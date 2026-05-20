@@ -10,11 +10,14 @@ export default function UserMenu() {
   return (
     <div class="relative inline-block text-left">
       <Show when={session().isPending}>
-        <div class="h-9 w-24 animate-pulse rounded" />
+        <div class="h-8 w-24 animate-pulse rounded-md bg-muted" />
       </Show>
 
       <Show when={!session().isPending && !session().data}>
-        <Link to="/login" class="inline-block border rounded px-4  text-sm">
+        <Link
+          to="/login"
+          class="inline-flex h-8 items-center justify-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+        >
           Sign In
         </Link>
       </Show>
@@ -22,18 +25,25 @@ export default function UserMenu() {
       <Show when={!session().isPending && session().data}>
         <button
           type="button"
-          class="inline-block border rounded px-4  text-sm"
+          class="inline-flex h-8 max-w-48 items-center justify-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
           onClick={() => setIsMenuOpen(!isMenuOpen())}
         >
-          {session().data?.user.name}
+          <span class="truncate">
+            {session().data?.user.name || session().data?.user.email}
+          </span>
         </button>
 
         <Show when={isMenuOpen()}>
-          <div class="absolute right-0 mt-2 w-56 rounded p-1 shadow-sm">
-            <div class="px-4  text-sm">{session().data?.user.email}</div>
+          <div class="absolute right-0 z-50 mt-2 w-56 rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10">
+            <div class="px-1.5 py-1 text-xs font-medium text-muted-foreground">
+              My Account
+            </div>
+            <div class="rounded-md px-1.5 py-1 text-sm text-muted-foreground">
+              {session().data?.user.email}
+            </div>
             <button
               type="button"
-              class="mt-1 w-full border rounded px-4  text-center text-sm"
+              class="flex w-full items-center rounded-md px-1.5 py-1 text-sm text-destructive transition-colors hover:bg-destructive/10"
               onClick={() => {
                 setIsMenuOpen(false);
                 authClient.signOut({

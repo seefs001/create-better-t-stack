@@ -41,12 +41,12 @@
 	type SubmitState = Pick<typeof form.state, 'canSubmit' | 'isSubmitting'>;
 </script>
 
-<div class="mx-auto mt-10 w-full max-w-md p-6">
-	<h1 class="mb-6 text-center font-bold text-3xl">Create Account</h1>
+<div class="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+	<h1 class="text-2xl font-semibold tracking-tight">Sign Up</h1>
 
 	<form
 		id="form"
-		class="space-y-4"
+		class="mt-6 flex flex-col gap-5"
 		onsubmit={(e) => {
 			e.preventDefault();
 			e.stopPropagation();
@@ -55,12 +55,13 @@
 	>
 		<form.Field name="name">
 			{#snippet children(field)}
-				<div class="space-y-1">
-					<label for={field.name}>Name</label>
+				<div class="space-y-2">
+					<label for={field.name} class="text-sm font-medium">Name</label>
 					<input
 						id={field.name}
 						name={field.name}
-						class="w-full border"
+						placeholder="Enter your name"
+						class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
 						onblur={field.handleBlur}
 						value={field.state.value}
 						oninput={(e: Event) => {
@@ -70,7 +71,7 @@
 					/>
 					{#if field.state.meta.isTouched}
 						{#each field.state.meta.errors as error}
-							<p class="text-sm text-red-500" role="alert">{error}</p>
+							<p class="text-destructive text-xs" role="alert">{error}</p>
 						{/each}
 					{/if}
 				</div>
@@ -79,13 +80,14 @@
 
 		<form.Field name="email">
 			{#snippet children(field)}
-				<div class="space-y-1">
-					<label for={field.name}>Email</label>
+				<div class="space-y-2">
+					<label for={field.name} class="text-sm font-medium">Email</label>
 					<input
 						id={field.name}
 						name={field.name}
 						type="email"
-						class="w-full border"
+						placeholder="Enter your email"
+						class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
 						onblur={field.handleBlur}
 						value={field.state.value}
 						oninput={(e: Event) => {
@@ -95,7 +97,7 @@
 					/>
 					{#if field.state.meta.isTouched}
 						{#each field.state.meta.errors as error}
-							<p class="text-sm text-red-500" role="alert">{error}</p>
+							<p class="text-destructive text-xs" role="alert">{error}</p>
 						{/each}
 					{/if}
 				</div>
@@ -104,13 +106,14 @@
 
 		<form.Field name="password">
 			{#snippet children(field)}
-				<div class="space-y-1">
-					<label for={field.name}>Password</label>
+				<div class="space-y-2">
+					<label for={field.name} class="text-sm font-medium">Password</label>
 					<input
 						id={field.name}
 						name={field.name}
 						type="password"
-						class="w-full border"
+						placeholder="Enter your password"
+						class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
 						onblur={field.handleBlur}
 						value={field.state.value}
 						oninput={(e: Event) => {
@@ -120,7 +123,7 @@
 					/>
 					{#if field.state.meta.isTouched}
 						{#each field.state.meta.errors as error}
-							<p class="text-sm text-red-500" role="alert">{error}</p>
+							<p class="text-destructive text-xs" role="alert">{error}</p>
 						{/each}
 					{/if}
 				</div>
@@ -129,16 +132,17 @@
 
 		<form.Subscribe selector={(state: typeof form.state): SubmitState => ({ canSubmit: state.canSubmit, isSubmitting: state.isSubmitting })}>
 			{#snippet children(state: SubmitState)}
-				<button type="submit" class="w-full" disabled={!state.canSubmit || state.isSubmitting}>
+				<button type="submit" class="inline-flex h-11 w-full items-center justify-center rounded-full bg-[oklch(0.62_0.22_255)] px-4 text-sm font-semibold text-[oklch(0.99_0.004_279)] transition-colors hover:bg-[oklch(0.57_0.23_255)] disabled:pointer-events-none disabled:opacity-50" disabled={!state.canSubmit || state.isSubmitting}>
 					{state.isSubmitting ? 'Submitting...' : 'Sign Up'}
 				</button>
 			{/snippet}
 		</form.Subscribe>
 	</form>
 
-	<div class="mt-4 text-center">
-		<button type="button" class="text-indigo-600 hover:text-indigo-800" onclick={switchToSignIn}>
-			Already have an account? Sign In
+	<div class="mt-5 flex flex-col items-center gap-3 text-center">
+		<button type="button" class="inline-flex h-auto gap-1.5 rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground" onclick={switchToSignIn}>
+			<span>Already have an account?</span>
+			<span class="text-[oklch(0.62_0.22_255)]">Sign In</span>
 		</button>
 	</div>
 </div>

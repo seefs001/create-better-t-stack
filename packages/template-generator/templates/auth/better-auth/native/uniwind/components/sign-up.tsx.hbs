@@ -103,7 +103,7 @@ export function SignUp() {
 
   return (
     <Surface variant="secondary" className="p-4 rounded-lg">
-      <Text className="text-foreground font-medium mb-4">Create Account</Text>
+      <Text className="text-foreground font-medium mb-4">Sign up</Text>
 
       <form.Subscribe
         selector={(state) => ({
@@ -190,7 +190,7 @@ export function SignUp() {
                   {isSubmitting ? (
                     <Spinner size="sm" color="default" />
                   ) : (
-                    <Button.Label>Create Account</Button.Label>
+                    <Button.Label>Sign up</Button.Label>
                   )}
                 </Button>
               </View>

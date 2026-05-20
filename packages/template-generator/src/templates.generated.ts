@@ -2617,7 +2617,7 @@ function SignUp() {
 
   return (
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-      <Text style={[styles.title, { color: theme.text }]}>Create Account</Text>
+      <Text style={[styles.title, { color: theme.text }]}>Sign up</Text>
 
       <form.Subscribe
         selector={(state) => ({
@@ -3094,7 +3094,7 @@ export function SignUp() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
+      <Text style={styles.title}>Sign up</Text>
 
       <form.Subscribe
         selector={(state) => ({
@@ -3490,7 +3490,7 @@ export function SignUp() {
 
   return (
     <Surface variant="secondary" className="p-4 rounded-lg">
-      <Text className="text-foreground font-medium mb-4">Create Account</Text>
+      <Text className="text-foreground font-medium mb-4">Sign up</Text>
 
       <form.Subscribe
         selector={(state) => ({
@@ -3577,7 +3577,7 @@ export function SignUp() {
                   {isSubmitting ? (
                     <Spinner size="sm" color="default" />
                   ) : (
-                    <Button.Label>Create Account</Button.Label>
+                    <Button.Label>Sign up</Button.Label>
                   )}
                 </Button>
               </View>
@@ -3608,27 +3608,56 @@ import {
 import { useState } from "react";
 
 export default function DashboardPage() {
-    const [showSignIn, setShowSignIn] = useState(false);
+    const [showSignIn, setShowSignIn] = useState(true);
     const privateData = useQuery(api.privateData.get);
 
     return (
         <>
             <Authenticated>
-                <div>
-                    <h1>Dashboard</h1>
-                    <p>privateData: {privateData?.message}</p>
-                    <UserMenu />
-                </div>
+                <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+                    <section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <p className="font-mono text-muted-foreground text-xs">CONVEX_AUTH</p>
+                                <h1 className="mt-2 font-semibold text-2xl tracking-tight">
+                                    Dashboard
+                                </h1>
+                                <p className="mt-2 text-muted-foreground text-sm">
+                                    This route is protected by Convex Auth and Better Auth.
+                                </p>
+                            </div>
+                            <UserMenu />
+                        </div>
+                    </section>
+                    <section className="grid gap-4 md:grid-cols-2">
+                        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+                            <p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+                            <h2 className="mt-2 font-medium text-lg">Protected route</h2>
+                            <p className="mt-3 text-muted-foreground text-sm leading-6">
+                                The dashboard content only renders after the authenticated state is ready.
+                            </p>
+                        </div>
+                        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+                            <p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
+                            <h2 className="mt-2 font-medium text-lg">Convex response</h2>
+                            <p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
+                        </div>
+                    </section>
+                </main>
             </Authenticated>
             <Unauthenticated>
-                {showSignIn ? (
+                <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+                  {showSignIn ? (
                     <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-                ) : (
+                  ) : (
                     <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
-                )}
+                  )}
+                </main>
             </Unauthenticated>
             <AuthLoading>
-                <div>Loading...</div>
+                <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+                    <div className="h-8 w-28 animate-pulse rounded-md bg-muted" />
+                </main>
             </AuthLoading>
         </>
     );
@@ -3681,8 +3710,8 @@ export default function SignInForm({
 	});
 
 	return (
-		<div className="mx-auto w-full mt-10 max-w-md p-6">
-			<h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+		<div className="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+			<h1 className="text-2xl font-semibold tracking-tight">Sign In</h1>
 
 			<form
 				onSubmit={(e) => {
@@ -3690,23 +3719,25 @@ export default function SignInForm({
 					e.stopPropagation();
 					form.handleSubmit();
 				}}
-				className="space-y-4"
+				className="mt-6 flex flex-col gap-5"
 			>
 				<div>
 					<form.Field name="email">
 						{(field) => (
 							<div className="space-y-2">
-								<Label htmlFor={field.name}>Email</Label>
+								<Label htmlFor={field.name} className="text-sm font-medium">Email</Label>
 								<Input
 									id={field.name}
 									name={field.name}
 									type="email"
+									placeholder="Enter your email"
+									className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
 								/>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
+									<p key={error?.message} className="text-destructive text-xs">
 										{error?.message}
 									</p>
 								))}
@@ -3719,17 +3750,19 @@ export default function SignInForm({
 					<form.Field name="password">
 						{(field) => (
 							<div className="space-y-2">
-								<Label htmlFor={field.name}>Password</Label>
+								<Label htmlFor={field.name} className="text-sm font-medium">Password</Label>
 								<Input
 									id={field.name}
 									name={field.name}
 									type="password"
+									placeholder="Enter your password"
+									className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
 								/>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
+									<p key={error?.message} className="text-destructive text-xs">
 										{error?.message}
 									</p>
 								))}
@@ -3742,7 +3775,7 @@ export default function SignInForm({
           {({ canSubmit, isSubmitting }) => (
 						<Button
 							type="submit"
-							className="w-full"
+							className="h-11 w-full rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] shadow-none hover:bg-[oklch(0.57_0.23_255)]"
 							disabled={!canSubmit || isSubmitting}
 						>
 							{isSubmitting ? "Submitting..." : "Sign In"}
@@ -3751,14 +3784,16 @@ export default function SignInForm({
 				</form.Subscribe>
 			</form>
 
-			<div className="mt-4 text-center">
+			<div className="mt-5 flex flex-col items-center gap-3 text-center">
 				<Button
+					type="button"
 					variant="link"
 					onClick={onSwitchToSignUp}
-					className="text-indigo-600 hover:text-indigo-800"
+					className="h-auto rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
 				>
-					Need an account? Sign Up
-				</Button>
+          <span>Need to create an account?</span>
+          <span className="text-[oklch(0.62_0.22_255)]">Sign Up</span>
+        </Button>
 			</div>
 		</div>
 	);
@@ -3814,8 +3849,8 @@ export default function SignUpForm({
 	});
 
 	return (
-		<div className="mx-auto w-full mt-10 max-w-md p-6">
-			<h1 className="mb-6 text-center text-3xl font-bold">Create Account</h1>
+		<div className="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+			<h1 className="text-2xl font-semibold tracking-tight">Sign Up</h1>
 
 			<form
 				onSubmit={(e) => {
@@ -3823,22 +3858,24 @@ export default function SignUpForm({
 					e.stopPropagation();
 					form.handleSubmit();
 				}}
-				className="space-y-4"
+				className="mt-6 flex flex-col gap-5"
 			>
 				<div>
 					<form.Field name="name">
 						{(field) => (
 							<div className="space-y-2">
-								<Label htmlFor={field.name}>Name</Label>
+								<Label htmlFor={field.name} className="text-sm font-medium">Name</Label>
 								<Input
 									id={field.name}
 									name={field.name}
+									placeholder="Enter your name"
+									className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
 								/>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
+									<p key={error?.message} className="text-destructive text-xs">
 										{error?.message}
 									</p>
 								))}
@@ -3851,17 +3888,19 @@ export default function SignUpForm({
 					<form.Field name="email">
 						{(field) => (
 							<div className="space-y-2">
-								<Label htmlFor={field.name}>Email</Label>
+								<Label htmlFor={field.name} className="text-sm font-medium">Email</Label>
 								<Input
 									id={field.name}
 									name={field.name}
 									type="email"
+									placeholder="Enter your email"
+									className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
 								/>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
+									<p key={error?.message} className="text-destructive text-xs">
 										{error?.message}
 									</p>
 								))}
@@ -3874,17 +3913,19 @@ export default function SignUpForm({
 					<form.Field name="password">
 						{(field) => (
 							<div className="space-y-2">
-								<Label htmlFor={field.name}>Password</Label>
+								<Label htmlFor={field.name} className="text-sm font-medium">Password</Label>
 								<Input
 									id={field.name}
 									name={field.name}
 									type="password"
+									placeholder="Enter your password"
+									className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
 								/>
 								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
+									<p key={error?.message} className="text-destructive text-xs">
 										{error?.message}
 									</p>
 								))}
@@ -3897,7 +3938,7 @@ export default function SignUpForm({
           {({ canSubmit, isSubmitting }) => (
 						<Button
 							type="submit"
-							className="w-full"
+							className="h-11 w-full rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] shadow-none hover:bg-[oklch(0.57_0.23_255)]"
 							disabled={!canSubmit || isSubmitting}
 						>
 							{isSubmitting ? "Submitting..." : "Sign Up"}
@@ -3906,14 +3947,16 @@ export default function SignUpForm({
 				</form.Subscribe>
 			</form>
 
-			<div className="mt-4 text-center">
+			<div className="mt-5 flex flex-col items-center gap-3 text-center">
 				<Button
+					type="button"
 					variant="link"
 					onClick={onSwitchToSignIn}
-					className="text-indigo-600 hover:text-indigo-800"
+					className="h-auto rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
 				>
-					Already have an account? Sign In
-				</Button>
+          <span>Already have an account?</span>
+          <span className="text-[oklch(0.62_0.22_255)]">Sign In</span>
+        </Button>
 			</div>
 		</div>
 	);
@@ -3940,14 +3983,14 @@ export default function UserMenu() {
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger render={<Button variant="outline" />}>
-				{user?.name}
+			<DropdownMenuTrigger render={<Button variant="outline" className="max-w-[12rem] gap-2 px-2.5" />}>
+				<span className="truncate">{user?.name || user?.email || "Account"}</span>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent className="bg-card">
+			<DropdownMenuContent align="end" className="w-56">
 				<DropdownMenuGroup>
 					<DropdownMenuLabel>My Account</DropdownMenuLabel>
 					<DropdownMenuSeparator />
-					<DropdownMenuItem>{user?.email}</DropdownMenuItem>
+					<DropdownMenuItem className="text-muted-foreground">{user?.email}</DropdownMenuItem>
 					<DropdownMenuItem
 						variant="destructive"
 						onClick={() => {
@@ -4038,8 +4081,8 @@ export default function SignInForm({
   });
 
   return (
-    <div className="mx-auto mt-10 w-full max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+    <div className="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+      <h1 className="text-2xl font-semibold tracking-tight">Sign In</h1>
 
       <form
         onSubmit={(e) => {
@@ -4047,23 +4090,25 @@ export default function SignInForm({
           e.stopPropagation();
           form.handleSubmit();
         }}
-        className="space-y-4"
+        className="mt-6 flex flex-col gap-5"
       >
         <div>
           <form.Field name="email">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Email</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="email"
+                  placeholder="Enter your email"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error, index) => (
-                  <p key={\`\${field.name}-error-\${index}\`} className="text-red-500">
+                  <p key={\`\${field.name}-error-\${index}\`} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -4076,17 +4121,19 @@ export default function SignInForm({
           <form.Field name="password">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Password</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Password</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="password"
+                  placeholder="Enter your password"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error, index) => (
-                  <p key={\`\${field.name}-error-\${index}\`} className="text-red-500">
+                  <p key={\`\${field.name}-error-\${index}\`} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -4102,20 +4149,22 @@ export default function SignInForm({
           })}
         >
           {({ canSubmit, isSubmitting }) => (
-            <Button type="submit" className="w-full" disabled={!canSubmit || isSubmitting}>
+            <Button type="submit" className="h-11 w-full rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] shadow-none hover:bg-[oklch(0.57_0.23_255)]" disabled={!canSubmit || isSubmitting}>
               {isSubmitting ? "Submitting..." : "Sign In"}
             </Button>
           )}
         </form.Subscribe>
       </form>
 
-      <div className="mt-4 text-center">
+      <div className="mt-5 flex flex-col items-center gap-3 text-center">
         <Button
+          type="button"
           variant="link"
           onClick={onSwitchToSignUp}
-          className="text-indigo-600 hover:text-indigo-800"
+          className="h-auto rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
         >
-          Need an account? Sign Up
+          <span>Need to create an account?</span>
+          <span className="text-[oklch(0.62_0.22_255)]">Sign Up</span>
         </Button>
       </div>
     </div>
@@ -4172,8 +4221,8 @@ export default function SignUpForm({
   });
 
   return (
-    <div className="mx-auto mt-10 w-full max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Create Account</h1>
+    <div className="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+      <h1 className="text-2xl font-semibold tracking-tight">Sign Up</h1>
 
       <form
         onSubmit={(e) => {
@@ -4181,22 +4230,24 @@ export default function SignUpForm({
           e.stopPropagation();
           form.handleSubmit();
         }}
-        className="space-y-4"
+        className="mt-6 flex flex-col gap-5"
       >
         <div>
           <form.Field name="name">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Name</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Name</Label>
                 <Input
                   id={field.name}
                   name={field.name}
+                  placeholder="Enter your name"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error, index) => (
-                  <p key={\`\${field.name}-error-\${index}\`} className="text-red-500">
+                  <p key={\`\${field.name}-error-\${index}\`} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -4209,17 +4260,19 @@ export default function SignUpForm({
           <form.Field name="email">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Email</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="email"
+                  placeholder="Enter your email"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error, index) => (
-                  <p key={\`\${field.name}-error-\${index}\`} className="text-red-500">
+                  <p key={\`\${field.name}-error-\${index}\`} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -4232,17 +4285,19 @@ export default function SignUpForm({
           <form.Field name="password">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Password</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Password</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="password"
+                  placeholder="Enter your password"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error, index) => (
-                  <p key={\`\${field.name}-error-\${index}\`} className="text-red-500">
+                  <p key={\`\${field.name}-error-\${index}\`} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -4258,20 +4313,22 @@ export default function SignUpForm({
           })}
         >
           {({ canSubmit, isSubmitting }) => (
-            <Button type="submit" className="w-full" disabled={!canSubmit || isSubmitting}>
+            <Button type="submit" className="h-11 w-full rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] shadow-none hover:bg-[oklch(0.57_0.23_255)]" disabled={!canSubmit || isSubmitting}>
               {isSubmitting ? "Submitting..." : "Sign Up"}
             </Button>
           )}
         </form.Subscribe>
       </form>
 
-      <div className="mt-4 text-center">
+      <div className="mt-5 flex flex-col items-center gap-3 text-center">
         <Button
+          type="button"
           variant="link"
           onClick={onSwitchToSignIn}
-          className="text-indigo-600 hover:text-indigo-800"
+          className="h-auto rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
         >
-          Already have an account? Sign In
+          <span>Already have an account?</span>
+          <span className="text-[oklch(0.62_0.22_255)]">Sign In</span>
         </Button>
       </div>
     </div>
@@ -4301,14 +4358,14 @@ export default function UserMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" />}>
-        {user?.name}
+      <DropdownMenuTrigger render={<Button variant="outline" className="max-w-[12rem] gap-2 px-2.5" />}>
+        <span className="truncate">{user?.name || user?.email || "Account"}</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-card">
+      <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuGroup>
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>{user?.email}</DropdownMenuItem>
+          <DropdownMenuItem className="text-muted-foreground">{user?.email}</DropdownMenuItem>
           <DropdownMenuItem
             variant="destructive"
             onClick={() => {
@@ -4357,16 +4414,39 @@ function PrivateDashboardContent() {
   const privateData = useQuery(api.privateData.get);
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <p>privateData: {privateData?.message}</p>
-      <UserMenu />
-    </div>
+    <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+      <section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="font-mono text-muted-foreground text-xs">CONVEX_AUTH</p>
+            <h1 className="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+            <p className="mt-2 text-muted-foreground text-sm">
+              This route is protected by Convex Auth and Better Auth.
+            </p>
+          </div>
+          <UserMenu />
+        </div>
+      </section>
+      <section className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+          <h2 className="mt-2 font-medium text-lg">Protected route</h2>
+          <p className="mt-3 text-muted-foreground text-sm leading-6">
+            The dashboard content only renders after the authenticated state is ready.
+          </p>
+        </div>
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
+          <h2 className="mt-2 font-medium text-lg">Convex response</h2>
+          <p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
+        </div>
+      </section>
+    </main>
   );
 }
 
 export default function Dashboard() {
-  const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(true);
 
   return (
     <>
@@ -4374,14 +4454,18 @@ export default function Dashboard() {
         <PrivateDashboardContent />
       </Authenticated>
       <Unauthenticated>
-        {showSignIn ? (
-          <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-        ) : (
-          <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
-        )}
+        <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+          {showSignIn ? (
+            <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
+          ) : (
+            <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+          )}
+        </main>
       </Unauthenticated>
       <AuthLoading>
-        <div>Loading...</div>
+        <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+          <div className="h-8 w-28 animate-pulse rounded-md bg-muted" />
+        </main>
       </AuthLoading>
     </>
   );
@@ -4438,8 +4522,8 @@ export default function SignInForm({
     });
 
     return (
-        <div className="mx-auto w-full mt-10 max-w-md p-6">
-            <h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+        <div className="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+            <h1 className="text-2xl font-semibold tracking-tight">Sign In</h1>
 
             <form
                 onSubmit={(e) => {
@@ -4447,23 +4531,25 @@ export default function SignInForm({
                     e.stopPropagation();
                     form.handleSubmit();
                 }}
-                className="space-y-4"
+                className="mt-6 flex flex-col gap-5"
             >
                 <div>
                     <form.Field name="email">
                         {(field) => (
                             <div className="space-y-2">
-                                <Label htmlFor={field.name}>Email</Label>
+                                <Label htmlFor={field.name} className="text-sm font-medium">Email</Label>
                                 <Input
                                     id={field.name}
                                     name={field.name}
                                     type="email"
+                                    placeholder="Enter your email"
+                                    className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                                     value={field.state.value}
                                     onBlur={field.handleBlur}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                 />
                                 {field.state.meta.errors.map((error, index) => (
-                                    <p key={\`\${field.name}-error-\${index}\`} className="text-red-500">
+                                    <p key={\`\${field.name}-error-\${index}\`} className="text-destructive text-xs">
                                         {error?.message}
                                     </p>
                                 ))}
@@ -4476,17 +4562,19 @@ export default function SignInForm({
                     <form.Field name="password">
                         {(field) => (
                             <div className="space-y-2">
-                                <Label htmlFor={field.name}>Password</Label>
+                                <Label htmlFor={field.name} className="text-sm font-medium">Password</Label>
                                 <Input
                                     id={field.name}
                                     name={field.name}
                                     type="password"
+                                    placeholder="Enter your password"
+                                    className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                                     value={field.state.value}
                                     onBlur={field.handleBlur}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                 />
                                 {field.state.meta.errors.map((error, index) => (
-                                    <p key={\`\${field.name}-error-\${index}\`} className="text-red-500">
+                                    <p key={\`\${field.name}-error-\${index}\`} className="text-destructive text-xs">
                                         {error?.message}
                                     </p>
                                 ))}
@@ -4499,7 +4587,7 @@ export default function SignInForm({
           {({ canSubmit, isSubmitting }) => (
                         <Button
                             type="submit"
-                            className="w-full"
+                            className="h-11 w-full rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] shadow-none hover:bg-[oklch(0.57_0.23_255)]"
                             disabled={!canSubmit || isSubmitting}
                         >
                             {isSubmitting ? "Submitting..." : "Sign In"}
@@ -4508,14 +4596,16 @@ export default function SignInForm({
                 </form.Subscribe>
             </form>
 
-            <div className="mt-4 text-center">
+            <div className="mt-5 flex flex-col items-center gap-3 text-center">
                 <Button
+                    type="button"
                     variant="link"
                     onClick={onSwitchToSignUp}
-                    className="text-indigo-600 hover:text-indigo-800"
+                    className="h-auto rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
                 >
-                    Need an account? Sign Up
-                </Button>
+          <span>Need to create an account?</span>
+          <span className="text-[oklch(0.62_0.22_255)]">Sign Up</span>
+        </Button>
             </div>
         </div>
     );
@@ -4575,8 +4665,8 @@ export default function SignUpForm({
     });
 
     return (
-        <div className="mx-auto w-full mt-10 max-w-md p-6">
-            <h1 className="mb-6 text-center text-3xl font-bold">Create Account</h1>
+        <div className="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+            <h1 className="text-2xl font-semibold tracking-tight">Sign Up</h1>
 
             <form
                 onSubmit={(e) => {
@@ -4584,22 +4674,24 @@ export default function SignUpForm({
                     e.stopPropagation();
                     form.handleSubmit();
                 }}
-                className="space-y-4"
+                className="mt-6 flex flex-col gap-5"
             >
                 <div>
                     <form.Field name="name">
                         {(field) => (
                             <div className="space-y-2">
-                                <Label htmlFor={field.name}>Name</Label>
+                                <Label htmlFor={field.name} className="text-sm font-medium">Name</Label>
                                 <Input
                                     id={field.name}
                                     name={field.name}
+                                    placeholder="Enter your name"
+                                    className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                                     value={field.state.value}
                                     onBlur={field.handleBlur}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                 />
                                 {field.state.meta.errors.map((error, index) => (
-                                    <p key={\`\${field.name}-error-\${index}\`} className="text-red-500">
+                                    <p key={\`\${field.name}-error-\${index}\`} className="text-destructive text-xs">
                                         {error?.message}
                                     </p>
                                 ))}
@@ -4612,17 +4704,19 @@ export default function SignUpForm({
                     <form.Field name="email">
                         {(field) => (
                             <div className="space-y-2">
-                                <Label htmlFor={field.name}>Email</Label>
+                                <Label htmlFor={field.name} className="text-sm font-medium">Email</Label>
                                 <Input
                                     id={field.name}
                                     name={field.name}
                                     type="email"
+                                    placeholder="Enter your email"
+                                    className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                                     value={field.state.value}
                                     onBlur={field.handleBlur}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                 />
                                 {field.state.meta.errors.map((error, index) => (
-                                    <p key={\`\${field.name}-error-\${index}\`} className="text-red-500">
+                                    <p key={\`\${field.name}-error-\${index}\`} className="text-destructive text-xs">
                                         {error?.message}
                                     </p>
                                 ))}
@@ -4635,17 +4729,19 @@ export default function SignUpForm({
                     <form.Field name="password">
                         {(field) => (
                             <div className="space-y-2">
-                                <Label htmlFor={field.name}>Password</Label>
+                                <Label htmlFor={field.name} className="text-sm font-medium">Password</Label>
                                 <Input
                                     id={field.name}
                                     name={field.name}
                                     type="password"
+                                    placeholder="Enter your password"
+                                    className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                                     value={field.state.value}
                                     onBlur={field.handleBlur}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                 />
                                 {field.state.meta.errors.map((error, index) => (
-                                    <p key={\`\${field.name}-error-\${index}\`} className="text-red-500">
+                                    <p key={\`\${field.name}-error-\${index}\`} className="text-destructive text-xs">
                                         {error?.message}
                                     </p>
                                 ))}
@@ -4658,7 +4754,7 @@ export default function SignUpForm({
           {({ canSubmit, isSubmitting }) => (
                         <Button
                             type="submit"
-                            className="w-full"
+                            className="h-11 w-full rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] shadow-none hover:bg-[oklch(0.57_0.23_255)]"
                             disabled={!canSubmit || isSubmitting}
                         >
                             {isSubmitting ? "Submitting..." : "Sign Up"}
@@ -4667,14 +4763,16 @@ export default function SignUpForm({
                 </form.Subscribe>
             </form>
 
-            <div className="mt-4 text-center">
+            <div className="mt-5 flex flex-col items-center gap-3 text-center">
                 <Button
+                    type="button"
                     variant="link"
                     onClick={onSwitchToSignIn}
-                    className="text-indigo-600 hover:text-indigo-800"
+                    className="h-auto rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
                 >
-                    Already have an account? Sign In
-                </Button>
+          <span>Already have an account?</span>
+          <span className="text-[oklch(0.62_0.22_255)]">Sign In</span>
+        </Button>
             </div>
         </div>
     );
@@ -4703,14 +4801,14 @@ export default function UserMenu() {
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="outline" />}>
-                {user?.name}
+            <DropdownMenuTrigger render={<Button variant="outline" className="max-w-[12rem] gap-2 px-2.5" />}>
+                <span className="truncate">{user?.name || user?.email || "Account"}</span>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-card">
+            <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuGroup>
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>{user?.email}</DropdownMenuItem>
+                    <DropdownMenuItem className="text-muted-foreground">{user?.email}</DropdownMenuItem>
                     <DropdownMenuItem
                         variant="destructive"
                         onClick={() => {
@@ -4766,16 +4864,39 @@ function PrivateDashboardContent() {
   const privateData = useQuery(api.privateData.get);
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <p>privateData: {privateData?.message}</p>
-      <UserMenu />
-    </div>
+    <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+      <section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="font-mono text-muted-foreground text-xs">CONVEX_AUTH</p>
+            <h1 className="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+            <p className="mt-2 text-muted-foreground text-sm">
+              This route is protected by Convex Auth and Better Auth.
+            </p>
+          </div>
+          <UserMenu />
+        </div>
+      </section>
+      <section className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+          <h2 className="mt-2 font-medium text-lg">Protected route</h2>
+          <p className="mt-3 text-muted-foreground text-sm leading-6">
+            The dashboard content only renders after the authenticated state is ready.
+          </p>
+        </div>
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
+          <h2 className="mt-2 font-medium text-lg">Convex response</h2>
+          <p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
+        </div>
+      </section>
+    </main>
   );
 }
 
 function RouteComponent() {
-  const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(true);
 
   return (
     <>
@@ -4783,14 +4904,18 @@ function RouteComponent() {
         <PrivateDashboardContent />
       </Authenticated>
       <Unauthenticated>
-        {showSignIn ? (
-          <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-        ) : (
-          <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
-        )}
+        <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+          {showSignIn ? (
+            <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
+          ) : (
+            <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+          )}
+        </main>
       </Unauthenticated>
       <AuthLoading>
-        <div>Loading...</div>
+        <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+          <div className="h-8 w-28 animate-pulse rounded-md bg-muted" />
+        </main>
       </AuthLoading>
     </>
   );
@@ -4847,8 +4972,8 @@ export default function SignInForm({
     });
 
     return (
-        <div className="mx-auto w-full mt-10 max-w-md p-6">
-            <h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+        <div className="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+            <h1 className="text-2xl font-semibold tracking-tight">Sign In</h1>
 
             <form
                 onSubmit={(e) => {
@@ -4856,23 +4981,25 @@ export default function SignInForm({
                     e.stopPropagation();
                     form.handleSubmit();
                 }}
-                className="space-y-4"
+                className="mt-6 flex flex-col gap-5"
             >
                 <div>
                     <form.Field name="email">
                         {(field) => (
                             <div className="space-y-2">
-                                <Label htmlFor={field.name}>Email</Label>
+                                <Label htmlFor={field.name} className="text-sm font-medium">Email</Label>
                                 <Input
                                     id={field.name}
                                     name={field.name}
                                     type="email"
+                                    placeholder="Enter your email"
+                                    className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                                     value={field.state.value}
                                     onBlur={field.handleBlur}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                 />
                                 {field.state.meta.errors.map((error) => (
-                                    <p key={error?.message} className="text-red-500">
+                                    <p key={error?.message} className="text-destructive text-xs">
                                         {error?.message}
                                     </p>
                                 ))}
@@ -4885,17 +5012,19 @@ export default function SignInForm({
                     <form.Field name="password">
                         {(field) => (
                             <div className="space-y-2">
-                                <Label htmlFor={field.name}>Password</Label>
+                                <Label htmlFor={field.name} className="text-sm font-medium">Password</Label>
                                 <Input
                                     id={field.name}
                                     name={field.name}
                                     type="password"
+                                    placeholder="Enter your password"
+                                    className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                                     value={field.state.value}
                                     onBlur={field.handleBlur}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                 />
                                 {field.state.meta.errors.map((error) => (
-                                    <p key={error?.message} className="text-red-500">
+                                    <p key={error?.message} className="text-destructive text-xs">
                                         {error?.message}
                                     </p>
                                 ))}
@@ -4908,7 +5037,7 @@ export default function SignInForm({
           {({ canSubmit, isSubmitting }) => (
                         <Button
                             type="submit"
-                            className="w-full"
+                            className="h-11 w-full rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] shadow-none hover:bg-[oklch(0.57_0.23_255)]"
                             disabled={!canSubmit || isSubmitting}
                         >
                             {isSubmitting ? "Submitting..." : "Sign In"}
@@ -4917,14 +5046,16 @@ export default function SignInForm({
                 </form.Subscribe>
             </form>
 
-            <div className="mt-4 text-center">
+            <div className="mt-5 flex flex-col items-center gap-3 text-center">
                 <Button
+                    type="button"
                     variant="link"
                     onClick={onSwitchToSignUp}
-                    className="text-indigo-600 hover:text-indigo-800"
+                    className="h-auto rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
                 >
-                    Need an account? Sign Up
-                </Button>
+          <span>Need to create an account?</span>
+          <span className="text-[oklch(0.62_0.22_255)]">Sign Up</span>
+        </Button>
             </div>
         </div>
     );
@@ -4984,8 +5115,8 @@ export default function SignUpForm({
     });
 
     return (
-        <div className="mx-auto w-full mt-10 max-w-md p-6">
-            <h1 className="mb-6 text-center text-3xl font-bold">Create Account</h1>
+        <div className="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+            <h1 className="text-2xl font-semibold tracking-tight">Sign Up</h1>
 
             <form
                 onSubmit={(e) => {
@@ -4993,22 +5124,24 @@ export default function SignUpForm({
                     e.stopPropagation();
                     form.handleSubmit();
                 }}
-                className="space-y-4"
+                className="mt-6 flex flex-col gap-5"
             >
                 <div>
                     <form.Field name="name">
                         {(field) => (
                             <div className="space-y-2">
-                                <Label htmlFor={field.name}>Name</Label>
+                                <Label htmlFor={field.name} className="text-sm font-medium">Name</Label>
                                 <Input
                                     id={field.name}
                                     name={field.name}
+                                    placeholder="Enter your name"
+                                    className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                                     value={field.state.value}
                                     onBlur={field.handleBlur}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                 />
                                 {field.state.meta.errors.map((error) => (
-                                    <p key={error?.message} className="text-red-500">
+                                    <p key={error?.message} className="text-destructive text-xs">
                                         {error?.message}
                                     </p>
                                 ))}
@@ -5021,17 +5154,19 @@ export default function SignUpForm({
                     <form.Field name="email">
                         {(field) => (
                             <div className="space-y-2">
-                                <Label htmlFor={field.name}>Email</Label>
+                                <Label htmlFor={field.name} className="text-sm font-medium">Email</Label>
                                 <Input
                                     id={field.name}
                                     name={field.name}
                                     type="email"
+                                    placeholder="Enter your email"
+                                    className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                                     value={field.state.value}
                                     onBlur={field.handleBlur}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                 />
                                 {field.state.meta.errors.map((error) => (
-                                    <p key={error?.message} className="text-red-500">
+                                    <p key={error?.message} className="text-destructive text-xs">
                                         {error?.message}
                                     </p>
                                 ))}
@@ -5044,17 +5179,19 @@ export default function SignUpForm({
                     <form.Field name="password">
                         {(field) => (
                             <div className="space-y-2">
-                                <Label htmlFor={field.name}>Password</Label>
+                                <Label htmlFor={field.name} className="text-sm font-medium">Password</Label>
                                 <Input
                                     id={field.name}
                                     name={field.name}
                                     type="password"
+                                    placeholder="Enter your password"
+                                    className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                                     value={field.state.value}
                                     onBlur={field.handleBlur}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                 />
                                 {field.state.meta.errors.map((error) => (
-                                    <p key={error?.message} className="text-red-500">
+                                    <p key={error?.message} className="text-destructive text-xs">
                                         {error?.message}
                                     </p>
                                 ))}
@@ -5067,7 +5204,7 @@ export default function SignUpForm({
           {({ canSubmit, isSubmitting }) => (
                         <Button
                             type="submit"
-                            className="w-full"
+                            className="h-11 w-full rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] shadow-none hover:bg-[oklch(0.57_0.23_255)]"
                             disabled={!canSubmit || isSubmitting}
                         >
                             {isSubmitting ? "Submitting..." : "Sign Up"}
@@ -5076,14 +5213,16 @@ export default function SignUpForm({
                 </form.Subscribe>
             </form>
 
-            <div className="mt-4 text-center">
+            <div className="mt-5 flex flex-col items-center gap-3 text-center">
                 <Button
+                    type="button"
                     variant="link"
                     onClick={onSwitchToSignIn}
-                    className="text-indigo-600 hover:text-indigo-800"
+                    className="h-auto rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
                 >
-                    Already have an account? Sign In
-                </Button>
+          <span>Already have an account?</span>
+          <span className="text-[oklch(0.62_0.22_255)]">Sign In</span>
+        </Button>
             </div>
         </div>
     );
@@ -5109,14 +5248,14 @@ export default function UserMenu() {
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="outline" />}>
-                {user?.name}
+            <DropdownMenuTrigger render={<Button variant="outline" className="max-w-[12rem] gap-2 px-2.5" />}>
+                <span className="truncate">{user?.name || user?.email || "Account"}</span>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-card">
+            <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuGroup>
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>{user?.email}</DropdownMenuItem>
+                    <DropdownMenuItem className="text-muted-foreground">{user?.email}</DropdownMenuItem>
                     <DropdownMenuItem
                         variant="destructive"
                         onClick={() => {
@@ -5187,27 +5326,54 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function RouteComponent() {
-  const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(true);
   const privateData = useQuery(api.privateData.get);
 
   return (
     <>
       <Authenticated>
-        <div>
-          <h1>Dashboard</h1>
-          <p>privateData: {privateData?.message}</p>
-          <UserMenu />
-        </div>
+        <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+          <section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="font-mono text-muted-foreground text-xs">CONVEX_AUTH</p>
+                <h1 className="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+                <p className="mt-2 text-muted-foreground text-sm">
+                  This route is protected by Convex Auth and Better Auth.
+                </p>
+              </div>
+              <UserMenu />
+            </div>
+          </section>
+          <section className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+              <p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+              <h2 className="mt-2 font-medium text-lg">Protected route</h2>
+              <p className="mt-3 text-muted-foreground text-sm leading-6">
+                The dashboard content only renders after the authenticated state is ready.
+              </p>
+            </div>
+            <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+              <p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
+              <h2 className="mt-2 font-medium text-lg">Convex response</h2>
+              <p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
+            </div>
+          </section>
+        </main>
       </Authenticated>
       <Unauthenticated>
-        {showSignIn ? (
-          <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-        ) : (
-          <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
-        )}
+        <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+          {showSignIn ? (
+            <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
+          ) : (
+            <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+          )}
+        </main>
       </Unauthenticated>
       <AuthLoading>
-        <div>Loading...</div>
+        <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+          <div className="h-8 w-28 animate-pulse rounded-md bg-muted" />
+        </main>
       </AuthLoading>
     </>
   );
@@ -5887,7 +6053,7 @@ function SignUp() {
 
   return (
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-      <Text style={[styles.title, { color: theme.text }]}>Create Account</Text>
+      <Text style={[styles.title, { color: theme.text }]}>Sign up</Text>
 
       <form.Subscribe
         selector={(state) => ({
@@ -6095,7 +6261,8 @@ export default function Home() {
     <Container>
       <ScrollView>
         <View style={styles.pageContainer}>
-          <Text style={styles.headerTitle}>BETTER T STACK</Text>
+          <Text style={styles.headerEyebrow}>GENERATED_STACK</Text>
+          <Text style={styles.headerTitle}>Better T Stack</Text>
           {session?.user ? (
             <View style={styles.sessionInfoCard}>
               <View style={styles.sessionUserRow}>
@@ -6124,7 +6291,7 @@ export default function Home() {
           ) : null}
           {{#unless (eq api "none")}}
           <View style={styles.apiStatusCard}>
-            <Text style={styles.cardTitle}>API Status</Text>
+            <Text style={styles.cardTitle}>PROJECT_STATUS</Text>
             <View style={styles.apiStatusRow}>
               <View
                 style={[
@@ -6175,6 +6342,13 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: 30,
     fontWeight: "bold",
     marginBottom: 16,
+  },
+  headerEyebrow: {
+    color: theme?.colors?.primary,
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+    marginBottom: 6,
   },
   sessionInfoCard: {
     marginBottom: 24,
@@ -6571,7 +6745,7 @@ export function SignUp() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
+      <Text style={styles.title}>Sign up</Text>
 
       <form.Subscribe
         selector={(state) => ({
@@ -7116,7 +7290,7 @@ export function SignUp() {
 
   return (
     <Surface variant="secondary" className="p-4 rounded-lg">
-      <Text className="text-foreground font-medium mb-4">Create Account</Text>
+      <Text className="text-foreground font-medium mb-4">Sign up</Text>
 
       <form.Subscribe
         selector={(state) => ({
@@ -7203,7 +7377,7 @@ export function SignUp() {
                   {isSubmitting ? (
                     <Spinner size="sm" color="default" />
                   ) : (
-                    <Button.Label>Create Account</Button.Label>
+                    <Button.Label>Sign up</Button.Label>
                   )}
                 </Button>
               </View>
@@ -8323,49 +8497,50 @@ model Verification {
 import { authClient } from "../lib/auth-client";
 ---
 
-<div class="mx-auto mt-10 w-full max-w-md p-6">
-  <h1 class="mb-6 text-center font-bold text-3xl text-white">Welcome Back</h1>
+<div class="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+  <h1 class="text-2xl font-semibold tracking-tight">Sign In</h1>
 
-  <form id="signin-form" class="space-y-4">
-    <div class="space-y-1">
-      <label for="email" class="block text-sm font-medium text-neutral-300">Email</label>
+  <form id="signin-form" class="mt-6 flex flex-col gap-5">
+    <div class="space-y-2">
+      <label for="email" class="block text-sm font-medium">Email</label>
       <input
         id="email"
         name="email"
         type="email"
         required
-        class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-white placeholder-neutral-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        placeholder="you@example.com"
+        class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
+        placeholder="Enter your email"
       />
-      <p id="email-error" class="text-sm text-red-500 hidden"></p>
+      <p id="email-error" class="hidden text-destructive text-xs"></p>
     </div>
 
-    <div class="space-y-1">
-      <label for="password" class="block text-sm font-medium text-neutral-300">Password</label>
+    <div class="space-y-2">
+      <label for="password" class="block text-sm font-medium">Password</label>
       <input
         id="password"
         name="password"
         type="password"
         required
-        class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-white placeholder-neutral-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        placeholder="••••••••"
+        class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
+        placeholder="Enter your password"
       />
-      <p id="password-error" class="text-sm text-red-500 hidden"></p>
+      <p id="password-error" class="hidden text-destructive text-xs"></p>
     </div>
 
-    <p id="form-error" class="text-sm text-red-500 hidden"></p>
+    <p id="form-error" class="hidden text-destructive text-xs"></p>
 
     <button
       type="submit"
-      class="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      class="inline-flex h-11 w-full items-center justify-center rounded-full bg-[oklch(0.62_0.22_255)] px-4 text-sm font-semibold text-[oklch(0.99_0.004_279)] transition-colors hover:bg-[oklch(0.57_0.23_255)] focus:outline-none focus:ring-3 focus:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
     >
       Sign In
     </button>
   </form>
 
-  <div class="mt-4 text-center">
-    <a href="/signup" class="text-indigo-400 hover:text-indigo-300 text-sm">
-      Need an account? Sign Up
+  <div class="mt-5 flex flex-col items-center gap-3 text-center">
+    <a href="/signup" class="inline-flex h-auto gap-1.5 rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground">
+      <span>Need to create an account?</span>
+      <span class="text-[oklch(0.62_0.22_255)]">Sign Up</span>
     </a>
   </div>
 </div>
@@ -8416,61 +8591,62 @@ import { authClient } from "../lib/auth-client";
 import { authClient } from "../lib/auth-client";
 ---
 
-<div class="mx-auto mt-10 w-full max-w-md p-6">
-  <h1 class="mb-6 text-center font-bold text-3xl text-white">Create Account</h1>
+<div class="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+  <h1 class="text-2xl font-semibold tracking-tight">Sign Up</h1>
 
-  <form id="signup-form" class="space-y-4">
-    <div class="space-y-1">
-      <label for="name" class="block text-sm font-medium text-neutral-300">Name</label>
+  <form id="signup-form" class="mt-6 flex flex-col gap-5">
+    <div class="space-y-2">
+      <label for="name" class="block text-sm font-medium">Name</label>
       <input
         id="name"
         name="name"
         type="text"
         required
-        class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-white placeholder-neutral-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        placeholder="John Doe"
+        class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
+        placeholder="Enter your name"
       />
     </div>
 
-    <div class="space-y-1">
-      <label for="email" class="block text-sm font-medium text-neutral-300">Email</label>
+    <div class="space-y-2">
+      <label for="email" class="block text-sm font-medium">Email</label>
       <input
         id="email"
         name="email"
         type="email"
         required
-        class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-white placeholder-neutral-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        placeholder="you@example.com"
+        class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
+        placeholder="Enter your email"
       />
     </div>
 
-    <div class="space-y-1">
-      <label for="password" class="block text-sm font-medium text-neutral-300">Password</label>
+    <div class="space-y-2">
+      <label for="password" class="block text-sm font-medium">Password</label>
       <input
         id="password"
         name="password"
         type="password"
         required
         minlength="8"
-        class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-white placeholder-neutral-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        placeholder="••••••••"
+        class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
+        placeholder="Enter your password"
       />
-      <p class="text-xs text-neutral-500">Must be at least 8 characters</p>
+      <p class="text-muted-foreground text-xs">Must be at least 8 characters</p>
     </div>
 
-    <p id="form-error" class="text-sm text-red-500 hidden"></p>
+    <p id="form-error" class="hidden text-destructive text-xs"></p>
 
     <button
       type="submit"
-      class="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      class="inline-flex h-11 w-full items-center justify-center rounded-full bg-[oklch(0.62_0.22_255)] px-4 text-sm font-semibold text-[oklch(0.99_0.004_279)] transition-colors hover:bg-[oklch(0.57_0.23_255)] focus:outline-none focus:ring-3 focus:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
     >
       Sign Up
     </button>
   </form>
 
-  <div class="mt-4 text-center">
-    <a href="/login" class="text-indigo-400 hover:text-indigo-300 text-sm">
-      Already have an account? Sign In
+  <div class="mt-5 flex flex-col items-center gap-3 text-center">
+    <a href="/login" class="inline-flex h-auto gap-1.5 rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground">
+      <span>Already have an account?</span>
+      <span class="text-[oklch(0.62_0.22_255)]">Sign In</span>
     </a>
   </div>
 </div>
@@ -8542,47 +8718,62 @@ import Layout from "../layouts/Layout.astro";
 
 <Layout title="Dashboard - {{projectName}}">
   <div id="dashboard-content" class="hidden">
-    <main class="mx-auto max-w-4xl px-4 py-8">
-      <div class="rounded-xl border border-neutral-800 bg-neutral-900/50 p-8">
-        <h1 class="text-3xl font-bold text-white mb-6">Dashboard</h1>
-        
-        <div class="space-y-4">
-          <div class="rounded-lg bg-neutral-800/50 p-4">
-            <p class="text-sm text-neutral-400">Welcome back,</p>
-            <p id="user-name" class="text-xl font-medium text-white">Loading...</p>
-          </div>
-          
-          <div class="rounded-lg bg-neutral-800/50 p-4">
-            <p class="text-sm text-neutral-400 mb-2">Email</p>
-            <p id="user-email" class="text-white">Loading...</p>
-          </div>
+    <main class="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+      <section class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+        <p class="font-mono text-muted-foreground text-xs">AUTH_SESSION</p>
+        <h1 class="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+        <p class="mt-2 text-muted-foreground text-sm">
+          Signed in as <span id="user-name">Loading...</span>.
+        </p>
+      </section>
+
+      <section class="grid gap-4 md:grid-cols-2">
+        <div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p class="font-mono text-muted-foreground text-xs">ACCOUNT</p>
+          <h2 class="mt-2 font-medium text-lg">Profile</h2>
+          <dl class="mt-4 space-y-3 text-sm">
+            <div class="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+              <dt class="text-muted-foreground">Email</dt>
+              <dd id="user-email" class="break-all font-medium">Loading...</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p class="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+          <h2 class="mt-2 font-medium text-lg">Protected route</h2>
+          <p class="mt-3 text-muted-foreground text-sm leading-6">
+            This page is rendered only after Better Auth returns an active session.
+          </p>
+        </div>
 
           {{#if (eq api "orpc")}}
-          <div class="rounded-lg bg-neutral-800/50 p-4">
-            <p class="text-sm text-neutral-400 mb-2">Server Message</p>
-            <p id="api-message" class="text-white">Loading...</p>
+          <div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+            <p class="font-mono text-muted-foreground text-xs">PRIVATE_API</p>
+            <h2 class="mt-2 font-medium text-lg">oRPC response</h2>
+            <p id="api-message" class="mt-3 text-sm">Loading...</p>
           </div>
           {{/if}}
 
           {{#if (eq payments "polar")}}
-          <div class="rounded-lg bg-neutral-800/50 p-4">
-            <p class="text-sm text-neutral-400 mb-2">Subscription</p>
+          <div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+            <p class="font-mono text-muted-foreground text-xs">BILLING</p>
+            <h2 class="mt-2 font-medium text-lg">Subscription</h2>
             <div id="subscription-info" class="space-y-2">
-              <p class="text-white">Loading...</p>
+              <p class="mt-3 text-sm">Loading...</p>
             </div>
           </div>
           {{/if}}
-        </div>
-      </div>
+      </section>
     </main>
   </div>
 
   <div id="loading" class="flex h-[calc(100vh-4rem)] items-center justify-center">
-    <p class="text-neutral-400">Loading...</p>
+    <div class="h-8 w-28 animate-pulse rounded-md bg-muted"></div>
   </div>
 
   <div id="redirect" class="hidden flex h-[calc(100vh-4rem)] items-center justify-center">
-    <p class="text-neutral-400">Redirecting to login...</p>
+    <p class="text-muted-foreground text-sm">Redirecting to login...</p>
   </div>
 </Layout>
 
@@ -8630,10 +8821,10 @@ import Layout from "../layouts/Layout.astro";
         const subscriptionInfo = document.getElementById("subscription-info")!;
         if (customerState?.activeSubscriptions?.length > 0) {
           subscriptionInfo.innerHTML = \`
-            <p class="text-white">Plan: <span class="text-green-400">Pro</span></p>
+            <p class="mt-3 text-sm">Plan: <span class="font-medium text-foreground">Pro</span></p>
             <button
               id="manage-subscription"
-              class="mt-2 rounded px-3 py-1.5 text-sm bg-neutral-700 hover:bg-neutral-600 text-white transition-colors"
+              class="mt-2 inline-flex h-8 items-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
             >
               Manage Subscription
             </button>
@@ -8643,10 +8834,10 @@ import Layout from "../layouts/Layout.astro";
           });
         } else {
           subscriptionInfo.innerHTML = \`
-            <p class="text-white">Plan: <span class="text-neutral-400">Free</span></p>
+            <p class="mt-3 text-sm">Plan: <span class="text-muted-foreground">Free</span></p>
             <button
               id="upgrade-button"
-              class="mt-2 rounded px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-colors"
+              class="mt-2 inline-flex h-8 items-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
             >
               Upgrade to Pro
             </button>
@@ -8678,7 +8869,7 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Sign In - {{projectName}}">
-  <div class="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+  <div class="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
     <SignInForm />
   </div>
 </Layout>
@@ -8689,7 +8880,7 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Sign Up - {{projectName}}">
-  <div class="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+  <div class="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
     <SignUpForm />
   </div>
 </Layout>
@@ -8757,18 +8948,18 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
 <template>
   <div class="flex flex-col items-center justify-center gap-4 p-4">
-    <UPageCard class="w-full max-w-md">
+    <UPageCard class="w-full max-w-md rounded-2xl p-5 shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
       <UAuthForm
         :schema="schema"
         :fields="fields"
-        title="Welcome Back"
+        title="Sign In"
         icon="i-lucide-log-in"
-        :submit="{ label: 'Sign In', loading }"
+        :submit="{ label: 'Sign In', loading, class: 'h-11 rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] hover:bg-[oklch(0.57_0.23_255)]' }"
         @submit="onSubmit"
       >
         <template #description>
-          Need an account?
-          <ULink class="text-primary font-medium" @click="$emit('switchToSignUp')">
+          Need to create an account?
+          <ULink class="font-medium text-[oklch(0.62_0.22_255)]" @click="$emit('switchToSignUp')">
             Sign Up
           </ULink>
         </template>
@@ -8849,18 +9040,18 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
 <template>
   <div class="flex flex-col items-center justify-center gap-4 p-4">
-    <UPageCard class="w-full max-w-md">
+    <UPageCard class="w-full max-w-md rounded-2xl p-5 shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
       <UAuthForm
         :schema="schema"
         :fields="fields"
-        title="Create Account"
+        title="Sign Up"
         icon="i-lucide-user-plus"
-        :submit="{ label: 'Sign Up', loading }"
+        :submit="{ label: 'Sign Up', loading, class: 'h-11 rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] hover:bg-[oklch(0.57_0.23_255)]' }"
         @submit="onSubmit"
       >
         <template #description>
           Already have an account?
-          <ULink class="text-primary font-medium" @click="$emit('switchToSignIn')">
+          <ULink class="font-medium text-[oklch(0.62_0.22_255)]" @click="$emit('switchToSignIn')">
             Sign In
           </ULink>
         </template>
@@ -8895,20 +9086,38 @@ const handleSignOut = async () => {
 </script>
 
 <template>
-  <div>
-    <USkeleton v-if="session.isPending" class="h-9 w-24" />
+  <div class="relative">
+    <USkeleton v-if="session.isPending" class="h-8 w-24 rounded-md" />
 
-    <UButton v-else-if="!session.data" variant="outline" to="/login">
+    <UButton v-else-if="!session.data" variant="outline" size="sm" to="/login">
       Sign In
     </UButton>
 
-    <UButton
-      v-else
-      variant="solid"
-      icon="i-lucide-log-out"
-      label="Sign out"
-      @click="handleSignOut()"
-    />
+    <details v-else class="group relative">
+      <summary
+        class="flex h-8 max-w-48 cursor-pointer list-none items-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted [&::-webkit-details-marker]:hidden"
+        :title="session.data.user.email"
+      >
+        <span class="truncate">
+          \\{{ session.data.user.name || session.data.user.email }}
+        </span>
+      </summary>
+      <div class="absolute right-0 z-50 mt-2 w-56 rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10">
+        <div class="px-1.5 py-1 text-xs font-medium text-muted-foreground">
+          My Account
+        </div>
+        <div class="rounded-md px-1.5 py-1 text-sm text-muted-foreground">
+          \\{{ session.data.user.email }}
+        </div>
+        <button
+          type="button"
+          class="flex w-full items-center rounded-md px-1.5 py-1 text-sm text-destructive transition-colors hover:bg-destructive/10"
+          @click="handleSignOut()"
+        >
+          Sign Out
+        </button>
+      </div>
+    </details>
   </div>
 </template>
 `],
@@ -8960,25 +9169,59 @@ onMounted(async () => {
 })
 
 const hasProSubscription = computed(() => 
-  customerState.value?.activeSubscriptions?.length! > 0
+  (customerState.value?.activeSubscriptions?.length ?? 0) > 0
 )
 {{/if}}
 </script>
 
 <template>
-  <UContainer class="py-8">
-    <UPageHeader
-      title="Dashboard"
-      :description="session?.data?.user ? \`Welcome back, \${session.data.user.name}!\` : 'Loading...'"
-    />
+  <main class="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+    <section class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p class="font-mono text-muted-foreground text-xs">AUTH_SESSION</p>
+          <h1 class="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+          <p class="mt-2 text-muted-foreground text-sm">
+            Signed in as \\{{ session.data?.user?.name || session.data?.user?.email || 'Loading...' }}.
+          </p>
+        </div>
+        <div class="rounded-lg bg-muted/50 px-3 py-2 text-sm ring-1 ring-border/60">
+          <p class="font-mono text-muted-foreground text-xs">EMAIL</p>
+          <p class="mt-1 break-all font-medium">
+            \\{{ session.data?.user?.email || 'Loading...' }}
+          </p>
+        </div>
+      </div>
+    </section>
 
-    <div class="mt-6 space-y-4">
+    <section class="grid gap-4 md:grid-cols-2">
+      <div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+        <p class="font-mono text-muted-foreground text-xs">ACCOUNT</p>
+        <h2 class="mt-2 font-medium text-lg">Profile</h2>
+        <dl class="mt-4 space-y-3 text-sm">
+          <div class="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+            <dt class="text-muted-foreground">Name</dt>
+            <dd class="font-medium">\\{{ session.data?.user?.name || 'User' }}</dd>
+          </div>
+          <div class="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+            <dt class="text-muted-foreground">Email</dt>
+            <dd class="break-all font-medium">\\{{ session.data?.user?.email }}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+        <p class="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+        <h2 class="mt-2 font-medium text-lg">Protected route</h2>
+        <p class="mt-3 text-muted-foreground text-sm leading-6">
+          This page is rendered only after Better Auth returns an active session.
+        </p>
+      </div>
+
       {{#if (eq api "orpc")}}
-      <UCard>
-        <template #header>
-          <div class="font-medium">Private Data</div>
-        </template>
-
+      <div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+        <p class="font-mono text-muted-foreground text-xs">PRIVATE_API</p>
+        <h2 class="mt-2 font-medium text-lg">oRPC response</h2>
         <USkeleton v-if="privateData.status.value === 'pending'" class="h-6 w-48" />
 
         <UAlert
@@ -8993,16 +9236,16 @@ const hasProSubscription = computed(() =>
           <UIcon name="i-lucide-check-circle" class="text-success" />
           <span>\\{{ privateData.data.value.message }}</span>
         </div>
-      </UCard>
+      </div>
       {{/if}}
 
       {{#if (eq payments "polar")}}
-      <UCard>
-        <template #header>
-          <div class="font-medium">Subscription</div>
-        </template>
-
-        <div class="flex items-center justify-between">
+      <div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+        <p class="font-mono text-muted-foreground text-xs">BILLING</p>
+        <h2 class="mt-2 font-medium text-lg">
+          \\{{ hasProSubscription ? "Pro plan" : "Free plan" }}
+        </h2>
+        <div class="mt-4 flex items-center justify-between gap-3">
           <div class="flex items-center gap-2">
             <UIcon :name="hasProSubscription ? 'i-lucide-crown' : 'i-lucide-user'" :class="hasProSubscription ? 'text-warning' : 'text-muted'" />
             <span>Plan: \\{{ hasProSubscription ? "Pro" : "Free" }}</span>
@@ -9021,10 +9264,10 @@ const hasProSubscription = computed(() =>
             Upgrade to Pro
           </UButton>
         </div>
-      </UCard>
+      </div>
       {{/if}}
-    </div>
-  </UContainer>
+    </section>
+  </main>
 </template>
 `],
   ["auth/better-auth/web/nuxt/app/pages/login.vue.hbs", `<script setup lang="ts">
@@ -9048,7 +9291,7 @@ watchEffect(() => {
       <UIcon name="i-lucide-loader-2" class="animate-spin text-4xl text-primary" />
       <span class="text-muted">Loading...</span>
     </div>
-    <div v-else-if="!session.data">
+    <div v-else-if="!session.data" class="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
       <SignInForm v-if="showSignIn" @switch-to-sign-up="showSignIn = false" />
       <SignUpForm v-else @switch-to-sign-in="showSignIn = true" />
     </div>
@@ -9131,31 +9374,69 @@ export default function Dashboard({
 	{{/if}}
 
 	{{#if (eq payments "polar")}}
-	const hasProSubscription = customerState?.activeSubscriptions?.length! > 0;
-	console.log("Active subscriptions:", customerState?.activeSubscriptions);
+	const hasProSubscription = (customerState?.activeSubscriptions?.length ?? 0) > 0;
 	{{/if}}
 
 	return (
-		<>
+		<section className="grid gap-4 md:grid-cols-2">
+			<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+				<p className="font-mono text-muted-foreground text-xs">ACCOUNT</p>
+				<h2 className="mt-2 font-medium text-lg">Profile</h2>
+				<dl className="mt-4 space-y-3 text-sm">
+					<div className="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+						<dt className="text-muted-foreground">Name</dt>
+						<dd className="font-medium">{session.user.name || "User"}</dd>
+					</div>
+					<div className="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+						<dt className="text-muted-foreground">Email</dt>
+						<dd className="break-all font-medium">{session.user.email}</dd>
+					</div>
+				</dl>
+			</div>
+			<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+				<p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+				<h2 className="mt-2 font-medium text-lg">Protected route</h2>
+				<p className="mt-3 text-muted-foreground text-sm leading-6">
+					This page is rendered only after Better Auth returns an active session.
+				</p>
+			</div>
 			{{#if (eq api "orpc")}}
-			<p>API: {privateData.data?.message}</p>
+			<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+				<p className="font-mono text-muted-foreground text-xs">PRIVATE_API</p>
+				<h2 className="mt-2 font-medium text-lg">oRPC response</h2>
+				<p className="mt-3 text-sm">{privateData.data?.message ?? "Waiting for private data..."}</p>
+			</div>
 			{{/if}}
 			{{#if (eq api "trpc")}}
-			<p>API: {privateData.data?.message}</p>
+			<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+				<p className="font-mono text-muted-foreground text-xs">PRIVATE_API</p>
+				<h2 className="mt-2 font-medium text-lg">tRPC response</h2>
+				<p className="mt-3 text-sm">{privateData.data?.message ?? "Waiting for private data..."}</p>
+			</div>
 			{{/if}}
 			{{#if (eq payments "polar")}}
-			<p>Plan: {hasProSubscription ? "Pro" : "Free"}</p>
-			{hasProSubscription ? (
-				<Button onClick={async () => await authClient.customer.portal()}>
-					Manage Subscription
-				</Button>
-			) : (
-				<Button onClick={async () => await authClient.checkout({ slug: "pro" })}>
-					Upgrade to Pro
-				</Button>
-			)}
+			<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+				<p className="font-mono text-muted-foreground text-xs">BILLING</p>
+				<h2 className="mt-2 font-medium text-lg">
+					{hasProSubscription ? "Pro plan" : "Free plan"}
+				</h2>
+				<p className="mt-3 text-muted-foreground text-sm leading-6">
+					Manage the generated Polar customer state from this protected surface.
+				</p>
+				<div className="mt-4">
+					{hasProSubscription ? (
+						<Button onClick={async () => await authClient.customer.portal()}>
+							Manage Subscription
+						</Button>
+					) : (
+						<Button onClick={async () => await authClient.checkout({ slug: "pro" })}>
+							Upgrade to Pro
+						</Button>
+					)}
+				</div>
+			</div>
 			{{/if}}
-		</>
+		</section>
 	);
 }
 `],
@@ -9200,11 +9481,26 @@ export default async function DashboardPage() {
 	{{/if}}
 
 	return (
-		<div>
-			<h1>Dashboard</h1>
-			<p>Welcome {session.user.name}</p>
+		<main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+			<section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+				<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+					<div>
+						<p className="font-mono text-muted-foreground text-xs">AUTH_SESSION</p>
+						<h1 className="mt-2 font-semibold text-2xl tracking-tight">
+							Dashboard
+						</h1>
+						<p className="mt-2 text-muted-foreground text-sm">
+							Signed in as {session.user.name || session.user.email}.
+						</p>
+					</div>
+					<div className="rounded-lg bg-muted/50 px-3 py-2 text-sm ring-1 ring-border/60">
+						<p className="font-mono text-muted-foreground text-xs">EMAIL</p>
+						<p className="mt-1 break-all font-medium">{session.user.email}</p>
+					</div>
+				</div>
+			</section>
 			<Dashboard session={session} {{#if (eq payments "polar")}}customerState={customerState}{{/if}} />
-		</div>
+		</main>
 	);
 }
 `],
@@ -9216,12 +9512,16 @@ import { useState } from "react";
 
 
 export default function LoginPage() {
-  const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(true);
 
-  return showSignIn ? (
-    <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-  ) : (
-    <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+  return (
+    <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+      {showSignIn ? (
+        <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
+      ) : (
+        <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+      )}
+    </main>
   );
 }
 `],
@@ -9278,8 +9578,8 @@ export default function SignInForm({
   }
 
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+    <div className="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+      <h1 className="text-2xl font-semibold tracking-tight">Sign In</h1>
 
       <form
         onSubmit={(e) => {
@@ -9287,23 +9587,25 @@ export default function SignInForm({
           e.stopPropagation();
           form.handleSubmit();
         }}
-        className="space-y-4"
+        className="mt-6 flex flex-col gap-5"
       >
         <div>
           <form.Field name="email">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Email</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="email"
+                  placeholder="Enter your email"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -9316,17 +9618,19 @@ export default function SignInForm({
           <form.Field name="password">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Password</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Password</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="password"
+                  placeholder="Enter your password"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -9339,7 +9643,7 @@ export default function SignInForm({
           {({ canSubmit, isSubmitting }) => (
             <Button
               type="submit"
-              className="w-full"
+              className="h-11 w-full rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] shadow-none hover:bg-[oklch(0.57_0.23_255)]"
               disabled={!canSubmit || isSubmitting}
             >
               {isSubmitting ? "Submitting..." : "Sign In"}
@@ -9348,13 +9652,15 @@ export default function SignInForm({
         </form.Subscribe>
       </form>
 
-      <div className="mt-4 text-center">
+      <div className="mt-5 flex flex-col items-center gap-3 text-center">
         <Button
+          type="button"
           variant="link"
           onClick={onSwitchToSignUp}
-          className="text-indigo-600 hover:text-indigo-800"
+          className="h-auto rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
         >
-          Need an account? Sign Up
+          <span>Need to create an account?</span>
+          <span className="text-[oklch(0.62_0.22_255)]">Sign Up</span>
         </Button>
       </div>
     </div>
@@ -9417,8 +9723,8 @@ export default function SignUpForm({
   }
 
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Create Account</h1>
+    <div className="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+      <h1 className="text-2xl font-semibold tracking-tight">Sign Up</h1>
 
       <form
         onSubmit={(e) => {
@@ -9426,22 +9732,24 @@ export default function SignUpForm({
           e.stopPropagation();
           form.handleSubmit();
         }}
-        className="space-y-4"
+        className="mt-6 flex flex-col gap-5"
       >
         <div>
           <form.Field name="name">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Name</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Name</Label>
                 <Input
                   id={field.name}
                   name={field.name}
+                  placeholder="Enter your name"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -9454,17 +9762,19 @@ export default function SignUpForm({
           <form.Field name="email">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Email</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="email"
+                  placeholder="Enter your email"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -9477,17 +9787,19 @@ export default function SignUpForm({
           <form.Field name="password">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Password</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Password</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="password"
+                  placeholder="Enter your password"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -9500,7 +9812,7 @@ export default function SignUpForm({
           {({ canSubmit, isSubmitting }) => (
             <Button
               type="submit"
-              className="w-full"
+              className="h-11 w-full rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] shadow-none hover:bg-[oklch(0.57_0.23_255)]"
               disabled={!canSubmit || isSubmitting}
             >
               {isSubmitting ? "Submitting..." : "Sign Up"}
@@ -9509,13 +9821,15 @@ export default function SignUpForm({
         </form.Subscribe>
       </form>
 
-      <div className="mt-4 text-center">
+      <div className="mt-5 flex flex-col items-center gap-3 text-center">
         <Button
+          type="button"
           variant="link"
           onClick={onSwitchToSignIn}
-          className="text-indigo-600 hover:text-indigo-800"
+          className="h-auto rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
         >
-          Already have an account? Sign In
+          <span>Already have an account?</span>
+          <span className="text-[oklch(0.62_0.22_255)]">Sign In</span>
         </Button>
       </div>
     </div>
@@ -9557,14 +9871,14 @@ export default function UserMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" />}>
-        {session.user.name}
+      <DropdownMenuTrigger render={<Button variant="outline" className="max-w-[12rem] gap-2 px-2.5" />}>
+        <span className="truncate">{session.user.name || session.user.email}</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-card">
+      <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuGroup>
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>{session.user.email}</DropdownMenuItem>
+          <DropdownMenuItem className="text-muted-foreground">{session.user.email}</DropdownMenuItem>
           <DropdownMenuItem
             variant="destructive"
             onClick={() => {
@@ -9638,8 +9952,8 @@ export default function SignInForm({
   }
 
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+    <div className="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+      <h1 className="text-2xl font-semibold tracking-tight">Sign In</h1>
 
       <form
         onSubmit={(e) => {
@@ -9647,23 +9961,25 @@ export default function SignInForm({
           e.stopPropagation();
           form.handleSubmit();
         }}
-        className="space-y-4"
+        className="mt-6 flex flex-col gap-5"
       >
         <div>
           <form.Field name="email">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Email</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="email"
+                  placeholder="Enter your email"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -9676,17 +9992,19 @@ export default function SignInForm({
           <form.Field name="password">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Password</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Password</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="password"
+                  placeholder="Enter your password"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -9699,7 +10017,7 @@ export default function SignInForm({
           {({ canSubmit, isSubmitting }) => (
             <Button
               type="submit"
-              className="w-full"
+              className="h-11 w-full rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] shadow-none hover:bg-[oklch(0.57_0.23_255)]"
               disabled={!canSubmit || isSubmitting}
             >
               {isSubmitting ? "Submitting..." : "Sign In"}
@@ -9708,13 +10026,15 @@ export default function SignInForm({
         </form.Subscribe>
       </form>
 
-      <div className="mt-4 text-center">
+      <div className="mt-5 flex flex-col items-center gap-3 text-center">
         <Button
+          type="button"
           variant="link"
           onClick={onSwitchToSignUp}
-          className="text-indigo-600 hover:text-indigo-800"
+          className="h-auto rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
         >
-          Need an account? Sign Up
+          <span>Need to create an account?</span>
+          <span className="text-[oklch(0.62_0.22_255)]">Sign Up</span>
         </Button>
       </div>
     </div>
@@ -9777,8 +10097,8 @@ export default function SignUpForm({
   }
 
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Create Account</h1>
+    <div className="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+      <h1 className="text-2xl font-semibold tracking-tight">Sign Up</h1>
 
       <form
         onSubmit={(e) => {
@@ -9786,22 +10106,24 @@ export default function SignUpForm({
           e.stopPropagation();
           form.handleSubmit();
         }}
-        className="space-y-4"
+        className="mt-6 flex flex-col gap-5"
       >
         <div>
           <form.Field name="name">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Name</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Name</Label>
                 <Input
                   id={field.name}
                   name={field.name}
+                  placeholder="Enter your name"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -9814,17 +10136,19 @@ export default function SignUpForm({
           <form.Field name="email">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Email</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="email"
+                  placeholder="Enter your email"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -9837,17 +10161,19 @@ export default function SignUpForm({
           <form.Field name="password">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Password</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Password</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="password"
+                  placeholder="Enter your password"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -9860,7 +10186,7 @@ export default function SignUpForm({
           {({ canSubmit, isSubmitting }) => (
             <Button
               type="submit"
-              className="w-full"
+              className="h-11 w-full rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] shadow-none hover:bg-[oklch(0.57_0.23_255)]"
               disabled={!canSubmit || isSubmitting}
             >
               {isSubmitting ? "Submitting..." : "Sign Up"}
@@ -9869,13 +10195,15 @@ export default function SignUpForm({
         </form.Subscribe>
       </form>
 
-      <div className="mt-4 text-center">
+      <div className="mt-5 flex flex-col items-center gap-3 text-center">
         <Button
+          type="button"
           variant="link"
           onClick={onSwitchToSignIn}
-          className="text-indigo-600 hover:text-indigo-800"
+          className="h-auto rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
         >
-          Already have an account? Sign In
+          <span>Already have an account?</span>
+          <span className="text-[oklch(0.62_0.22_255)]">Sign In</span>
         </Button>
       </div>
     </div>
@@ -9916,14 +10244,14 @@ export default function UserMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" />}>
-        {session.user.name}
+      <DropdownMenuTrigger render={<Button variant="outline" className="max-w-[12rem] gap-2 px-2.5" />}>
+        <span className="truncate">{session.user.name || session.user.email}</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-card">
+      <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuGroup>
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>{session.user.email}</DropdownMenuItem>
+          <DropdownMenuItem className="text-muted-foreground">{session.user.email}</DropdownMenuItem>
           <DropdownMenuItem
             variant="destructive"
             onClick={() => {
@@ -9998,30 +10326,79 @@ export default function Dashboard() {
   }
 
   {{#if (eq payments "polar")}}
-  const hasProSubscription = customerState?.activeSubscriptions?.length! > 0;
-  console.log("Active subscriptions:", customerState?.activeSubscriptions);
+  const hasProSubscription = (customerState?.activeSubscriptions?.length ?? 0) > 0;
   {{/if}}
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <p>Welcome {session?.user.name}</p>
+    <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+      <section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="font-mono text-muted-foreground text-xs">AUTH_SESSION</p>
+            <h1 className="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+            <p className="mt-2 text-muted-foreground text-sm">
+              Signed in as {session?.user.name || session?.user.email}.
+            </p>
+          </div>
+          <div className="rounded-lg bg-muted/50 px-3 py-2 text-sm ring-1 ring-border/60">
+            <p className="font-mono text-muted-foreground text-xs">EMAIL</p>
+            <p className="mt-1 break-all font-medium">{session?.user.email}</p>
+          </div>
+        </div>
+      </section>
+      <section className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">ACCOUNT</p>
+          <h2 className="mt-2 font-medium text-lg">Profile</h2>
+          <dl className="mt-4 space-y-3 text-sm">
+            <div className="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+              <dt className="text-muted-foreground">Name</dt>
+              <dd className="font-medium">{session?.user.name || "User"}</dd>
+            </div>
+            <div className="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+              <dt className="text-muted-foreground">Email</dt>
+              <dd className="break-all font-medium">{session?.user.email}</dd>
+            </div>
+          </dl>
+        </div>
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+          <h2 className="mt-2 font-medium text-lg">Protected route</h2>
+          <p className="mt-3 text-muted-foreground text-sm leading-6">
+            This page is rendered only after Better Auth returns an active session.
+          </p>
+        </div>
       {{#if ( or (eq api "orpc") (eq api "trpc"))}}
-      <p>API: {privateData.data?.message}</p>
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">PRIVATE_API</p>
+          <h2 className="mt-2 font-medium text-lg">API response</h2>
+          <p className="mt-3 text-sm">{privateData.data?.message ?? "Waiting for private data..."}</p>
+        </div>
       {{/if}}
       {{#if (eq payments "polar")}}
-      <p>Plan: {hasProSubscription ? "Pro" : "Free"}</p>
-      {hasProSubscription ? (
-        <Button onClick={async () => await authClient.customer.portal()}>
-          Manage Subscription
-        </Button>
-      ) : (
-        <Button onClick={async () => await authClient.checkout({ slug: "pro" })}>
-          Upgrade to Pro
-        </Button>
-      )}
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">BILLING</p>
+          <h2 className="mt-2 font-medium text-lg">
+            {hasProSubscription ? "Pro plan" : "Free plan"}
+          </h2>
+          <p className="mt-3 text-muted-foreground text-sm leading-6">
+            Manage the generated Polar customer state from this protected surface.
+          </p>
+          <div className="mt-4">
+            {hasProSubscription ? (
+              <Button onClick={async () => await authClient.customer.portal()}>
+                Manage Subscription
+              </Button>
+            ) : (
+              <Button onClick={async () => await authClient.checkout({ slug: "pro" })}>
+                Upgrade to Pro
+              </Button>
+            )}
+          </div>
+        </div>
       {{/if}}
-    </div>
+      </section>
+    </main>
   );
 }
 `],
@@ -10030,12 +10407,16 @@ import SignUpForm from "@/components/sign-up-form";
 import { useState } from "react";
 
 export default function Login() {
-  const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(true);
 
-  return showSignIn ? (
-    <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-  ) : (
-    <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+  return (
+    <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+      {showSignIn ? (
+        <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
+      ) : (
+        <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+      )}
+    </main>
   );
 }
 `],
@@ -10092,8 +10473,8 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
   }
 
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+    <div className="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+      <h1 className="text-2xl font-semibold tracking-tight">Sign In</h1>
 
       <form
         onSubmit={(e) => {
@@ -10101,23 +10482,25 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
           e.stopPropagation();
           form.handleSubmit();
         }}
-        className="space-y-4"
+        className="mt-6 flex flex-col gap-5"
       >
         <div>
           <form.Field name="email">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Email</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="email"
+                  placeholder="Enter your email"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -10130,17 +10513,19 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
           <form.Field name="password">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Password</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Password</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="password"
+                  placeholder="Enter your password"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -10153,7 +10538,7 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
           {({ canSubmit, isSubmitting }) => (
             <Button
               type="submit"
-              className="w-full"
+              className="h-11 w-full rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] shadow-none hover:bg-[oklch(0.57_0.23_255)]"
               disabled={!canSubmit || isSubmitting}
             >
               {isSubmitting ? "Submitting..." : "Sign In"}
@@ -10162,13 +10547,15 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
         </form.Subscribe>
       </form>
 
-      <div className="mt-4 text-center">
+      <div className="mt-5 flex flex-col items-center gap-3 text-center">
         <Button
+          type="button"
           variant="link"
           onClick={onSwitchToSignUp}
-          className="text-indigo-600 hover:text-indigo-800"
+          className="h-auto rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
         >
-          Need an account? Sign Up
+          <span>Need to create an account?</span>
+          <span className="text-[oklch(0.62_0.22_255)]">Sign Up</span>
         </Button>
       </div>
     </div>
@@ -10231,8 +10618,8 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
   }
 
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Create Account</h1>
+    <div className="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+      <h1 className="text-2xl font-semibold tracking-tight">Sign Up</h1>
 
       <form
         onSubmit={(e) => {
@@ -10240,22 +10627,24 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
           e.stopPropagation();
           form.handleSubmit();
         }}
-        className="space-y-4"
+        className="mt-6 flex flex-col gap-5"
       >
         <div>
           <form.Field name="name">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Name</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Name</Label>
                 <Input
                   id={field.name}
                   name={field.name}
+                  placeholder="Enter your name"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -10268,17 +10657,19 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
           <form.Field name="email">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Email</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="email"
+                  placeholder="Enter your email"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -10291,17 +10682,19 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
           <form.Field name="password">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Password</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Password</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="password"
+                  placeholder="Enter your password"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -10314,7 +10707,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
           {({ canSubmit, isSubmitting }) => (
             <Button
               type="submit"
-              className="w-full"
+              className="h-11 w-full rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] shadow-none hover:bg-[oklch(0.57_0.23_255)]"
               disabled={!canSubmit || isSubmitting}
             >
               {isSubmitting ? "Submitting..." : "Sign Up"}
@@ -10323,13 +10716,15 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
         </form.Subscribe>
       </form>
 
-      <div className="mt-4 text-center">
+      <div className="mt-5 flex flex-col items-center gap-3 text-center">
         <Button
+          type="button"
           variant="link"
           onClick={onSwitchToSignIn}
-          className="text-indigo-600 hover:text-indigo-800"
+          className="h-auto rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
         >
-          Already have an account? Sign In
+          <span>Already have an account?</span>
+          <span className="text-[oklch(0.62_0.22_255)]">Sign In</span>
         </Button>
       </div>
     </div>
@@ -10370,14 +10765,14 @@ export default function UserMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" />}>
-        {session.user.name}
+      <DropdownMenuTrigger render={<Button variant="outline" className="max-w-[12rem] gap-2 px-2.5" />}>
+        <span className="truncate">{session.user.name || session.user.email}</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-card">
+      <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuGroup>
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>{session.user.email}</DropdownMenuItem>
+          <DropdownMenuItem className="text-muted-foreground">{session.user.email}</DropdownMenuItem>
           <DropdownMenuItem
             variant="destructive"
             onClick={() => {
@@ -10445,30 +10840,79 @@ function RouteComponent() {
 	{{/if}}
 
 	{{#if (eq payments "polar")}}
-	const hasProSubscription = customerState?.activeSubscriptions?.length! > 0
-    console.log("Active subscriptions:", customerState?.activeSubscriptions)
+	const hasProSubscription = (customerState?.activeSubscriptions?.length ?? 0) > 0
 	{{/if}}
 
 	return (
-		<div>
-			<h1>Dashboard</h1>
-			<p>Welcome {session.data?.user.name}</p>
+		<main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+			<section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+				<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+					<div>
+						<p className="font-mono text-muted-foreground text-xs">AUTH_SESSION</p>
+						<h1 className="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+						<p className="mt-2 text-muted-foreground text-sm">
+							Signed in as {session.data?.user.name || session.data?.user.email}.
+						</p>
+					</div>
+					<div className="rounded-lg bg-muted/50 px-3 py-2 text-sm ring-1 ring-border/60">
+						<p className="font-mono text-muted-foreground text-xs">EMAIL</p>
+						<p className="mt-1 break-all font-medium">{session.data?.user.email}</p>
+					</div>
+				</div>
+			</section>
+			<section className="grid gap-4 md:grid-cols-2">
+				<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+					<p className="font-mono text-muted-foreground text-xs">ACCOUNT</p>
+					<h2 className="mt-2 font-medium text-lg">Profile</h2>
+					<dl className="mt-4 space-y-3 text-sm">
+						<div className="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+							<dt className="text-muted-foreground">Name</dt>
+							<dd className="font-medium">{session.data?.user.name || "User"}</dd>
+						</div>
+						<div className="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+							<dt className="text-muted-foreground">Email</dt>
+							<dd className="break-all font-medium">{session.data?.user.email}</dd>
+						</div>
+					</dl>
+				</div>
+				<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+					<p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+					<h2 className="mt-2 font-medium text-lg">Protected route</h2>
+					<p className="mt-3 text-muted-foreground text-sm leading-6">
+						This page is rendered only after Better Auth returns an active session.
+					</p>
+				</div>
 			{{#if ( or (eq api "orpc") (eq api "trpc"))}}
-			<p>API: {privateData.data?.message}</p>
+				<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+					<p className="font-mono text-muted-foreground text-xs">PRIVATE_API</p>
+					<h2 className="mt-2 font-medium text-lg">API response</h2>
+					<p className="mt-3 text-sm">{privateData.data?.message ?? "Waiting for private data..."}</p>
+				</div>
 			{{/if}}
 			{{#if (eq payments "polar")}}
-			<p>Plan: {hasProSubscription ? "Pro" : "Free"}</p>
-			{hasProSubscription ? (
-				<Button onClick={async () => await authClient.customer.portal()}>
-					Manage Subscription
-				</Button>
-			) : (
-				<Button onClick={async () => await authClient.checkout({ slug: "pro" })}>
-					Upgrade to Pro
-				</Button>
-			)}
+				<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+					<p className="font-mono text-muted-foreground text-xs">BILLING</p>
+					<h2 className="mt-2 font-medium text-lg">
+						{hasProSubscription ? "Pro plan" : "Free plan"}
+					</h2>
+					<p className="mt-3 text-muted-foreground text-sm leading-6">
+						Manage the generated Polar customer state from this protected surface.
+					</p>
+					<div className="mt-4">
+						{hasProSubscription ? (
+							<Button onClick={async () => await authClient.customer.portal()}>
+								Manage Subscription
+							</Button>
+						) : (
+							<Button onClick={async () => await authClient.checkout({ slug: "pro" })}>
+								Upgrade to Pro
+							</Button>
+						)}
+					</div>
+				</div>
 			{{/if}}
-		</div>
+			</section>
+		</main>
 	);
 }
 `],
@@ -10482,12 +10926,16 @@ export const Route = createFileRoute("/login")({
 });
 
 function RouteComponent() {
-  const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(true);
 
-  return showSignIn ? (
-    <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-  ) : (
-    <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+  return (
+    <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+      {showSignIn ? (
+        <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
+      ) : (
+        <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+      )}
+    </main>
   );
 }
 `],
@@ -10544,8 +10992,8 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
   }
 
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+    <div className="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+      <h1 className="text-2xl font-semibold tracking-tight">Sign In</h1>
 
       <form
         onSubmit={(e) => {
@@ -10553,23 +11001,25 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
           e.stopPropagation();
           form.handleSubmit();
         }}
-        className="space-y-4"
+        className="mt-6 flex flex-col gap-5"
       >
         <div>
           <form.Field name="email">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Email</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="email"
+                  placeholder="Enter your email"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -10582,17 +11032,19 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
           <form.Field name="password">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Password</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Password</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="password"
+                  placeholder="Enter your password"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -10605,7 +11057,7 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
           {({ canSubmit, isSubmitting }) => (
             <Button
               type="submit"
-              className="w-full"
+              className="h-11 w-full rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] shadow-none hover:bg-[oklch(0.57_0.23_255)]"
               disabled={!canSubmit || isSubmitting}
             >
               {isSubmitting ? "Submitting..." : "Sign In"}
@@ -10614,13 +11066,15 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
         </form.Subscribe>
       </form>
 
-      <div className="mt-4 text-center">
+      <div className="mt-5 flex flex-col items-center gap-3 text-center">
         <Button
+          type="button"
           variant="link"
           onClick={onSwitchToSignUp}
-          className="text-indigo-600 hover:text-indigo-800"
+          className="h-auto rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
         >
-          Need an account? Sign Up
+          <span>Need to create an account?</span>
+          <span className="text-[oklch(0.62_0.22_255)]">Sign Up</span>
         </Button>
       </div>
     </div>
@@ -10683,8 +11137,8 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
   }
 
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Create Account</h1>
+    <div className="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+      <h1 className="text-2xl font-semibold tracking-tight">Sign Up</h1>
 
       <form
         onSubmit={(e) => {
@@ -10692,22 +11146,24 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
           e.stopPropagation();
           form.handleSubmit();
         }}
-        className="space-y-4"
+        className="mt-6 flex flex-col gap-5"
       >
         <div>
           <form.Field name="name">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Name</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Name</Label>
                 <Input
                   id={field.name}
                   name={field.name}
+                  placeholder="Enter your name"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -10720,17 +11176,19 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
           <form.Field name="email">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Email</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="email"
+                  placeholder="Enter your email"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -10743,17 +11201,19 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
           <form.Field name="password">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Password</Label>
+                <Label htmlFor={field.name} className="text-sm font-medium">Password</Label>
                 <Input
                   id={field.name}
                   name={field.name}
                   type="password"
+                  placeholder="Enter your password"
+                  className="h-11 rounded-2xl border-transparent bg-muted px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-[3px]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive text-xs">
                     {error?.message}
                   </p>
                 ))}
@@ -10766,7 +11226,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
           {({ canSubmit, isSubmitting }) => (
             <Button
               type="submit"
-              className="w-full"
+              className="h-11 w-full rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] shadow-none hover:bg-[oklch(0.57_0.23_255)]"
               disabled={!canSubmit || isSubmitting}
             >
               {isSubmitting ? "Submitting..." : "Sign Up"}
@@ -10775,13 +11235,15 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
         </form.Subscribe>
       </form>
 
-      <div className="mt-4 text-center">
+      <div className="mt-5 flex flex-col items-center gap-3 text-center">
         <Button
+          type="button"
           variant="link"
           onClick={onSwitchToSignIn}
-          className="text-indigo-600 hover:text-indigo-800"
+          className="h-auto rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
         >
-          Already have an account? Sign In
+          <span>Already have an account?</span>
+          <span className="text-[oklch(0.62_0.22_255)]">Sign In</span>
         </Button>
       </div>
     </div>
@@ -10822,14 +11284,14 @@ export default function UserMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" />}>
-        {session.user.name}
+      <DropdownMenuTrigger render={<Button variant="outline" className="max-w-[12rem] gap-2 px-2.5" />}>
+        <span className="truncate">{session.user.name || session.user.email}</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-card">
+      <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuGroup>
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>{session.user.email}</DropdownMenuItem>
+          <DropdownMenuItem className="text-muted-foreground">{session.user.email}</DropdownMenuItem>
           <DropdownMenuItem
             variant="destructive"
             onClick={() => {
@@ -10943,41 +11405,95 @@ function RouteComponent() {
 
   {{#if (eq payments "polar") }}
   const hasProSubscription = (customerState?.activeSubscriptions?.length ?? 0) > 0;
-  // For debugging: console.log("Active subscriptions:", customerState?.activeSubscriptions);
   {{/if}}
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <p>Welcome {session?.user.name}</p>
+    <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+      <section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="font-mono text-muted-foreground text-xs">AUTH_SESSION</p>
+            <h1 className="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+            <p className="mt-2 text-muted-foreground text-sm">
+              Signed in as {session?.user.name || session?.user.email}.
+            </p>
+          </div>
+          <div className="rounded-lg bg-muted/50 px-3 py-2 text-sm ring-1 ring-border/60">
+            <p className="font-mono text-muted-foreground text-xs">EMAIL</p>
+            <p className="mt-1 break-all font-medium">{session?.user.email}</p>
+          </div>
+        </div>
+      </section>
+      <section className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">ACCOUNT</p>
+          <h2 className="mt-2 font-medium text-lg">Profile</h2>
+          <dl className="mt-4 space-y-3 text-sm">
+            <div className="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+              <dt className="text-muted-foreground">Name</dt>
+              <dd className="font-medium">{session?.user.name || "User"}</dd>
+            </div>
+            <div className="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+              <dt className="text-muted-foreground">Email</dt>
+              <dd className="break-all font-medium">{session?.user.email}</dd>
+            </div>
+          </dl>
+        </div>
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+          <h2 className="mt-2 font-medium text-lg">Protected route</h2>
+          <p className="mt-3 text-muted-foreground text-sm leading-6">
+            This page is rendered only after Better Auth returns an active session.
+          </p>
+        </div>
       {{#if (eq api "trpc") }}
-      <p>API: {privateData.data?.message}</p>
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">PRIVATE_API</p>
+          <h2 className="mt-2 font-medium text-lg">tRPC response</h2>
+          <p className="mt-3 text-sm">{privateData.data?.message ?? "Waiting for private data..."}</p>
+        </div>
       {{else if (eq api "orpc") }}
-      <p>API: {privateData.data?.message}</p>
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">PRIVATE_API</p>
+          <h2 className="mt-2 font-medium text-lg">oRPC response</h2>
+          <p className="mt-3 text-sm">{privateData.data?.message ?? "Waiting for private data..."}</p>
+        </div>
       {{/if}}
       {{#if (eq payments "polar") }}
-      <p>Plan: {hasProSubscription ? "Pro" : "Free"}</p>
-      {hasProSubscription ? (
-        <Button
-          onClick={async function handlePortal() {
-            await authClient.customer.portal();
-          }}
-        >
-          Manage Subscription
-        </Button>
-      ) : (
-        <Button
-          onClick={async function handleUpgrade() {
-            await authClient.checkout({ slug: "pro" });
-          }}
-        >
-          Upgrade to Pro
-        </Button>
-      )}
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">BILLING</p>
+          <h2 className="mt-2 font-medium text-lg">
+            {hasProSubscription ? "Pro plan" : "Free plan"}
+          </h2>
+          <p className="mt-3 text-muted-foreground text-sm leading-6">
+            Manage the generated Polar customer state from this protected surface.
+          </p>
+          <div className="mt-4">
+            {hasProSubscription ? (
+              <Button
+                onClick={async function handlePortal() {
+                  await authClient.customer.portal();
+                }}
+              >
+                Manage Subscription
+              </Button>
+            ) : (
+              <Button
+                onClick={async function handleUpgrade() {
+                  await authClient.checkout({ slug: "pro" });
+                }}
+              >
+                Upgrade to Pro
+              </Button>
+            )}
+          </div>
+        </div>
       {{/if}}
-    </div>
+      </section>
+    </main>
   );
-}`],
+}
+`],
   ["auth/better-auth/web/react/tanstack-start/src/routes/login.tsx.hbs", `import SignInForm from "@/components/sign-in-form";
 import SignUpForm from "@/components/sign-up-form";
 import { createFileRoute } from "@tanstack/react-router";
@@ -10988,12 +11504,16 @@ export const Route = createFileRoute("/login")({
 });
 
 function RouteComponent() {
-  const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(true);
 
-  return showSignIn ? (
-    <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-  ) : (
-    <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+  return (
+    <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+      {showSignIn ? (
+        <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
+      ) : (
+        <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+      )}
+    </main>
   );
 }
 `],
@@ -11041,8 +11561,8 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
   }));
 
   return (
-    <div class="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 class="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+    <div class="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+      <h1 class="text-2xl font-semibold tracking-tight">Sign In</h1>
 
       <form
         onSubmit={(e) => {
@@ -11050,24 +11570,25 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
           e.stopPropagation();
           form.handleSubmit();
         }}
-        class="space-y-4"
+        class="mt-6 flex flex-col gap-5"
       >
         <div>
           <form.Field name="email">
             {(field) => (
               <div class="space-y-2">
-                <label for={field().name}>Email</label>
+                <label for={field().name} class="text-sm font-medium">Email</label>
                 <input
                   id={field().name}
                   name={field().name}
                   type="email"
+                  placeholder="Enter your email"
                   value={field().state.value}
                   onBlur={field().handleBlur}
                   onInput={(e) => field().handleChange(e.currentTarget.value)}
-                  class="w-full rounded border p-2"
+                  class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
                 />
                 <For each={field().state.meta.errors}>
-                  {(error) => <p class="text-sm text-red-600">{error?.message}</p>}
+                  {(error) => <p class="text-destructive text-xs">{error?.message}</p>}
                 </For>
               </div>
             )}
@@ -11078,18 +11599,19 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
           <form.Field name="password">
             {(field) => (
               <div class="space-y-2">
-                <label for={field().name}>Password</label>
+                <label for={field().name} class="text-sm font-medium">Password</label>
                 <input
                   id={field().name}
                   name={field().name}
                   type="password"
+                  placeholder="Enter your password"
                   value={field().state.value}
                   onBlur={field().handleBlur}
                   onInput={(e) => field().handleChange(e.currentTarget.value)}
-                  class="w-full rounded border p-2"
+                  class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
                 />
                 <For each={field().state.meta.errors}>
-                  {(error) => <p class="text-sm text-red-600">{error?.message}</p>}
+                  {(error) => <p class="text-destructive text-xs">{error?.message}</p>}
                 </For>
               </div>
             )}
@@ -11100,7 +11622,7 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
           {(state) => (
             <button
               type="submit"
-              class="w-full rounded bg-indigo-600 p-2 text-white hover:bg-indigo-700 disabled:opacity-50"
+              class="inline-flex h-11 w-full items-center justify-center rounded-full bg-[oklch(0.62_0.22_255)] px-4 text-sm font-semibold text-[oklch(0.99_0.004_279)] transition-colors hover:bg-[oklch(0.57_0.23_255)] disabled:pointer-events-none disabled:opacity-50"
               disabled={!state().canSubmit || state().isSubmitting}
             >
               {state().isSubmitting ? "Submitting..." : "Sign In"}
@@ -11109,13 +11631,14 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
         </form.Subscribe>
       </form>
 
-      <div class="mt-4 text-center">
+      <div class="mt-5 flex flex-col items-center gap-3 text-center">
         <button
           type="button"
           onClick={onSwitchToSignUp}
-          class="text-sm text-indigo-600 hover:text-indigo-800 hover:underline"
+          class="inline-flex h-auto gap-1.5 rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
         >
-          Need an account? Sign Up
+          <span>Need to create an account?</span>
+          <span class="text-[oklch(0.62_0.22_255)]">Sign Up</span>
         </button>
       </div>
     </div>
@@ -11169,8 +11692,8 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
   }));
 
   return (
-    <div class="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 class="mb-6 text-center text-3xl font-bold">Create Account</h1>
+    <div class="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+      <h1 class="text-2xl font-semibold tracking-tight">Sign Up</h1>
 
       <form
         onSubmit={(e) => {
@@ -11178,23 +11701,24 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
           e.stopPropagation();
           form.handleSubmit();
         }}
-        class="space-y-4"
+        class="mt-6 flex flex-col gap-5"
       >
         <div>
           <form.Field name="name">
             {(field) => (
               <div class="space-y-2">
-                <label for={field().name}>Name</label>
+                <label for={field().name} class="text-sm font-medium">Name</label>
                 <input
                   id={field().name}
                   name={field().name}
+                  placeholder="Enter your name"
                   value={field().state.value}
                   onBlur={field().handleBlur}
                   onInput={(e) => field().handleChange(e.currentTarget.value)}
-                  class="w-full rounded border p-2"
+                  class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
                 />
                 <For each={field().state.meta.errors}>
-                  {(error) => <p class="text-sm text-red-600">{error?.message}</p>}
+                  {(error) => <p class="text-destructive text-xs">{error?.message}</p>}
                 </For>
               </div>
             )}
@@ -11205,18 +11729,19 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
           <form.Field name="email">
             {(field) => (
               <div class="space-y-2">
-                <label for={field().name}>Email</label>
+                <label for={field().name} class="text-sm font-medium">Email</label>
                 <input
                   id={field().name}
                   name={field().name}
                   type="email"
+                  placeholder="Enter your email"
                   value={field().state.value}
                   onBlur={field().handleBlur}
                   onInput={(e) => field().handleChange(e.currentTarget.value)}
-                  class="w-full rounded border p-2"
+                  class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
                 />
                 <For each={field().state.meta.errors}>
-                  {(error) => <p class="text-sm text-red-600">{error?.message}</p>}
+                  {(error) => <p class="text-destructive text-xs">{error?.message}</p>}
                 </For>
               </div>
             )}
@@ -11227,18 +11752,19 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
           <form.Field name="password">
             {(field) => (
               <div class="space-y-2">
-                <label for={field().name}>Password</label>
+                <label for={field().name} class="text-sm font-medium">Password</label>
                 <input
                   id={field().name}
                   name={field().name}
                   type="password"
+                  placeholder="Enter your password"
                   value={field().state.value}
                   onBlur={field().handleBlur}
                   onInput={(e) => field().handleChange(e.currentTarget.value)}
-                  class="w-full rounded border p-2"
+                  class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
                 />
                 <For each={field().state.meta.errors}>
-                  {(error) => <p class="text-sm text-red-600">{error?.message}</p>}
+                  {(error) => <p class="text-destructive text-xs">{error?.message}</p>}
                 </For>
               </div>
             )}
@@ -11249,7 +11775,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
           {(state) => (
             <button
               type="submit"
-              class="w-full rounded bg-indigo-600 p-2 text-white hover:bg-indigo-700 disabled:opacity-50"
+              class="inline-flex h-11 w-full items-center justify-center rounded-full bg-[oklch(0.62_0.22_255)] px-4 text-sm font-semibold text-[oklch(0.99_0.004_279)] transition-colors hover:bg-[oklch(0.57_0.23_255)] disabled:pointer-events-none disabled:opacity-50"
               disabled={!state().canSubmit || state().isSubmitting}
             >
               {state().isSubmitting ? "Submitting..." : "Sign Up"}
@@ -11258,13 +11784,14 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
         </form.Subscribe>
       </form>
 
-      <div class="mt-4 text-center">
+      <div class="mt-5 flex flex-col items-center gap-3 text-center">
         <button
           type="button"
           onClick={onSwitchToSignIn}
-          class="text-sm text-indigo-600 hover:text-indigo-800 hover:underline"
+          class="inline-flex h-auto gap-1.5 rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
         >
-          Already have an account? Sign In
+          <span>Already have an account?</span>
+          <span class="text-[oklch(0.62_0.22_255)]">Sign In</span>
         </button>
       </div>
     </div>
@@ -11283,11 +11810,14 @@ export default function UserMenu() {
   return (
     <div class="relative inline-block text-left">
       <Show when={session().isPending}>
-        <div class="h-9 w-24 animate-pulse rounded" />
+        <div class="h-8 w-24 animate-pulse rounded-md bg-muted" />
       </Show>
 
       <Show when={!session().isPending && !session().data}>
-        <Link to="/login" class="inline-block border rounded px-4  text-sm">
+        <Link
+          to="/login"
+          class="inline-flex h-8 items-center justify-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+        >
           Sign In
         </Link>
       </Show>
@@ -11295,18 +11825,25 @@ export default function UserMenu() {
       <Show when={!session().isPending && session().data}>
         <button
           type="button"
-          class="inline-block border rounded px-4  text-sm"
+          class="inline-flex h-8 max-w-48 items-center justify-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
           onClick={() => setIsMenuOpen(!isMenuOpen())}
         >
-          {session().data?.user.name}
+          <span class="truncate">
+            {session().data?.user.name || session().data?.user.email}
+          </span>
         </button>
 
         <Show when={isMenuOpen()}>
-          <div class="absolute right-0 mt-2 w-56 rounded p-1 shadow-sm">
-            <div class="px-4  text-sm">{session().data?.user.email}</div>
+          <div class="absolute right-0 z-50 mt-2 w-56 rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10">
+            <div class="px-1.5 py-1 text-xs font-medium text-muted-foreground">
+              My Account
+            </div>
+            <div class="rounded-md px-1.5 py-1 text-sm text-muted-foreground">
+              {session().data?.user.email}
+            </div>
             <button
               type="button"
-              class="mt-1 w-full border rounded px-4  text-center text-sm"
+              class="flex w-full items-center rounded-md px-1.5 py-1 text-sm text-destructive transition-colors hover:bg-destructive/10"
               onClick={() => {
                 setIsMenuOpen(false);
                 authClient.signOut({
@@ -11384,27 +11921,81 @@ function RouteComponent() {
 	{{/if}}
 
 	return (
-		<div>
-			<h1>Dashboard</h1>
-			<p>Welcome {session.data?.user.name}</p>
+		<main class="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+			<section class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+				<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+					<div>
+						<p class="font-mono text-muted-foreground text-xs">AUTH_SESSION</p>
+						<h1 class="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+						<p class="mt-2 text-muted-foreground text-sm">
+							Signed in as {session.data?.user.name || session.data?.user.email}.
+						</p>
+					</div>
+					<div class="rounded-lg bg-muted/50 px-3 py-2 text-sm ring-1 ring-border/60">
+						<p class="font-mono text-muted-foreground text-xs">EMAIL</p>
+						<p class="mt-1 break-all font-medium">{session.data?.user.email}</p>
+					</div>
+				</div>
+			</section>
+			<section class="grid gap-4 md:grid-cols-2">
+				<div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+					<p class="font-mono text-muted-foreground text-xs">ACCOUNT</p>
+					<h2 class="mt-2 font-medium text-lg">Profile</h2>
+					<dl class="mt-4 space-y-3 text-sm">
+						<div class="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+							<dt class="text-muted-foreground">Name</dt>
+							<dd class="font-medium">{session.data?.user.name || "User"}</dd>
+						</div>
+						<div class="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+							<dt class="text-muted-foreground">Email</dt>
+							<dd class="break-all font-medium">{session.data?.user.email}</dd>
+						</div>
+					</dl>
+				</div>
+				<div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+					<p class="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+					<h2 class="mt-2 font-medium text-lg">Protected route</h2>
+					<p class="mt-3 text-muted-foreground text-sm leading-6">
+						This page is rendered only after Better Auth returns an active session.
+					</p>
+				</div>
 			{{#if (eq api "orpc")}}
-			<p>API: {privateData.data?.message}</p>
+				<div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+					<p class="font-mono text-muted-foreground text-xs">PRIVATE_API</p>
+					<h2 class="mt-2 font-medium text-lg">oRPC response</h2>
+					<p class="mt-3 text-sm">{privateData.data?.message ?? "Waiting for private data..."}</p>
+				</div>
 			{{/if}}
 			{{#if (eq payments "polar")}}
-			<p>Plan: {hasProSubscription() ? "Pro" : "Free"}</p>
-			{hasProSubscription() ? (
-				<button onClick={async () => await authClient.customer.portal()}>
-					Manage Subscription
-				</button>
-			) : (
-				<button
-					onClick={async () => await authClient.checkout({ slug: "pro" })}
-				>
-					Upgrade to Pro
-				</button>
-			)}
+				<div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+					<p class="font-mono text-muted-foreground text-xs">BILLING</p>
+					<h2 class="mt-2 font-medium text-lg">
+						{hasProSubscription() ? "Pro plan" : "Free plan"}
+					</h2>
+					<p class="mt-3 text-muted-foreground text-sm leading-6">
+						Manage the generated Polar customer state from this protected surface.
+					</p>
+					<div class="mt-4">
+						{hasProSubscription() ? (
+							<button
+								class="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
+								onClick={async () => await authClient.customer.portal()}
+							>
+								Manage Subscription
+							</button>
+						) : (
+							<button
+								class="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
+								onClick={async () => await authClient.checkout({ slug: "pro" })}
+							>
+								Upgrade to Pro
+							</button>
+						)}
+					</div>
+				</div>
 			{{/if}}
-		</div>
+			</section>
+		</main>
 	);
 }
 `],
@@ -11418,17 +12009,19 @@ export const Route = createFileRoute("/login")({
 });
 
 function RouteComponent() {
-  const [showSignIn, setShowSignIn] = createSignal(false);
+  const [showSignIn, setShowSignIn] = createSignal(true);
 
   return (
-    <Switch>
-      <Match when={showSignIn()}>
-        <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-      </Match>
-      <Match when={!showSignIn()}>
-        <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
-      </Match>
-    </Switch>
+    <main class="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+      <Switch>
+        <Match when={showSignIn()}>
+          <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
+        </Match>
+        <Match when={!showSignIn()}>
+          <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+        </Match>
+      </Switch>
+    </main>
   );
 }
 `],
@@ -11467,11 +12060,11 @@ function RouteComponent() {
 	type SubmitState = Pick<typeof form.state, 'canSubmit' | 'isSubmitting'>;
 </script>
 
-<div class="mx-auto mt-10 w-full max-w-md p-6">
-	<h1 class="mb-6 text-center font-bold text-3xl">Welcome Back</h1>
+<div class="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+	<h1 class="text-2xl font-semibold tracking-tight">Sign In</h1>
 
 	<form
-		class="space-y-4"
+		class="mt-6 flex flex-col gap-5"
 		onsubmit={(e) => {
 			e.preventDefault();
 			e.stopPropagation();
@@ -11480,13 +12073,14 @@ function RouteComponent() {
 	>
 		<form.Field name="email">
 			{#snippet children(field)}
-				<div class="space-y-1">
-					<label for={field.name}>Email</label>
+				<div class="space-y-2">
+					<label for={field.name} class="text-sm font-medium">Email</label>
 					<input
 						id={field.name}
 						name={field.name}
 						type="email"
-						class="w-full border"
+						placeholder="Enter your email"
+						class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
 						onblur={field.handleBlur}
 						value={field.state.value}
 						oninput={(e: Event) => {
@@ -11496,7 +12090,7 @@ function RouteComponent() {
 					/>
 					{#if field.state.meta.isTouched}
 						{#each field.state.meta.errors as error}
-							<p class="text-sm text-red-500" role="alert">{error}</p>
+							<p class="text-destructive text-xs" role="alert">{error}</p>
 						{/each}
 					{/if}
 				</div>
@@ -11505,13 +12099,14 @@ function RouteComponent() {
 
 		<form.Field name="password">
 			{#snippet children(field)}
-				<div class="space-y-1">
-					<label for={field.name}>Password</label>
+				<div class="space-y-2">
+					<label for={field.name} class="text-sm font-medium">Password</label>
 					<input
 						id={field.name}
 						name={field.name}
 						type="password"
-						class="w-full border"
+						placeholder="Enter your password"
+						class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
 						onblur={field.handleBlur}
 						value={field.state.value}
 						oninput={(e: Event) => {
@@ -11521,7 +12116,7 @@ function RouteComponent() {
 					/>
 					{#if field.state.meta.isTouched}
 						{#each field.state.meta.errors as error}
-							<p class="text-sm text-red-500" role="alert">{error}</p>
+							<p class="text-destructive text-xs" role="alert">{error}</p>
 						{/each}
 					{/if}
 				</div>
@@ -11530,16 +12125,17 @@ function RouteComponent() {
 
 		<form.Subscribe selector={(state: typeof form.state): SubmitState => ({ canSubmit: state.canSubmit, isSubmitting: state.isSubmitting })}>
 			{#snippet children(state: SubmitState)}
-				<button type="submit" class="w-full" disabled={!state.canSubmit || state.isSubmitting}>
+				<button type="submit" class="inline-flex h-11 w-full items-center justify-center rounded-full bg-[oklch(0.62_0.22_255)] px-4 text-sm font-semibold text-[oklch(0.99_0.004_279)] transition-colors hover:bg-[oklch(0.57_0.23_255)] disabled:pointer-events-none disabled:opacity-50" disabled={!state.canSubmit || state.isSubmitting}>
 					{state.isSubmitting ? 'Submitting...' : 'Sign In'}
 				</button>
 			{/snippet}
 		</form.Subscribe>
 	</form>
 
-	<div class="mt-4 text-center">
-		<button type="button" class="text-indigo-600 hover:text-indigo-800" onclick={switchToSignUp}>
-			Need an account? Sign Up
+	<div class="mt-5 flex flex-col items-center gap-3 text-center">
+		<button type="button" class="inline-flex h-auto gap-1.5 rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground" onclick={switchToSignUp}>
+			<span>Need to create an account?</span>
+			<span class="text-[oklch(0.62_0.22_255)]">Sign Up</span>
 		</button>
 	</div>
 </div>
@@ -11587,12 +12183,12 @@ function RouteComponent() {
 	type SubmitState = Pick<typeof form.state, 'canSubmit' | 'isSubmitting'>;
 </script>
 
-<div class="mx-auto mt-10 w-full max-w-md p-6">
-	<h1 class="mb-6 text-center font-bold text-3xl">Create Account</h1>
+<div class="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+	<h1 class="text-2xl font-semibold tracking-tight">Sign Up</h1>
 
 	<form
 		id="form"
-		class="space-y-4"
+		class="mt-6 flex flex-col gap-5"
 		onsubmit={(e) => {
 			e.preventDefault();
 			e.stopPropagation();
@@ -11601,12 +12197,13 @@ function RouteComponent() {
 	>
 		<form.Field name="name">
 			{#snippet children(field)}
-				<div class="space-y-1">
-					<label for={field.name}>Name</label>
+				<div class="space-y-2">
+					<label for={field.name} class="text-sm font-medium">Name</label>
 					<input
 						id={field.name}
 						name={field.name}
-						class="w-full border"
+						placeholder="Enter your name"
+						class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
 						onblur={field.handleBlur}
 						value={field.state.value}
 						oninput={(e: Event) => {
@@ -11616,7 +12213,7 @@ function RouteComponent() {
 					/>
 					{#if field.state.meta.isTouched}
 						{#each field.state.meta.errors as error}
-							<p class="text-sm text-red-500" role="alert">{error}</p>
+							<p class="text-destructive text-xs" role="alert">{error}</p>
 						{/each}
 					{/if}
 				</div>
@@ -11625,13 +12222,14 @@ function RouteComponent() {
 
 		<form.Field name="email">
 			{#snippet children(field)}
-				<div class="space-y-1">
-					<label for={field.name}>Email</label>
+				<div class="space-y-2">
+					<label for={field.name} class="text-sm font-medium">Email</label>
 					<input
 						id={field.name}
 						name={field.name}
 						type="email"
-						class="w-full border"
+						placeholder="Enter your email"
+						class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
 						onblur={field.handleBlur}
 						value={field.state.value}
 						oninput={(e: Event) => {
@@ -11641,7 +12239,7 @@ function RouteComponent() {
 					/>
 					{#if field.state.meta.isTouched}
 						{#each field.state.meta.errors as error}
-							<p class="text-sm text-red-500" role="alert">{error}</p>
+							<p class="text-destructive text-xs" role="alert">{error}</p>
 						{/each}
 					{/if}
 				</div>
@@ -11650,13 +12248,14 @@ function RouteComponent() {
 
 		<form.Field name="password">
 			{#snippet children(field)}
-				<div class="space-y-1">
-					<label for={field.name}>Password</label>
+				<div class="space-y-2">
+					<label for={field.name} class="text-sm font-medium">Password</label>
 					<input
 						id={field.name}
 						name={field.name}
 						type="password"
-						class="w-full border"
+						placeholder="Enter your password"
+						class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
 						onblur={field.handleBlur}
 						value={field.state.value}
 						oninput={(e: Event) => {
@@ -11666,7 +12265,7 @@ function RouteComponent() {
 					/>
 					{#if field.state.meta.isTouched}
 						{#each field.state.meta.errors as error}
-							<p class="text-sm text-red-500" role="alert">{error}</p>
+							<p class="text-destructive text-xs" role="alert">{error}</p>
 						{/each}
 					{/if}
 				</div>
@@ -11675,16 +12274,17 @@ function RouteComponent() {
 
 		<form.Subscribe selector={(state: typeof form.state): SubmitState => ({ canSubmit: state.canSubmit, isSubmitting: state.isSubmitting })}>
 			{#snippet children(state: SubmitState)}
-				<button type="submit" class="w-full" disabled={!state.canSubmit || state.isSubmitting}>
+				<button type="submit" class="inline-flex h-11 w-full items-center justify-center rounded-full bg-[oklch(0.62_0.22_255)] px-4 text-sm font-semibold text-[oklch(0.99_0.004_279)] transition-colors hover:bg-[oklch(0.57_0.23_255)] disabled:pointer-events-none disabled:opacity-50" disabled={!state.canSubmit || state.isSubmitting}>
 					{state.isSubmitting ? 'Submitting...' : 'Sign Up'}
 				</button>
 			{/snippet}
 		</form.Subscribe>
 	</form>
 
-	<div class="mt-4 text-center">
-		<button type="button" class="text-indigo-600 hover:text-indigo-800" onclick={switchToSignIn}>
-			Already have an account? Sign In
+	<div class="mt-5 flex flex-col items-center gap-3 text-center">
+		<button type="button" class="inline-flex h-auto gap-1.5 rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground" onclick={switchToSignIn}>
+			<span>Already have an account?</span>
+			<span class="text-[oklch(0.62_0.22_255)]">Sign In</span>
 		</button>
 	</div>
 </div>
@@ -11716,25 +12316,38 @@ function RouteComponent() {
 
 <div class="relative">
 	{#if $sessionQuery.isPending}
-		<div class="h-8 w-24 animate-pulse rounded bg-neutral-700"></div>
+		<div class="h-8 w-24 animate-pulse rounded-md bg-muted"></div>
 	{:else if $sessionQuery.data?.user}
 		{@const user = $sessionQuery.data.user}
-		<div class="flex items-center gap-3">
-			<span class="text-sm text-neutral-300 hidden sm:inline" title={user.email}>
-				{user.name || user.email?.split('@')[0] || 'User'}
-			</span>
-			<button
-				onclick={handleSignOut}
-				class="rounded px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white transition-colors"
+		<details class="group relative">
+			<summary
+				class="flex h-8 max-w-48 cursor-pointer list-none items-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted [&::-webkit-details-marker]:hidden"
+				title={user.email}
 			>
-				Sign Out
-			</button>
-		</div>
+				<span class="truncate">
+					{user.name || user.email?.split('@')[0] || 'User'}
+				</span>
+			</summary>
+			<div class="absolute right-0 z-50 mt-2 w-56 rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10">
+				<div class="px-1.5 py-1 text-xs font-medium text-muted-foreground">
+					My Account
+				</div>
+				<div class="rounded-md px-1.5 py-1 text-sm text-muted-foreground">
+					{user.email}
+				</div>
+				<button
+					onclick={handleSignOut}
+					class="flex w-full items-center rounded-md px-1.5 py-1 text-sm text-destructive transition-colors hover:bg-destructive/10"
+				>
+					Sign Out
+				</button>
+			</div>
+		</details>
 	{:else}
 		<div class="flex items-center gap-2">
 			<button
 				onclick={goToLogin}
-				class="rounded px-3 py-1 text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-colors"
+				class="inline-flex h-8 items-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
 			>
 				Sign In
 			</button>
@@ -11794,29 +12407,89 @@ export const authClient = createAuthClient({
 </script>
 
 {#if $sessionQuery.isPending}
-	<div>Loading...</div>
+	<main class="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+		<div class="h-8 w-28 animate-pulse rounded-md bg-muted"></div>
+	</main>
 {:else if !$sessionQuery.data}
-	<div>Redirecting to login...</div>
+	<main class="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+		<p class="text-muted-foreground text-sm">Redirecting to login...</p>
+	</main>
 {:else}
-	<div>
-		<h1>Dashboard</h1>
-		<p>Welcome {$sessionQuery.data.user.name}</p>
+	<main class="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+		<section class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+			<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+				<div>
+					<p class="font-mono text-muted-foreground text-xs">AUTH_SESSION</p>
+					<h1 class="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+					<p class="mt-2 text-muted-foreground text-sm">
+						Signed in as {$sessionQuery.data.user.name || $sessionQuery.data.user.email}.
+					</p>
+				</div>
+				<div class="rounded-lg bg-muted/50 px-3 py-2 text-sm ring-1 ring-border/60">
+					<p class="font-mono text-muted-foreground text-xs">EMAIL</p>
+					<p class="mt-1 break-all font-medium">{$sessionQuery.data.user.email}</p>
+				</div>
+			</div>
+		</section>
+		<section class="grid gap-4 md:grid-cols-2">
+			<div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+				<p class="font-mono text-muted-foreground text-xs">ACCOUNT</p>
+				<h2 class="mt-2 font-medium text-lg">Profile</h2>
+				<dl class="mt-4 space-y-3 text-sm">
+					<div class="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+						<dt class="text-muted-foreground">Name</dt>
+						<dd class="font-medium">{$sessionQuery.data.user.name || 'User'}</dd>
+					</div>
+					<div class="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+						<dt class="text-muted-foreground">Email</dt>
+						<dd class="break-all font-medium">{$sessionQuery.data.user.email}</dd>
+					</div>
+				</dl>
+			</div>
+			<div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+				<p class="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+				<h2 class="mt-2 font-medium text-lg">Protected route</h2>
+				<p class="mt-3 text-muted-foreground text-sm leading-6">
+					This page is rendered only after Better Auth returns an active session.
+				</p>
+			</div>
 		{{#if (eq api "orpc")}}
-		<p>API: {$privateDataQuery.data?.message}</p>
+			<div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+				<p class="font-mono text-muted-foreground text-xs">PRIVATE_API</p>
+				<h2 class="mt-2 font-medium text-lg">oRPC response</h2>
+				<p class="mt-3 text-sm">{$privateDataQuery.data?.message ?? 'Waiting for private data...'}</p>
+			</div>
 		{{/if}}
 		{{#if (eq payments "polar")}}
-		<p>Plan: {customerState?.activeSubscriptions?.length > 0 ? "Pro" : "Free"}</p>
-		{#if customerState?.activeSubscriptions?.length > 0}
-			<button onclick={async () => await authClient.customer.portal()}>
-				Manage Subscription
-			</button>
-		{:else}
-			<button onclick={async () => await authClient.checkout({ slug: "pro" })}>
-				Upgrade to Pro
-			</button>
-		{/if}
+			<div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+				<p class="font-mono text-muted-foreground text-xs">BILLING</p>
+				<h2 class="mt-2 font-medium text-lg">
+					{customerState?.activeSubscriptions?.length > 0 ? "Pro plan" : "Free plan"}
+				</h2>
+				<p class="mt-3 text-muted-foreground text-sm leading-6">
+					Manage the generated Polar customer state from this protected surface.
+				</p>
+				<div class="mt-4">
+					{#if customerState?.activeSubscriptions?.length > 0}
+						<button
+							class="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
+							onclick={async () => await authClient.customer.portal()}
+						>
+							Manage Subscription
+						</button>
+					{:else}
+						<button
+							class="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
+							onclick={async () => await authClient.checkout({ slug: "pro" })}
+						>
+							Upgrade to Pro
+						</button>
+					{/if}
+				</div>
+			</div>
 		{{/if}}
-	</div>
+		</section>
+	</main>
 {/if}
 `],
   ["auth/better-auth/web/svelte/src/routes/login/+page.svelte.hbs", `<script lang="ts">
@@ -11826,11 +12499,13 @@ export const authClient = createAuthClient({
 	let showSignIn = $state(true);
 </script>
 
-{#if showSignIn}
-	<SignInForm switchToSignUp={() => showSignIn = false} />
-{:else}
-	<SignUpForm switchToSignIn={() => showSignIn = true} />
-{/if}
+<main class="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+	{#if showSignIn}
+		<SignInForm switchToSignUp={() => showSignIn = false} />
+	{:else}
+		<SignUpForm switchToSignIn={() => showSignIn = true} />
+	{/if}
+</main>
 `],
   ["auth/clerk/convex/backend/convex/auth.config.ts.hbs", `export default {
 	providers: [
@@ -12388,18 +13063,44 @@ export default function Dashboard() {
   return (
     <>
       <Authenticated>
-        <div>
-          <h1>Dashboard</h1>
-          <p>Welcome {user.user?.fullName}</p>
-          <p>privateData: {privateData?.message}</p>
-          <UserButton />
-        </div>
+        <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+          <section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="font-mono text-muted-foreground text-xs">CLERK_SESSION</p>
+                <h1 className="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+                <p className="mt-2 text-muted-foreground text-sm">
+                  Signed in as {user.user?.fullName || user.user?.primaryEmailAddress?.emailAddress}.
+                </p>
+              </div>
+              <UserButton />
+            </div>
+          </section>
+          <section className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+              <p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+              <h2 className="mt-2 font-medium text-lg">Protected route</h2>
+              <p className="mt-3 text-muted-foreground text-sm leading-6">
+                This page is rendered only after Clerk returns an active session.
+              </p>
+            </div>
+            <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+              <p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
+              <h2 className="mt-2 font-medium text-lg">Convex response</h2>
+              <p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
+            </div>
+          </section>
+        </main>
       </Authenticated>
       <Unauthenticated>
-        <SignInButton />
+        <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+          <SignInButton />
+        </main>
       </Unauthenticated>
       <AuthLoading>
-        <div>Loading...</div>
+        <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+          <div className="h-8 w-28 animate-pulse rounded-md bg-muted" />
+        </main>
       </AuthLoading>
     </>
   );
@@ -12434,18 +13135,46 @@ export default function Dashboard() {
 	return (
 		<>
 			<Authenticated>
-				<div>
-					<h1>Dashboard</h1>
-					<p>Welcome {user.user?.fullName}</p>
-					<p>privateData: {privateData?.message}</p>
-					<UserButton />
-				</div>
+				<main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+					<section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+						<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+							<div>
+								<p className="font-mono text-muted-foreground text-xs">CLERK_SESSION</p>
+								<h1 className="mt-2 font-semibold text-2xl tracking-tight">
+									Dashboard
+								</h1>
+								<p className="mt-2 text-muted-foreground text-sm">
+									Signed in as {user.user?.fullName || user.user?.primaryEmailAddress?.emailAddress}.
+								</p>
+							</div>
+							<UserButton />
+						</div>
+					</section>
+					<section className="grid gap-4 md:grid-cols-2">
+						<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+							<p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+							<h2 className="mt-2 font-medium text-lg">Protected route</h2>
+							<p className="mt-3 text-muted-foreground text-sm leading-6">
+								This page is rendered only after Clerk returns an active session.
+							</p>
+						</div>
+						<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+							<p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
+							<h2 className="mt-2 font-medium text-lg">Convex response</h2>
+							<p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
+						</div>
+					</section>
+				</main>
 			</Authenticated>
 			<Unauthenticated>
-				<SignInButton />
+				<main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+					<SignInButton />
+				</main>
 			</Unauthenticated>
 			<AuthLoading>
-				<div>Loading...</div>
+				<main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+					<div className="h-8 w-28 animate-pulse rounded-md bg-muted" />
+				</main>
 			</AuthLoading>
 		</>
 	);
@@ -12472,18 +13201,46 @@ function RouteComponent() {
 	return (
 		<>
 			<Authenticated>
-				<div>
-					<h1>Dashboard</h1>
-					<p>Welcome {user.user?.fullName}</p>
-					<p>privateData: {privateData?.message}</p>
-					<UserButton />
-				</div>
+				<main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+					<section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+						<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+							<div>
+								<p className="font-mono text-muted-foreground text-xs">CLERK_SESSION</p>
+								<h1 className="mt-2 font-semibold text-2xl tracking-tight">
+									Dashboard
+								</h1>
+								<p className="mt-2 text-muted-foreground text-sm">
+									Signed in as {user.user?.fullName || user.user?.primaryEmailAddress?.emailAddress}.
+								</p>
+							</div>
+							<UserButton />
+						</div>
+					</section>
+					<section className="grid gap-4 md:grid-cols-2">
+						<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+							<p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+							<h2 className="mt-2 font-medium text-lg">Protected route</h2>
+							<p className="mt-3 text-muted-foreground text-sm leading-6">
+								This page is rendered only after Clerk returns an active session.
+							</p>
+						</div>
+						<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+							<p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
+							<h2 className="mt-2 font-medium text-lg">Convex response</h2>
+							<p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
+						</div>
+					</section>
+				</main>
 			</Authenticated>
 			<Unauthenticated>
-				<SignInButton />
+				<main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+					<SignInButton />
+				</main>
 			</Unauthenticated>
 			<AuthLoading>
-				<div>Loading...</div>
+				<main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+					<div className="h-8 w-28 animate-pulse rounded-md bg-muted" />
+				</main>
 			</AuthLoading>
 		</>
 	);
@@ -12510,18 +13267,46 @@ function RouteComponent() {
 	return (
 		<>
 			<Authenticated>
-				<div>
-					<h1>Dashboard</h1>
-					<p>Welcome {user.user?.fullName}</p>
-					<p>privateData: {privateData?.message}</p>
-					<UserButton />
-				</div>
+				<main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+					<section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+						<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+							<div>
+								<p className="font-mono text-muted-foreground text-xs">CLERK_SESSION</p>
+								<h1 className="mt-2 font-semibold text-2xl tracking-tight">
+									Dashboard
+								</h1>
+								<p className="mt-2 text-muted-foreground text-sm">
+									Signed in as {user.user?.fullName || user.user?.primaryEmailAddress?.emailAddress}.
+								</p>
+							</div>
+							<UserButton />
+						</div>
+					</section>
+					<section className="grid gap-4 md:grid-cols-2">
+						<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+							<p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+							<h2 className="mt-2 font-medium text-lg">Protected route</h2>
+							<p className="mt-3 text-muted-foreground text-sm leading-6">
+								This page is rendered only after Clerk returns an active session.
+							</p>
+						</div>
+						<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+							<p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
+							<h2 className="mt-2 font-medium text-lg">Convex response</h2>
+							<p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
+						</div>
+					</section>
+				</main>
 			</Authenticated>
 			<Unauthenticated>
-				<SignInButton />
+				<main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+					<SignInButton />
+				</main>
 			</Unauthenticated>
 			<AuthLoading>
-				<div>Loading...</div>
+				<main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+					<div className="h-8 w-28 animate-pulse rounded-md bg-muted" />
+				</main>
 			</AuthLoading>
 		</>
 	);
@@ -18138,7 +18923,7 @@ function RouteComponent() {
 			>
 				<p
 					class="mb-1 text-sm font-semibold"
-					class:text-indigo-600={message.role === "user"}
+					class:text-primary={message.role === "user"}
 					class:text-neutral-400={message.role === "assistant"}
 				>
 					{message.role === "user" ? "You" : "AI Assistant"}
@@ -18175,7 +18960,7 @@ function RouteComponent() {
 		<button
 			type="submit"
 			disabled={!input.trim()}
-			class="inline-flex h-10 w-10 items-center justify-center rounded bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-neutral-900 disabled:cursor-not-allowed disabled:opacity-50"
+			class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
 			aria-label="Send message"
 		>
 			<svg
@@ -19814,7 +20599,7 @@ import Layout from "../layouts/Layout.astro";
     <div id="loading" class="text-neutral-400">Loading...</div>
     <div id="empty" class="hidden text-neutral-400">No todos yet.</div>
     <ul id="todo-list" class="space-y-1 hidden"></ul>
-    <p id="error" class="mt-4 text-red-500 hidden"></p>
+    <p id="error" class="mt-4 text-destructive hidden"></p>
   </div>
 </Layout>
 
@@ -19868,7 +20653,7 @@ import Layout from "../layouts/Layout.astro";
           </label>
         </div>
         <button
-          class="delete-btn text-red-500 px-2 hover:text-red-400 transition-colors"
+          class="delete-btn text-destructive px-2 hover:text-destructive/80 transition-colors"
           aria-label="Delete todo"
         >
           X
@@ -21452,7 +22237,7 @@ function TodosRoute() {
 						onclick={() => handleDeleteTodo(todo._id)}
 						disabled={isDisabled}
 						aria-label="Delete todo"
-						class="text-red-500 px-1 disabled:opacity-50"
+						class="text-destructive px-1 disabled:opacity-50"
 					>
 						{#if isDeletingThis}Deleting...{:else}X{/if}
 					</button>
@@ -21462,22 +22247,22 @@ function TodosRoute() {
 	{/if}
 
 	{#if todosQuery.error}
-		<p class="mt-4 text-red-500">
+		<p class="mt-4 text-destructive">
 			Error loading: {todosQuery.error?.message ?? 'Unknown error'}
 		</p>
 	{/if}
 	{#if addError}
-		<p class="mt-4 text-red-500">
+		<p class="mt-4 text-destructive">
 			Error adding: {addError.message ?? 'Unknown error'}
 		</p>
 	{/if}
 	{#if toggleError}
-		<p class="mt-4 text-red-500">
+		<p class="mt-4 text-destructive">
 			Error updating: {toggleError.message ?? 'Unknown error'}
 		</p>
 	{/if}
 	{#if deleteError}
-		<p class="mt-4 text-red-500">
+		<p class="mt-4 text-destructive">
 			Error deleting: {deleteError.message ?? 'Unknown error'}
 		</p>
 	{/if}
@@ -21607,7 +22392,7 @@ function TodosRoute() {
 						onclick={() => handleDeleteTodo(todo.id)}
 						disabled={isDisabled}
 						aria-label="Delete todo"
-						class="text-red-500 px-1 disabled:opacity-50"
+						class="text-destructive px-1 disabled:opacity-50"
 					>
 						{#if isDeleting}Deleting...{:else}X{/if}
 					</button>
@@ -21617,22 +22402,22 @@ function TodosRoute() {
 	{/if}
 
 	{#if $todosQuery.isError}
-		<p class="mt-4 text-red-500">
+		<p class="mt-4 text-destructive">
 			Error loading: {$todosQuery.error?.message ?? 'Unknown error'}
 		</p>
 	{/if}
 	{#if $addMutation.isError}
-		<p class="mt-4 text-red-500">
+		<p class="mt-4 text-destructive">
 			Error adding: {$addMutation.error?.message ?? 'Unknown error'}
 		</p>
 	{/if}
 	{#if $toggleMutation.isError}
-		<p class="mt-4 text-red-500">
+		<p class="mt-4 text-destructive">
 			Error updating: {$toggleMutation.error?.message ?? 'Unknown error'}
 		</p>
 	{/if}
 	{#if $deleteMutation.isError}
-		<p class="mt-4 text-red-500">
+		<p class="mt-4 text-destructive">
 			Error deleting: {$deleteMutation.error?.message ?? 'Unknown error'}
 		</p>
 	{/if}
@@ -21757,7 +22542,7 @@ export default defineConfig({
 `],
   ["frontend/astro/src/components/Header.astro.hbs", `---
 const links = [
-  { to: "/", label: "Home" },
+  { to: "/", label: "Demo" },
   {{#if (eq auth "better-auth")}}
   { to: "/dashboard", label: "Dashboard" },
   {{/if}}
@@ -21770,25 +22555,70 @@ const links = [
 ];
 ---
 
-<div>
-  <div class="flex flex-row items-center justify-between px-4 py-2 md:px-6">
-    <nav class="flex gap-4 text-lg">
-      {links.map((link) => (
-        <a href={link.to} class="text-white hover:text-neutral-400 transition-colors">
-          {link.label}
+<header class="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur">
+  <div class="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+    <div class="flex min-w-0 items-center gap-6">
+      <div class="flex min-w-0 items-center gap-3">
+        <div class="grid size-5 shrink-0 grid-cols-2 gap-0.5" aria-hidden="true">
+          <span class="bg-foreground"></span>
+          <span class="bg-foreground"></span>
+          <span class="bg-foreground"></span>
+          <span class="bg-foreground/20"></span>
+        </div>
+        <span class="truncate font-semibold text-sm tracking-wide">{{projectName}}</span>
+      </div>
+
+      <nav class="hidden items-center gap-2 lg:flex" aria-label="Main navigation">
+        {links.map((link) => (
+          <a
+            href={link.to}
+            class="rounded-md px-2 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground"
+          >
+            {link.label}
+          </a>
+        ))}
+        <a
+          href="https://better-t-stack.dev/docs"
+          class="rounded-md px-2 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground"
+        >
+          Docs
         </a>
-      ))}
-    </nav>
+      </nav>
+    </div>
+
     <div class="flex items-center gap-2" id="user-menu-container">
+      <a
+        href="https://better-t-stack.dev/docs"
+        class="hidden h-9 w-64 items-center gap-2 rounded-full border border-border bg-background px-3 text-left text-muted-foreground text-sm shadow-sm transition-colors hover:bg-muted/50 hover:text-foreground xl:flex"
+        aria-label="Search docs"
+      >
+        <span class="text-base leading-none">⌕</span>
+        <span class="flex-1">Search docs</span>
+        <kbd class="rounded-md border border-border bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">⌘</kbd>
+        <kbd class="rounded-md border border-border bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">K</kbd>
+      </a>
+      <div class="flex items-center gap-1 rounded-full border border-border bg-background p-0.5 shadow-sm">
+        <a
+          href="https://github.com/AmanVarshney01/create-better-t-stack"
+          class="inline-flex size-7 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted"
+          aria-label="GitHub repository"
+        >
+          <span class="font-semibold text-sm">GH</span>
+        </a>
+      </div>
       {{#if (eq auth "better-auth")}}
-      <a href="/login" id="login-link" class="rounded px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-colors">
+      <a
+        href="/login"
+        id="login-link"
+        class="rounded-lg bg-primary px-3 py-1.5 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/85"
+      >
         Sign In
       </a>
       <div id="user-menu" class="hidden flex items-center gap-3">
-        <span class="text-sm text-neutral-400 hidden sm:inline" id="user-display"></span>
+        <span class="hidden font-mono text-muted-foreground text-xs sm:inline" id="user-display"></span>
         <button
           id="signout-button"
-          class="rounded px-3 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white transition-colors"
+          class="rounded-md bg-muted px-3 py-1.5 font-medium text-foreground text-sm transition-colors hover:bg-muted/80"
         >
           Sign Out
         </button>
@@ -21796,8 +22626,7 @@ const links = [
       {{/if}}
     </div>
   </div>
-  <hr class="border-neutral-800" />
-</div>
+</header>
 
 {{#if (eq auth "better-auth")}}
 <script>
@@ -21857,7 +22686,7 @@ const { title = "{{projectName}}" } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
   </head>
-  <body class="min-h-screen bg-neutral-950 text-white">
+  <body>
     <Header />
     <slot />
   </body>
@@ -21865,59 +22694,163 @@ const { title = "{{projectName}}" } = Astro.props;
 `],
   ["frontend/astro/src/pages/index.astro.hbs", `---
 import Layout from "../layouts/Layout.astro";
-{{#if (eq api "orpc")}}
-import { orpc } from "../lib/orpc";
-{{/if}}
-
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-    ██║       ███████╗   ██║   ███████║██║     █████╔╝
-    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
 ---
 
 <Layout title="{{projectName}}">
-  <div class="container mx-auto max-w-3xl px-4 py-2">
-    <pre class="overflow-x-auto font-mono text-sm text-white">{TITLE_TEXT}</pre>
-    <div class="grid gap-6">
-      {{#if (eq api "orpc")}}
-      <section class="rounded-lg border border-neutral-700 p-4">
-        <h2 class="mb-2 font-medium text-white">API Status</h2>
-        <div class="flex items-center gap-2" id="api-status">
-          <div class="h-2 w-2 rounded-full bg-orange-400" id="status-dot"></div>
-          <span class="text-sm text-neutral-400" id="status-text">Checking...</span>
+  <main class="min-h-svh bg-background text-foreground">
+    <section class="relative isolate overflow-hidden border-b">
+    <div class="absolute inset-0 -z-10 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:28px_28px] opacity-60"></div>
+    <div class="absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(ellipse_at_top_left,oklch(0.9_0.06_62_/_0.28),transparent_58%)]"></div>
+    <div class="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <div class="rounded-2xl bg-card/95 p-3 shadow-sm ring-1 ring-foreground/10">
+        <div class="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+          <section class="flex min-h-[26rem] flex-col justify-between rounded-xl border bg-background p-4">
+            <div>
+              <div class="mb-5 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                  <span class="size-4 rounded-sm border border-primary/40 bg-primary/15"></span>
+                  <span class="font-bold font-mono text-lg sm:text-xl">GENERATED_STACK</span>
+                </div>
+                <span class="rounded-md bg-primary/15 px-2 py-1 font-mono text-primary text-xs">
+                  READY
+                </span>
+              </div>
+
+              <h1 class="max-w-2xl font-semibold text-3xl tracking-tight sm:text-4xl">
+                A generated app shell that already feels designed.
+              </h1>
+              <p class="mt-3 max-w-2xl text-muted-foreground text-sm leading-6">
+                Better T Stack wires the project, then leaves you with a clean demo surface: neutral shadcn tokens, compact navigation, typed status, and no custom component fork.
+              </p>
+            </div>
+
+            <div class="mt-8 space-y-3">
+              <div class="rounded-md bg-muted/20 p-3">
+                <div class="mb-3 flex items-center gap-2 text-muted-foreground text-xs">
+                  <span class="size-3.5 rounded-sm bg-primary/25"></span>
+                  <span class="font-mono">CLI_COMMAND</span>
+                </div>
+                <div class="flex items-center gap-2 overflow-x-auto font-mono text-sm">
+                  <span class="text-primary">$</span>
+                  <span>{{packageManager}} run dev</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="rounded-xl border bg-background p-4">
+            <div class="mb-4 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <span class="size-4 rounded-full bg-primary/20 ring-1 ring-primary/30"></span>
+                <h2 class="font-bold font-mono text-lg sm:text-xl">PROJECT_STATUS</h2>
+              </div>
+              <span class="rounded-md bg-muted/35 px-2 py-1 font-mono text-muted-foreground text-xs">
+                APPS/WEB
+              </span>
+            </div>
+
+            <p class="mb-5 text-muted-foreground text-xs leading-5">
+              Live checks from the generated application shell.
+            </p>
+
+            <div class="space-y-5">
+              <div class="rounded-md bg-muted/20 p-3">
+                {{#if (eq api "orpc")}}
+                <div class="flex items-start gap-3" id="api-status">
+                  <span class="mt-1 size-2.5 rounded-full bg-primary" id="status-dot"></span>
+                  <div>
+                    <p class="font-medium text-sm" id="status-text">API Checking</p>
+                    <p class="mt-1 text-muted-foreground text-xs leading-5" id="status-description">
+                      The app is asking the generated API for a health response.
+                    </p>
+                  </div>
+                </div>
+                {{else}}
+                <div class="flex items-start gap-3">
+                  <span class="mt-1 size-2.5 rounded-full bg-muted-foreground"></span>
+                  <div>
+                    <p class="font-medium text-sm">API No API</p>
+                    <p class="mt-1 text-muted-foreground text-xs leading-5">
+                      This project was generated without an API layer.
+                    </p>
+                  </div>
+                </div>
+                {{/if}}
+              </div>
+
+              <dl class="grid gap-2">
+                <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                  <dt class="font-mono text-muted-foreground text-xs">Frontend</dt>
+                  <dd>
+                    <span class="block font-medium text-sm">Astro</span>
+                    <span class="block text-muted-foreground text-xs">Static-first web app</span>
+                  </dd>
+                </div>
+                <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                  <dt class="font-mono text-muted-foreground text-xs">Backend</dt>
+                  <dd>
+                    <span class="block font-medium text-sm">{{backend}}</span>
+                    <span class="block text-muted-foreground text-xs">{{runtime}} runtime</span>
+                  </dd>
+                </div>
+                <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                  <dt class="font-mono text-muted-foreground text-xs">API</dt>
+                  <dd>
+                    <span class="block font-medium text-sm">{{#if (eq api "orpc")}}oRPC{{else}}None{{/if}}</span>
+                    <span class="block text-muted-foreground text-xs">Type-safe boundary</span>
+                  </dd>
+                </div>
+                <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                  <dt class="font-mono text-muted-foreground text-xs">Data</dt>
+                  <dd>
+                    <span class="block font-medium text-sm">{{#if (eq database "none")}}None{{else}}{{database}} + {{orm}}{{/if}}</span>
+                    <span class="block text-muted-foreground text-xs">{{#if (eq dbSetup "none")}}Manual setup{{else}}{{dbSetup}} setup{{/if}}</span>
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <section class="rounded-lg bg-card p-4 ring-1 ring-border/70">
+        <div class="grid gap-5 lg:grid-cols-[13rem_1fr]">
+          <div>
+            <p class="font-mono text-muted-foreground text-xs">WORKBENCH_RULES</p>
+            <h2 class="mt-3 font-semibold text-lg tracking-tight">Built to be replaced</h2>
+          </div>
+          <div class="grid gap-3 text-sm sm:grid-cols-3">
+            <p class="rounded-md bg-muted/20 p-3">Typed defaults stay visible at the edge.</p>
+            <p class="rounded-md bg-muted/20 p-3">The shell proves wiring, then gets out of the way.</p>
+            <p class="rounded-md bg-muted/20 p-3">Tokens carry the style, not component forks.</p>
+          </div>
         </div>
       </section>
-      {{/if}}
     </div>
-  </div>
+  </section>
+</main>
 </Layout>
 
 {{#if (eq api "orpc")}}
 <script>
   import { orpc } from "../lib/orpc";
 
-  const statusDot = document.getElementById("status-dot")!;
-  const statusText = document.getElementById("status-text")!;
+  const statusDot = document.getElementById("status-dot");
+  const statusText = document.getElementById("status-text");
+  const statusDescription = document.getElementById("status-description");
 
   async function checkHealth() {
+    if (!statusDot || !statusText || !statusDescription) return;
+
     try {
-      const data = await orpc.healthCheck();
-      statusDot.className = "h-2 w-2 rounded-full bg-green-500";
-      statusText.textContent = "Connected";
-    } catch (error) {
-      statusDot.className = "h-2 w-2 rounded-full bg-red-500";
-      statusText.textContent = "Disconnected";
+      await orpc.healthCheck();
+      statusDot.className = "mt-1 size-2.5 rounded-full bg-emerald-500";
+      statusText.textContent = "API Connected";
+      statusDescription.textContent = "The generated client can reach the backend health endpoint.";
+    } catch {
+      statusDot.className = "mt-1 size-2.5 rounded-full bg-destructive";
+      statusText.textContent = "API Disconnected";
+      statusDescription.textContent = "The client rendered, but the health endpoint did not return data.";
     }
   }
 
@@ -21927,11 +22860,81 @@ const TITLE_TEXT = \`
 `],
   ["frontend/astro/src/styles/global.css", `@import "tailwindcss";
 
-/* Add your theme customizations here. */
-/* See the TailwindCSS v4 docs for more info: https://tailwindcss.com/docs/v4-beta */
+@theme inline {
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
 
-@theme {
-  --font-sans: "Inter", sans-serif;
+:root {
+  --radius: 0.625rem;
+  --background: oklch(0.955 0.004 279);
+  --foreground: oklch(0.19 0.01 279);
+  --card: oklch(0.99 0.003 279);
+  --card-foreground: oklch(0.19 0.01 279);
+  --popover: oklch(0.99 0.003 279);
+  --popover-foreground: oklch(0.19 0.01 279);
+  --primary: oklch(0.22 0.012 279);
+  --primary-foreground: oklch(0.99 0.006 279);
+  --secondary: oklch(0.92 0.005 279);
+  --secondary-foreground: oklch(0.22 0.012 279);
+  --muted: oklch(0.92 0.005 279);
+  --muted-foreground: oklch(0.55 0.012 279);
+  --accent: oklch(0.92 0.005 279);
+  --accent-foreground: oklch(0.22 0.012 279);
+  --border: oklch(0.88 0.006 279);
+  --input: oklch(0.88 0.006 279);
+  --ring: oklch(0.7 0.012 279);
+  --destructive: oklch(0.58 0.22 27);
+}
+
+.dark {
+  --background: oklch(0.15 0.01 279);
+  --foreground: oklch(0.985 0.004 279);
+  --card: oklch(0.21 0.01 279);
+  --card-foreground: oklch(0.985 0.004 279);
+  --popover: oklch(0.21 0.01 279);
+  --popover-foreground: oklch(0.985 0.004 279);
+  --primary: oklch(0.92 0.006 279);
+  --primary-foreground: oklch(0.21 0.01 279);
+  --secondary: oklch(0.27 0.01 279);
+  --secondary-foreground: oklch(0.985 0.004 279);
+  --muted: oklch(0.27 0.01 279);
+  --muted-foreground: oklch(0.72 0.008 279);
+  --accent: oklch(0.27 0.01 279);
+  --accent-foreground: oklch(0.985 0.004 279);
+  --border: oklch(0.985 0.004 279 / 10%);
+  --input: oklch(0.985 0.004 279 / 15%);
+  --ring: oklch(0.56 0.012 279);
+  --destructive: oklch(0.7 0.19 22);
+}
+
+body {
+  @apply min-h-screen bg-background font-sans text-foreground;
 }
 `],
   ["frontend/astro/tsconfig.json.hbs", `{
@@ -22492,8 +23495,11 @@ return (
 <Container>
   <ScrollView style={styles.scrollView}>
     <View style={styles.content}>
+      <Text style={[styles.eyebrow, { color: theme.primary }]}>
+        GENERATED_STACK
+      </Text>
       <Text style={[styles.title, { color: theme.text }]}>
-        BETTER T STACK
+        Better T Stack
       </Text>
 
       {{#unless (and (eq backend "convex") (eq auth "better-auth"))}}
@@ -22603,7 +23609,7 @@ return (
       ) : null}
       <View style={[styles.statusCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
         <Text style={[styles.statusCardTitle, { color: theme.text }]}>
-          API Status
+          PROJECT_STATUS
         </Text>
         <View style={styles.statusRow}>
           <View style={[styles.statusIndicator, { backgroundColor: healthCheck ? "#10b981" : "#ef4444" }]} />
@@ -22640,6 +23646,12 @@ title: {
 fontSize: 24,
 fontWeight: "bold",
 marginBottom: 16,
+},
+eyebrow: {
+fontSize: 12,
+fontWeight: "700",
+letterSpacing: 0.5,
+marginBottom: 6,
 },
 card: {
 padding: 16,
@@ -23595,8 +24607,9 @@ export default function Home() {
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
       >
+        <Text style={styles.heroEyebrow}>GENERATED_STACK</Text>
         <Text style={styles.heroTitle}>
-          BETTER T STACK
+          Better T Stack
         </Text>
 
         {{#unless (and (eq backend "convex") (eq auth "better-auth"))}}
@@ -23730,7 +24743,7 @@ export default function Home() {
           </View>
         ) : null}
         <View style={styles.apiStatusCard}>
-          <Text style={styles.apiStatusTitle}>API Status</Text>
+          <Text style={styles.apiStatusTitle}>PROJECT_STATUS</Text>
           <View style={styles.apiStatusRow}>
             <View
               style={[
@@ -23774,6 +24787,13 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.foreground,
     marginBottom: theme.spacing.sm,
   },
+  heroEyebrow: {
+    fontSize: theme.fontSize.xs,
+    fontWeight: "700",
+    color: theme.colors.primary,
+    letterSpacing: 0.5,
+    marginBottom: theme.spacing.xs,
+  },
   heroSubtitle: {
     fontSize: theme.fontSize.lg,
     color: theme.colors.mutedForeground,
@@ -23783,7 +24803,7 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.card,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    borderRadius: theme.borderRadius.xl,
+    borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.lg,
     marginBottom: theme.spacing.lg,
     shadowColor: "#000",
@@ -24808,6 +25828,9 @@ const isLoading = healthCheck?.isLoading;
 return (
 <Container className="px-4 pb-4">
   <View className="py-6 mb-5">
+    <Text className="text-primary text-xs font-bold mb-1">
+      GENERATED_STACK
+    </Text>
     <Text className="text-3xl font-semibold text-foreground tracking-tight">
       Better T Stack
     </Text>
@@ -24815,7 +25838,7 @@ return (
   </View>
 
   {{#unless (or (eq backend "none") (and (eq backend "convex") (eq auth "better-auth")))}}
-  <Surface variant="secondary" className="p-4 rounded-xl">
+  <Surface variant="secondary" className="p-4 rounded-lg">
     <View className="flex-row items-center justify-between mb-3">
       <Text className="text-foreground font-medium">System Status</Text>
       <Chip variant="secondary" color={isConnected ? "success" : "danger" } size="sm">
@@ -24862,7 +25885,7 @@ return (
 
   {{#if (and (eq backend "convex") (eq auth "clerk"))}}
   <Authenticated>
-    <Surface variant="secondary" className="mt-5 p-4 rounded-xl">
+    <Surface variant="secondary" className="mt-5 p-4 rounded-lg">
       <View className="flex-row items-center justify-between">
         <View className="flex-1">
           <Text className="text-foreground font-medium">{user?.emailAddresses[0].emailAddress}</Text>
@@ -24895,7 +25918,7 @@ return (
     <Spinner size="sm" />
   </View>
   ) : isSignedIn ? (
-  <Surface variant="secondary" className="mt-5 p-4 rounded-xl">
+  <Surface variant="secondary" className="mt-5 p-4 rounded-lg">
     <View className="flex-row items-center justify-between">
       <View className="flex-1">
         <Text className="text-foreground font-medium">
@@ -24922,7 +25945,7 @@ return (
 
   {{#if (and (eq backend "convex") (eq auth "better-auth"))}}
   {user ? (
-  <Surface variant="secondary" className="mb-4 p-4 rounded-xl">
+  <Surface variant="secondary" className="mb-4 p-4 rounded-lg">
     <View className="flex-row items-center justify-between">
       <View className="flex-1">
         <Text className="text-foreground font-medium">{user.name}</Text>
@@ -24940,8 +25963,8 @@ return (
     </View>
   </Surface>
   ) : null}
-  <Surface variant="secondary" className="p-4 rounded-xl">
-    <Text className="text-foreground font-medium mb-2">API Status</Text>
+  <Surface variant="secondary" className="p-4 rounded-lg">
+    <Text className="text-foreground font-medium mb-2">PROJECT_STATUS</Text>
     <View className="flex-row items-center gap-2">
       <View className={\`w-2 h-2 rounded-full \${healthCheck==="OK" ? "bg-success" : "bg-danger" }\`} />
       <Text className="text-muted text-xs">
@@ -25301,7 +26324,7 @@ logs
   ["frontend/nuxt/app/app.config.ts.hbs", `export default defineAppConfig({
   ui: {
     colors: {
-      primary: 'emerald',
+      primary: 'neutral',
       neutral: 'neutral',
     },
   }
@@ -25329,17 +26352,93 @@ import { VueQueryDevtools } from '@tanstack/vue-query-devtools'
 `],
   ["frontend/nuxt/app/assets/css/main.css", `@import "tailwindcss";
 @import "@nuxt/ui";
+
+@theme inline {
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(0.955 0.004 279);
+  --foreground: oklch(0.19 0.01 279);
+  --card: oklch(0.99 0.003 279);
+  --card-foreground: oklch(0.19 0.01 279);
+  --popover: oklch(0.99 0.003 279);
+  --popover-foreground: oklch(0.19 0.01 279);
+  --primary: oklch(0.22 0.012 279);
+  --primary-foreground: oklch(0.99 0.006 279);
+  --secondary: oklch(0.92 0.005 279);
+  --secondary-foreground: oklch(0.22 0.012 279);
+  --muted: oklch(0.92 0.005 279);
+  --muted-foreground: oklch(0.55 0.012 279);
+  --accent: oklch(0.92 0.005 279);
+  --accent-foreground: oklch(0.22 0.012 279);
+  --border: oklch(0.88 0.006 279);
+  --input: oklch(0.88 0.006 279);
+  --ring: oklch(0.7 0.012 279);
+  --destructive: oklch(0.58 0.22 27);
+}
+
+.dark {
+  --background: oklch(0.15 0.01 279);
+  --foreground: oklch(0.985 0.004 279);
+  --card: oklch(0.21 0.01 279);
+  --card-foreground: oklch(0.985 0.004 279);
+  --popover: oklch(0.21 0.01 279);
+  --popover-foreground: oklch(0.985 0.004 279);
+  --primary: oklch(0.92 0.006 279);
+  --primary-foreground: oklch(0.21 0.01 279);
+  --secondary: oklch(0.27 0.01 279);
+  --secondary-foreground: oklch(0.985 0.004 279);
+  --muted: oklch(0.27 0.01 279);
+  --muted-foreground: oklch(0.72 0.008 279);
+  --accent: oklch(0.27 0.01 279);
+  --accent-foreground: oklch(0.985 0.004 279);
+  --border: oklch(0.985 0.004 279 / 10%);
+  --input: oklch(0.985 0.004 279 / 15%);
+  --ring: oklch(0.56 0.012 279);
+  --destructive: oklch(0.7 0.19 22);
+}
+
+body {
+  @apply bg-background font-sans text-foreground;
+}
 `],
   ["frontend/nuxt/app/components/Header.vue.hbs", `<script setup lang="ts">
-import type { NavigationMenuItem } from '@nuxt/ui'
 {{#if (eq auth "better-auth")}}
 import UserMenu from './UserMenu.vue'
 {{/if}}
 
 const route = useRoute()
 
-const items = computed<NavigationMenuItem[]>(() => [
-    { label: "Home", to: "/", active: route.path === "/" },
+const items = computed(() => [
+    { label: "Demo", to: "/", active: route.path === "/" },
     {{#if (or (eq auth "better-auth") (eq auth "clerk"))}}
     { label: "Dashboard", to: "/dashboard", active: route.path.startsWith("/dashboard") },
     {{/if}}
@@ -25353,22 +26452,70 @@ const items = computed<NavigationMenuItem[]>(() => [
 </script>
 
 <template>
-  <UHeader>
-    <template #left>
-      <UNavigationMenu :items="items" />
-    </template>
+  <header class="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur">
+    <div class="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+      <div class="flex min-w-0 items-center gap-6">
+        <div class="flex min-w-0 items-center gap-3">
+          <div class="grid size-5 shrink-0 grid-cols-2 gap-0.5" aria-hidden="true">
+            <span class="bg-foreground" />
+            <span class="bg-foreground" />
+            <span class="bg-foreground" />
+            <span class="bg-foreground/20" />
+          </div>
+          <span class="truncate font-semibold text-sm tracking-wide">{{projectName}}</span>
+        </div>
 
-    <template #right>
-      <UColorModeButton />
+        <nav class="hidden items-center gap-2 lg:flex" aria-label="Main navigation">
+          <NuxtLink
+            v-for="item in items"
+            :key="item.to"
+            :to="item.to"
+            :class="[
+              'rounded-md px-2 py-1 text-sm transition-colors hover:bg-muted/60 hover:text-foreground',
+              item.active ? 'text-foreground' : 'text-muted-foreground'
+            ]"
+          >
+            \\{{ item.label }}
+          </NuxtLink>
+          <NuxtLink
+            to="https://better-t-stack.dev/docs"
+            external
+            class="rounded-md px-2 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground"
+          >
+            Docs
+          </NuxtLink>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-2">
+      <NuxtLink
+        to="https://better-t-stack.dev/docs"
+        external
+        class="hidden h-9 w-64 items-center gap-2 rounded-full border border-border bg-background px-3 text-left text-muted-foreground text-sm shadow-sm transition-colors hover:bg-muted/50 hover:text-foreground xl:flex"
+        aria-label="Search docs"
+      >
+        <UIcon name="i-lucide-search" class="size-4" />
+        <span class="flex-1">Search docs</span>
+        <kbd class="rounded-md border border-border bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">⌘</kbd>
+        <kbd class="rounded-md border border-border bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">K</kbd>
+      </NuxtLink>
+      <div class="flex items-center gap-1 rounded-full border border-border bg-background p-0.5 shadow-sm">
+      <UColorModeButton variant="ghost" />
+      <NuxtLink
+        to="https://github.com/AmanVarshney01/create-better-t-stack"
+        external
+        class="inline-flex size-7 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted"
+        aria-label="GitHub repository"
+      >
+        <UIcon name="i-lucide-github" class="size-4" />
+      </NuxtLink>
+      </div>
       {{#if (eq auth "better-auth")}}
       <UserMenu />
       {{/if}}
-    </template>
-
-    <template #body>
-      <UNavigationMenu :items="items" orientation="vertical" class="-mx-2.5" />
-    </template>
-  </UHeader>
+      </div>
+    </div>
+  </header>
 </template>
 `],
   ["frontend/nuxt/app/layouts/default.vue.hbs", `<script setup></script>
@@ -25387,103 +26534,216 @@ const items = computed<NavigationMenuItem[]>(() => [
 import { api } from "@{{ projectName }}/backend/convex/_generated/api";
 import { useConvexQuery } from "convex-vue";
 {{else}}
-  {{#unless (eq api "none")}}
-const { $orpc } = useNuxtApp()
-import { useQuery } from '@tanstack/vue-query'
-  {{/unless}}
+{{#unless (eq api "none")}}
+import { useQuery } from "@tanstack/vue-query";
+{{/unless}}
 {{/if}}
-
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-    ██║       ███████╗   ██║   ███████║██║     █████╔╝
-    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
 
 {{#if (eq backend "convex")}}
 const healthCheck = useConvexQuery(api.healthCheck.get, {});
 {{else}}
-  {{#unless (eq api "none")}}
-const healthCheck = useQuery($orpc.healthCheck.queryOptions())
+{{#unless (eq api "none")}}
+const { $orpc } = useNuxtApp();
+const healthCheck = useQuery($orpc.healthCheck.queryOptions());
 
 onServerPrefetch(async () => {
   try {
-    await healthCheck.suspense()
+    await healthCheck.suspense();
   } catch {}
-})
-  {{/unless}}
+});
+{{/unless}}
 {{/if}}
 </script>
 
 <template>
-  <UContainer class="py-8">
-    <pre class="overflow-x-auto font-mono text-sm whitespace-pre-wrap">\\{{ TITLE_TEXT }}</pre>
+  <main class="min-h-svh bg-background text-foreground">
+    <section class="relative isolate overflow-hidden border-b">
+    <div class="absolute inset-0 -z-10 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:28px_28px] opacity-60"></div>
+    <div class="absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(ellipse_at_top_left,oklch(0.9_0.06_62_/_0.28),transparent_58%)]"></div>
+    <div class="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <div class="rounded-2xl bg-card/95 p-3 shadow-sm ring-1 ring-foreground/10">
+        <div class="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+          <section class="flex min-h-[26rem] flex-col justify-between rounded-xl border bg-background p-4">
+            <div>
+              <div class="mb-5 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                  <span class="size-4 rounded-sm border border-primary/40 bg-primary/15"></span>
+                  <span class="font-bold font-mono text-lg sm:text-xl">GENERATED_STACK</span>
+                </div>
+                <span class="rounded-md bg-primary/15 px-2 py-1 font-mono text-primary text-xs">
+                  READY
+                </span>
+              </div>
 
-    <div class="grid gap-6 mt-6">
-      <UCard>
-        <template #header>
-          <div class="font-medium">API Status</div>
-        </template>
+              <h1 class="max-w-2xl font-semibold text-3xl tracking-tight sm:text-4xl">
+                A generated app shell that already feels designed.
+              </h1>
+              <p class="mt-3 max-w-2xl text-muted-foreground text-sm leading-6">
+                Better T Stack wires the project, then leaves you with a clean demo surface: neutral shadcn tokens, compact navigation, typed status, and no custom component fork.
+              </p>
+            </div>
 
-        {{#if (eq backend "convex")}}
-        <div class="flex items-center gap-2">
-          <UIcon
-            :name="healthCheck === undefined ? 'i-lucide-loader-2' : healthCheck.data.value === 'OK' ? 'i-lucide-check-circle' : 'i-lucide-x-circle'"
-            :class="[
-              healthCheck === undefined ? 'animate-spin text-muted' : '',
-              healthCheck?.data.value === 'OK' ? 'text-success' : 'text-error'
-            ]"
-          />
-          <span class="text-sm">
-            \\{{
-              healthCheck === undefined
-                ? "Checking..."
-                : healthCheck.data.value === "OK"
-                  ? "Connected"
-                  : "Error"
-            }}
-          </span>
+            <div class="mt-8 space-y-3">
+              <div class="rounded-md bg-muted/20 p-3">
+                <div class="mb-3 flex items-center gap-2 text-muted-foreground text-xs">
+                  <span class="size-3.5 rounded-sm bg-primary/25"></span>
+                  <span class="font-mono">CLI_COMMAND</span>
+                </div>
+                <div class="flex items-center gap-2 overflow-x-auto font-mono text-sm">
+                  <span class="text-primary">$</span>
+                  <span>{{packageManager}} run dev</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="rounded-xl border bg-background p-4">
+            <div class="mb-4 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <span class="size-4 rounded-full bg-primary/20 ring-1 ring-primary/30"></span>
+                <h2 class="font-bold font-mono text-lg sm:text-xl">PROJECT_STATUS</h2>
+              </div>
+              <span class="rounded-md bg-muted/35 px-2 py-1 font-mono text-muted-foreground text-xs">
+                APPS/WEB
+              </span>
+            </div>
+
+            <p class="mb-5 text-muted-foreground text-xs leading-5">
+              Live checks from the generated application shell.
+            </p>
+
+            <div class="space-y-5">
+              <div class="rounded-md bg-muted/20 p-3">
+                {{#if (eq backend "convex")}}
+                <div class="flex items-start gap-3">
+                  <span
+                    :class="[
+                      'mt-1 size-2.5 rounded-full',
+                      healthCheck === undefined ? 'animate-pulse bg-primary' : '',
+                      healthCheck?.data.value === 'OK' ? 'bg-emerald-500' : '',
+                      healthCheck !== undefined && healthCheck?.data.value !== 'OK' ? 'bg-destructive' : ''
+                    ]"
+                  ></span>
+                  <div>
+                    <p class="font-medium text-sm">
+                      \\{{
+                        healthCheck === undefined
+                          ? "API Checking"
+                          : healthCheck.data.value === "OK"
+                            ? "API Connected"
+                            : "API Error"
+                      }}
+                    </p>
+                    <p class="mt-1 text-muted-foreground text-xs leading-5">
+                      \\{{
+                        healthCheck === undefined
+                          ? "The app is asking the generated API for a health response."
+                          : healthCheck.data.value === "OK"
+                            ? "The generated client can reach the backend health endpoint."
+                            : "The backend health check returned an unexpected response."
+                      }}
+                    </p>
+                  </div>
+                </div>
+                {{else}}
+                {{#unless (eq api "none")}}
+                <div class="flex items-start gap-3">
+                  <span
+                    :class="[
+                      'mt-1 size-2.5 rounded-full',
+                      healthCheck.isLoading.value ? 'animate-pulse bg-primary' : '',
+                      healthCheck.isSuccess.value ? 'bg-emerald-500' : '',
+                      healthCheck.isError.value ? 'bg-destructive' : ''
+                    ]"
+                  ></span>
+                  <div>
+                    <p class="font-medium text-sm">
+                      <template v-if="healthCheck.isLoading.value">API Checking</template>
+                      <template v-else-if="healthCheck.isSuccess.value">API Connected</template>
+                      <template v-else-if="healthCheck.isError.value">API Error</template>
+                      <template v-else>API Idle</template>
+                    </p>
+                    <p class="mt-1 text-muted-foreground text-xs leading-5">
+                      <template v-if="healthCheck.isLoading.value">
+                        The app is asking the generated API for a health response.
+                      </template>
+                      <template v-else-if="healthCheck.isSuccess.value">
+                        The generated client can reach the backend health endpoint.
+                      </template>
+                      <template v-else-if="healthCheck.isError.value">
+                        \\{{ healthCheck.error.value?.message || 'Failed to connect' }}
+                      </template>
+                      <template v-else>
+                        Waiting for the generated API client.
+                      </template>
+                    </p>
+                  </div>
+                </div>
+                {{else}}
+                <div class="flex items-start gap-3">
+                  <span class="mt-1 size-2.5 rounded-full bg-muted-foreground"></span>
+                  <div>
+                    <p class="font-medium text-sm">API No API</p>
+                    <p class="mt-1 text-muted-foreground text-xs leading-5">
+                      This project was generated without an API layer.
+                    </p>
+                  </div>
+                </div>
+                {{/unless}}
+                {{/if}}
+              </div>
+
+              <dl class="grid gap-2">
+                <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                  <dt class="font-mono text-muted-foreground text-xs">Frontend</dt>
+                  <dd>
+                    <span class="block font-medium text-sm">Nuxt</span>
+                    <span class="block text-muted-foreground text-xs">Vue web app</span>
+                  </dd>
+                </div>
+                <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                  <dt class="font-mono text-muted-foreground text-xs">Backend</dt>
+                  <dd>
+                    <span class="block font-medium text-sm">{{#if (eq backend "convex")}}Convex{{else}}{{backend}}{{/if}}</span>
+                    <span class="block text-muted-foreground text-xs">{{#if (eq runtime "none")}}No separate runtime{{else}}{{runtime}} runtime{{/if}}</span>
+                  </dd>
+                </div>
+                <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                  <dt class="font-mono text-muted-foreground text-xs">API</dt>
+                  <dd>
+                    <span class="block font-medium text-sm">{{#if (eq api "orpc")}}oRPC{{else}}None{{/if}}</span>
+                    <span class="block text-muted-foreground text-xs">Type-safe boundary</span>
+                  </dd>
+                </div>
+                <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                  <dt class="font-mono text-muted-foreground text-xs">Data</dt>
+                  <dd>
+                    <span class="block font-medium text-sm">{{#if (eq backend "convex")}}Convex{{else if (eq database "none")}}None{{else}}{{database}} + {{orm}}{{/if}}</span>
+                    <span class="block text-muted-foreground text-xs">{{#if (eq dbSetup "none")}}Manual setup{{else}}{{dbSetup}} setup{{/if}}</span>
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </section>
         </div>
-        {{else}}
-        {{#unless (eq api "none")}}
-        <div class="flex items-center gap-2">
-          <UIcon
-            :name="healthCheck.isLoading.value ? 'i-lucide-loader-2' : healthCheck.isSuccess.value ? 'i-lucide-check-circle' : 'i-lucide-x-circle'"
-            :class="[
-              healthCheck.isLoading.value ? 'animate-spin text-muted' : '',
-              healthCheck.isSuccess.value ? 'text-success' : '',
-              healthCheck.isError.value ? 'text-error' : ''
-            ]"
-          />
-          <span class="text-sm">
-            <template v-if="healthCheck.isLoading.value">
-              Checking...
-            </template>
-            <template v-else-if="healthCheck.isSuccess.value">
-              Connected (\\{{ healthCheck.data.value }})
-            </template>
-            <template v-else-if="healthCheck.isError.value">
-              Error: \\{{ healthCheck.error.value?.message || 'Failed to connect' }}
-            </template>
-            <template v-else>
-              Idle
-            </template>
-          </span>
+      </div>
+
+      <section class="rounded-lg bg-card p-4 ring-1 ring-border/70">
+        <div class="grid gap-5 lg:grid-cols-[13rem_1fr]">
+          <div>
+            <p class="font-mono text-muted-foreground text-xs">WORKBENCH_RULES</p>
+            <h2 class="mt-3 font-semibold text-lg tracking-tight">Built to be replaced</h2>
+          </div>
+          <div class="grid gap-3 text-sm sm:grid-cols-3">
+            <p class="rounded-md bg-muted/20 p-3">Typed defaults stay visible at the edge.</p>
+            <p class="rounded-md bg-muted/20 p-3">The shell proves wiring, then gets out of the way.</p>
+            <p class="rounded-md bg-muted/20 p-3">Tokens carry the style, not component forks.</p>
+          </div>
         </div>
-        {{/unless}}
-        {{/if}}
-      </UCard>
+      </section>
     </div>
-  </UContainer>
+  </section>
+</main>
 </template>
 `],
   ["frontend/nuxt/nuxt.config.ts.hbs", `import "@{{projectName}}/env/web";
@@ -25720,71 +26980,36 @@ import { orpc } from "@/utils/orpc";
 import { trpc } from "@/utils/trpc";
   {{/if}}
 {{/if}}
-
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-    ██║       ███████╗   ██║   ███████║██║     █████╔╝
-    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
+import { HomeContent, type ApiStatus } from "@/components/home-content";
 
 export default function Home() {
   {{#if (eq backend "convex")}}
   const healthCheck = useQuery(api.healthCheck.get);
+  const apiStatus: ApiStatus =
+    healthCheck === undefined ? "checking" : healthCheck === "OK" ? "connected" : "error";
   {{else if (eq api "orpc")}}
   const healthCheck = useQuery(orpc.healthCheck.queryOptions());
+  const apiStatus: ApiStatus = healthCheck.isLoading
+    ? "checking"
+    : healthCheck.isError
+      ? "error"
+      : healthCheck.data
+        ? "connected"
+        : "disconnected";
   {{else if (eq api "trpc")}}
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
+  const apiStatus: ApiStatus = healthCheck.isLoading
+    ? "checking"
+    : healthCheck.isError
+      ? "error"
+      : healthCheck.data
+        ? "connected"
+        : "disconnected";
+  {{else}}
+  const apiStatus: ApiStatus = "not-configured";
   {{/if}}
 
-  return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-          {{#if (eq backend "convex")}}
-          <div className="flex items-center gap-2">
-            <div
-              className={\`h-2 w-2 rounded-full \${healthCheck === "OK" ? "bg-green-500" : healthCheck === undefined ? "bg-orange-400" : "bg-red-500"}\`}
-            />
-            <span className="text-sm text-muted-foreground">
-              {healthCheck === undefined
-                ? "Checking..."
-                : healthCheck === "OK"
-                  ? "Connected"
-                  : "Error"}
-            </span>
-          </div>
-          {{else}}
-            {{#unless (eq api "none")}}
-            <div className="flex items-center gap-2">
-              <div
-                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
-              </span>
-            </div>
-            {{/unless}}
-          {{/if}}
-        </section>
-      </div>
-    </div>
-  );
+  return <HomeContent apiStatus={apiStatus} />;
 }
 `],
   ["frontend/react/next/src/components/mode-toggle.tsx.hbs", `"use client"
@@ -25805,7 +27030,7 @@ export function ModeToggle() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" size="icon" />}>
+      <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="rounded-full" />}>
         <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
         <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
         <span className="sr-only">Toggle theme</span>
@@ -26059,7 +27284,7 @@ export function ModeToggle() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" size="icon" />}>
+      <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="rounded-full" />}>
         <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
         <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
         <span className="sr-only">Toggle theme</span>
@@ -26405,83 +27630,49 @@ import { api } from "@{{projectName}}/backend/convex/_generated/api";
 {{else if (or (eq api "orpc") (eq api "trpc"))}}
 import { useQuery } from "@tanstack/react-query";
   {{#if (eq api "orpc")}}
-  import { orpc } from "@/utils/orpc";
+import { orpc } from "@/utils/orpc";
   {{/if}}
   {{#if (eq api "trpc")}}
-  import { trpc } from "@/utils/trpc";
+import { trpc } from "@/utils/trpc";
   {{/if}}
 {{/if}}
-
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-    ██║       ███████╗   ██║   ███████║██║     █████╔╝
-    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
+import { HomeContent, type ApiStatus } from "@/components/home-content";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: "{{projectName}}" }, { name: "description", content: "{{projectName}} is a web application" }];
+  return [
+    { title: "{{projectName}}" },
+    { name: "description", content: "{{projectName}} is a web application" },
+  ];
 }
 
 export default function Home() {
   {{#if (eq backend "convex")}}
   const healthCheck = useQuery(api.healthCheck.get);
+  const apiStatus: ApiStatus =
+    healthCheck === undefined ? "checking" : healthCheck === "OK" ? "connected" : "error";
   {{else if (eq api "orpc")}}
   const healthCheck = useQuery(orpc.healthCheck.queryOptions());
+  const apiStatus: ApiStatus = healthCheck.isLoading
+    ? "checking"
+    : healthCheck.isError
+      ? "error"
+      : healthCheck.data
+        ? "connected"
+        : "disconnected";
   {{else if (eq api "trpc")}}
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
+  const apiStatus: ApiStatus = healthCheck.isLoading
+    ? "checking"
+    : healthCheck.isError
+      ? "error"
+      : healthCheck.data
+        ? "connected"
+        : "disconnected";
+  {{else}}
+  const apiStatus: ApiStatus = "not-configured";
   {{/if}}
 
-  return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-          {{#if (eq backend "convex")}}
-          <div className="flex items-center gap-2">
-            <div
-              className={\`h-2 w-2 rounded-full \${healthCheck === "OK" ? "bg-green-500" : healthCheck === undefined ? "bg-orange-400" : "bg-red-500"}\`}
-            />
-            <span className="text-sm text-muted-foreground">
-              {healthCheck === undefined
-                ? "Checking..."
-                : healthCheck === "OK"
-                  ? "Connected"
-                  : "Error"}
-            </span>
-          </div>
-          {{else}}
-            {{#unless (eq api "none")}}
-            <div className="flex items-center gap-2">
-              <div
-                className={\`h-2 w-2 rounded-full \${
-                  healthCheck.data ? "bg-green-500" : "bg-red-500"
-                }\`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                  ? "Connected"
-                  : "Disconnected"}
-              </span>
-            </div>
-            {{/unless}}
-          {{/if}}
-        </section>
-      </div>
-    </div>
-  );
+  return <HomeContent apiStatus={apiStatus} />;
 }
 `],
   ["frontend/react/react-router/tsconfig.json.hbs", `{
@@ -26590,7 +27781,7 @@ export function ModeToggle() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" size="icon" />}>
+      <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="rounded-full" />}>
         <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
         <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
         <span className="sr-only">Toggle theme</span>
@@ -26878,77 +28069,43 @@ import { useQuery } from "@tanstack/react-query";
 import { useQuery } from "convex/react";
 import { api } from "@{{ projectName }}/backend/convex/_generated/api";
 {{/if}}
+import { HomeContent, type ApiStatus } from "@/components/home-content";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-    ██║       ███████╗   ██║   ███████║██║     █████╔╝
-    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
-
 function HomeComponent() {
   {{#if (eq api "orpc")}}
   const healthCheck = useQuery(orpc.healthCheck.queryOptions());
+  const apiStatus: ApiStatus = healthCheck.isLoading
+    ? "checking"
+    : healthCheck.isError
+      ? "error"
+      : healthCheck.data
+        ? "connected"
+        : "disconnected";
   {{/if}}
   {{#if (eq api "trpc")}}
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
+  const apiStatus: ApiStatus = healthCheck.isLoading
+    ? "checking"
+    : healthCheck.isError
+      ? "error"
+      : healthCheck.data
+        ? "connected"
+        : "disconnected";
   {{/if}}
   {{#if (eq backend "convex")}}
   const healthCheck = useQuery(api.healthCheck.get);
+  const apiStatus: ApiStatus =
+    healthCheck === undefined ? "checking" : healthCheck === "OK" ? "connected" : "error";
+  {{/if}}
+  {{#if (and (eq api "none") (ne backend "convex"))}}
+  const apiStatus: ApiStatus = "not-configured";
   {{/if}}
 
-  return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-          {{#if (eq backend "convex")}}
-          <div className="flex items-center gap-2">
-            <div
-              className={\`h-2 w-2 rounded-full \${healthCheck === "OK" ? "bg-green-500" : healthCheck === undefined ? "bg-orange-400" : "bg-red-500"}\`}
-            />
-            <span className="text-sm text-muted-foreground">
-              {healthCheck === undefined
-                ? "Checking..."
-                : healthCheck === "OK"
-                  ? "Connected"
-                  : "Error"}
-            </span>
-          </div>
-          {{else}}
-            {{#unless (eq api "none")}}
-            <div className="flex items-center gap-2">
-              <div
-                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
-              </span>
-            </div>
-            {{/unless}}
-          {{/if}}
-        </section>
-      </div>
-    </div>
-  );
+  return <HomeContent apiStatus={apiStatus} />;
 }
 `],
   ["frontend/react/tanstack-router/tsconfig.json.hbs", `{
@@ -27453,76 +28610,44 @@ import { useTRPC } from "@/utils/trpc";
 import { orpc } from "@/utils/orpc";
   {{/if}}
 {{/if}}
+import { HomeContent, type ApiStatus } from "@/components/home-content";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-    ██║       ███████╗   ██║   ███████║██║     █████╔╝
-    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
-
 function HomeComponent() {
   {{#if (eq backend "convex")}}
   const healthCheck = useQuery(convexQuery(api.healthCheck.get, {}));
+  const apiStatus: ApiStatus = healthCheck.isLoading
+    ? "checking"
+    : healthCheck.data === "OK"
+      ? "connected"
+      : "error";
   {{else if (eq api "trpc")}}
   const trpc = useTRPC();
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
+  const apiStatus: ApiStatus = healthCheck.isLoading
+    ? "checking"
+    : healthCheck.isError
+      ? "error"
+      : healthCheck.data
+        ? "connected"
+        : "disconnected";
   {{else if (eq api "orpc")}}
   const healthCheck = useQuery(orpc.healthCheck.queryOptions());
+  const apiStatus: ApiStatus = healthCheck.isLoading
+    ? "checking"
+    : healthCheck.isError
+      ? "error"
+      : healthCheck.data
+        ? "connected"
+        : "disconnected";
+  {{else}}
+  const apiStatus: ApiStatus = "not-configured";
   {{/if}}
 
-  return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-          {{#if (eq backend "convex")}}
-          <div className="flex items-center gap-2">
-            <div
-              className={\`h-2 w-2 rounded-full \${healthCheck.data === "OK" ? "bg-green-500" : healthCheck.isLoading ? "bg-orange-400" : "bg-red-500"}\`}
-            />
-            <span className="text-muted-foreground text-sm">
-              {healthCheck.isLoading
-                ? "Checking..."
-                : healthCheck.data === "OK"
-                  ? "Connected"
-                  : "Error"}
-            </span>
-          </div>
-          {{else}}
-            {{#unless (eq api "none")}}
-            <div className="flex items-center gap-2">
-              <div
-                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-              />
-              <span className="text-muted-foreground text-sm">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
-              </span>
-            </div>
-            {{/unless}}
-          {{/if}}
-        </section>
-      </div>
-    </div>
-  );
+  return <HomeContent apiStatus={apiStatus} />;
 }
 `],
   ["frontend/react/tanstack-start/tsconfig.json.hbs", `{
@@ -27671,6 +28796,8 @@ import { NavLink } from "react-router";
 {{else if (or (includes frontend "tanstack-router") (includes frontend "tanstack-start"))}}
 import { Link } from "@tanstack/react-router";
 {{/if}}
+import { Search } from "lucide-react";
+import { cn } from "@{{projectName}}/ui/lib/utils";
 {{#unless (includes frontend "tanstack-start")}}
 import { ModeToggle } from "./mode-toggle";
 {{/unless}}
@@ -27678,67 +28805,404 @@ import { ModeToggle } from "./mode-toggle";
 import UserMenu from "./user-menu";
 {{/if}}
 
-export default function Header() {
-  const links = [
-    { to: "/", label: "Home" },
-    {{#if (or (eq auth "better-auth") (eq auth "clerk"))}}
-      { to: "/dashboard", label: "Dashboard" },
-    {{/if}}
-    {{#if (includes examples "todo")}}
-    { to: "/todos", label: "Todos" },
-    {{/if}}
-    {{#if (includes examples "ai")}}
-    { to: "/ai", label: "AI Chat" },
-    {{/if}}
-  ] as const;
+const links = [
+  { to: "/", label: "Demo" },
+  {{#if (or (eq auth "better-auth") (eq auth "clerk"))}}
+  { to: "/dashboard", label: "Dashboard" },
+  {{/if}}
+  {{#if (includes examples "todo")}}
+  { to: "/todos", label: "Todos" },
+  {{/if}}
+  {{#if (includes examples "ai")}}
+  { to: "/ai", label: "AI Chat" },
+  {{/if}}
+] as const;
 
+function navItemClass(isActive = false) {
+  return cn(
+    "rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground",
+    isActive && "text-foreground"
+  );
+}
+
+export default function Header() {
   return (
-    <div>
-      <div className="flex flex-row items-center justify-between px-2 py-1">
-        <nav className="flex gap-4 text-lg">
-          {links.map(({ to, label }) => {
-            {{#if (includes frontend "next")}}
-            return (
-              <Link key={to} href={to}>
-                {label}
-              </Link>
-            );
-            {{else if (includes frontend "react-router")}}
-            return (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) => isActive ? "font-bold" : ""}
-                end
-              >
-                {label}
-              </NavLink>
-            );
-            {{else if (or (includes frontend "tanstack-router") (includes frontend "tanstack-start"))}}
-            return (
-              <Link
-                key={to}
-                to={to}
-              >
-                {label}
-              </Link>
-            );
-            {{else}}
-            return null;
-            {{/if}}
-          })}
-        </nav>
+    <header className="sticky top-0 z-50 border-b bg-card/90 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+        <div className="flex min-w-0 items-center gap-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="grid size-5 shrink-0 grid-cols-2 gap-0.5" aria-hidden="true">
+              <span className="bg-foreground" />
+              <span className="bg-foreground" />
+              <span className="bg-foreground" />
+              <span className="bg-foreground/20" />
+            </div>
+            <span className="truncate font-semibold text-sm tracking-wide">
+              {{projectName}}
+            </span>
+          </div>
+
+          <nav className="hidden items-center gap-2 lg:flex" aria-label="Main navigation">
+            {links.map(({ to, label }) => {
+              {{#if (includes frontend "next")}}
+              return (
+                <Link key={to} href={to} className={navItemClass()}>
+                  {label}
+                </Link>
+              );
+              {{else if (includes frontend "react-router")}}
+              return (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) => navItemClass(isActive)}
+                  end
+                >
+                  {label}
+                </NavLink>
+              );
+              {{else if (or (includes frontend "tanstack-router") (includes frontend "tanstack-start"))}}
+              return (
+                <Link key={to} to={to} className={navItemClass()}>
+                  {label}
+                </Link>
+              );
+              {{else}}
+              return null;
+              {{/if}}
+            })}
+            <a
+              href="https://better-t-stack.dev/docs"
+              className={navItemClass()}
+            >
+              Docs
+            </a>
+          </nav>
+        </div>
+
         <div className="flex items-center gap-2">
+          <a
+            href="https://better-t-stack.dev/docs"
+            className="hidden h-9 w-64 items-center gap-2 rounded-full border bg-background px-3 text-left text-muted-foreground text-sm shadow-sm transition-colors hover:bg-muted/50 hover:text-foreground xl:flex"
+            aria-label="Search docs"
+          >
+            <Search className="size-4" />
+            <span className="flex-1">Search docs</span>
+            <kbd className="rounded-md border bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">
+              ⌘
+            </kbd>
+            <kbd className="rounded-md border bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">
+              K
+            </kbd>
+          </a>
+          <div className="flex items-center gap-1 rounded-full border bg-background p-0.5 shadow-sm">
           {{#unless (includes frontend "tanstack-start")}}
           <ModeToggle />
           {{/unless}}
+            <a
+              href="https://github.com/AmanVarshney01/create-better-t-stack"
+              className="inline-flex size-7 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted"
+              aria-label="GitHub repository"
+            >
+              <svg
+                className="size-4"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.6 7.6 0 0 1 8 3.86c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
+              </svg>
+            </a>
+          </div>
           {{#if (and (eq auth "better-auth") (ne backend "convex"))}}
           <UserMenu />
           {{/if}}
         </div>
       </div>
-      <hr />
-    </div>
+    </header>
+  );
+}
+`],
+  ["frontend/react/web-base/src/components/home-content.tsx.hbs", `import type { LucideIcon } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Code2,
+  Database,
+  FileCode2,
+  GitBranch,
+  Layers3,
+  PackageCheck,
+  ShieldCheck,
+  Terminal,
+} from "lucide-react";
+
+import { Button } from "@{{projectName}}/ui/components/button";
+
+export type ApiStatus = "checking" | "connected" | "disconnected" | "error" | "not-configured";
+
+type StackItem = {
+  label: string;
+  value: string;
+  detail: string;
+};
+
+type WorkbenchItem = {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+};
+
+type HomeContentProps = {
+  apiStatus: ApiStatus;
+};
+
+const stackItems: StackItem[] = [
+  {
+    label: "Frontend",
+    value: \`{{#if (includes frontend "next")}}Next.js{{else if (includes frontend "tanstack-router")}}TanStack Router{{else if (includes frontend "tanstack-start")}}TanStack Start{{else if (includes frontend "react-router")}}React Router{{else}}React{{/if}}\`,
+    detail: "Generated web shell",
+  },
+  {
+    label: "Backend",
+    value: \`{{#if (eq backend "self")}}Full-stack{{else if (eq backend "none")}}None{{else if (eq backend "convex")}}Convex{{else}}{{backend}}{{/if}}\`,
+    detail: \`{{#if (eq runtime "none")}}No separate runtime{{else}}{{runtime}} runtime{{/if}}\`,
+  },
+  {
+    label: "API",
+    value: \`{{#if (eq api "trpc")}}tRPC{{else if (eq api "orpc")}}oRPC{{else}}None{{/if}}\`,
+    detail: "Typed request boundary",
+  },
+  {
+    label: "Data",
+    value: \`{{#if (eq backend "convex")}}Convex{{else if (eq database "none")}}None{{else}}{{database}} + {{orm}}{{/if}}\`,
+    detail: \`{{#if (eq dbSetup "none")}}Manual setup{{else}}{{dbSetup}} setup{{/if}}\`,
+  },
+];
+
+const workbenchItems: WorkbenchItem[] = [
+  {
+    title: "Minimal files",
+    description: "The template keeps the first screen useful without hiding the generated project shape.",
+    icon: FileCode2,
+  },
+  {
+    title: "Replaceable UI",
+    description: "Base UI-backed shadcn components stay easy to swap, extend, or remove.",
+    icon: Layers3,
+  },
+  {
+    title: "Typed boundaries",
+    description: "Routes, API calls, auth, database access, and runtime choices remain explicit.",
+    icon: ShieldCheck,
+  },
+];
+
+const apiCopy: Record<ApiStatus, { label: string; description: string; className: string }> = {
+  checking: {
+    label: "Checking",
+    description: "The app is asking the generated API for a health response.",
+    className: "bg-primary",
+  },
+  connected: {
+    label: "Connected",
+    description: "The generated client can reach the backend health endpoint.",
+    className: "bg-emerald-500",
+  },
+  disconnected: {
+    label: "Disconnected",
+    description: "The client rendered, but the health endpoint did not return data.",
+    className: "bg-destructive",
+  },
+  error: {
+    label: "Error",
+    description: "The backend health check returned an unexpected response.",
+    className: "bg-destructive",
+  },
+  "not-configured": {
+    label: "No API",
+    description: "This project was generated without an API layer.",
+    className: "bg-muted-foreground",
+  },
+};
+
+export function HomeContent({ apiStatus }: HomeContentProps) {
+  const status = apiCopy[apiStatus];
+
+  return (
+    <main className="min-h-svh bg-background text-foreground">
+      <section className="relative isolate overflow-hidden border-b bg-background">
+        <div
+          className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:28px_28px] opacity-45"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute inset-x-0 top-0 -z-10 h-64 bg-[radial-gradient(ellipse_at_top_left,oklch(0.9_0.06_62_/_0.18),transparent_58%)]"
+          aria-hidden="true"
+        />
+        <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1.02fr_0.98fr] lg:py-14">
+          <div className="flex min-h-[28rem] flex-col justify-between">
+            <div>
+              <div className="mb-8 inline-flex items-center gap-2 rounded-full border bg-background/80 px-3 py-1 text-muted-foreground text-xs shadow-sm">
+                <Terminal className="size-3.5 text-foreground" />
+                <span className="font-mono">GENERATED_STACK</span>
+                <span className="h-3 w-px bg-border" />
+                <span>{{packageManager}} workspace</span>
+              </div>
+
+              <h1 className="max-w-3xl text-balance font-semibold text-4xl tracking-tight sm:text-5xl">
+                A generated app shell that already feels designed.
+              </h1>
+              <p className="mt-5 max-w-2xl text-muted-foreground text-sm leading-6 sm:text-base">
+                Better T Stack wires the project, then leaves you with a clean demo surface:
+                neutral shadcn tokens, compact navigation, typed status, and no custom component fork.
+              </p>
+            </div>
+
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+              <Button
+                render={<a href="https://better-t-stack.dev/docs" />}
+                nativeButton={false}
+                size="lg"
+              >
+                Read the docs
+                <ArrowRight data-icon="inline-end" className="size-4" />
+              </Button>
+              <Button
+                render={<a href="https://github.com/AmanVarshney01/create-better-t-stack" />}
+                nativeButton={false}
+                variant="outline"
+                size="lg"
+              >
+                View on GitHub
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-card p-2.5 shadow-[0_16px_48px_oklch(0.2_0.01_279_/_0.08)] ring-1 ring-border">
+            <div className="rounded-xl border bg-background">
+              <div className="flex items-center justify-between border-b px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <span className="size-2.5 rounded-full bg-destructive" />
+                  <span className="size-2.5 rounded-full bg-muted-foreground/40" />
+                  <span className="size-2.5 rounded-full bg-emerald-500" />
+                </div>
+                <span className="font-mono text-muted-foreground text-xs">apps/web</span>
+              </div>
+
+              <div className="grid gap-0 lg:grid-cols-[0.92fr_1.08fr]">
+                <div className="border-b p-4 lg:border-r lg:border-b-0">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <PackageCheck className="size-4 text-primary" />
+                      <p className="font-mono font-medium text-sm">PROJECT_STATUS</p>
+                    </div>
+                    <span className="rounded-md bg-primary/10 px-2 py-1 font-mono text-primary text-xs">
+                      READY
+                    </span>
+                  </div>
+
+                  <div className="rounded-lg bg-muted/40 p-3">
+                    <div className="flex items-start gap-3">
+                      <span className={\`mt-1 size-2.5 rounded-full \${status.className}\`} />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm">API {status.label}</p>
+                          {apiStatus === "connected" ? (
+                            <CheckCircle2 className="size-4 text-emerald-500" />
+                          ) : null}
+                        </div>
+                        <p className="mt-1 text-muted-foreground text-xs leading-5">
+                          {status.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-2">
+                    {stackItems.map((item) => (
+                      <div
+                        key={item.label}
+                        className="grid grid-cols-[5.5rem_1fr] gap-3 border-t py-3 first:border-t-0 first:pt-0"
+                      >
+                        <span className="font-mono text-muted-foreground text-xs">
+                          {item.label}
+                        </span>
+                        <span>
+                          <span className="block font-medium text-sm">{item.value}</span>
+                          <span className="block text-muted-foreground text-xs">{item.detail}</span>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-4">
+                  <div className="mb-3 flex items-center gap-2 text-muted-foreground text-xs">
+                    <Code2 className="size-3.5 text-primary" />
+                    <span className="font-mono">CLI_COMMAND</span>
+                  </div>
+                  <div className="overflow-x-auto rounded-lg bg-muted/40 p-3 font-mono text-sm">
+                    <span className="text-primary">$</span> {{packageManager}} run dev
+                  </div>
+
+                  <div className="mt-4 rounded-lg border bg-background">
+                    <div className="border-b px-3 py-2 font-mono text-muted-foreground text-xs">
+                      FILE_PREVIEW
+                    </div>
+                    <div className="grid gap-1 p-3 font-mono text-xs">
+                      <div className="flex items-center gap-2 rounded-md bg-muted/50 px-2 py-1.5 text-foreground">
+                        <GitBranch className="size-3.5" />
+                        <span>apps/web</span>
+                      </div>
+                      <div className="flex items-center gap-2 px-2 py-1.5 text-muted-foreground">
+                        <Database className="size-3.5" />
+                        <span>packages/server</span>
+                      </div>
+                      <div className="flex items-center gap-2 px-2 py-1.5 text-muted-foreground">
+                        <FileCode2 className="size-3.5" />
+                        <span>packages/ui</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto grid w-full max-w-6xl gap-4 px-4 py-5 sm:px-6 md:grid-cols-3">
+        <div className="rounded-xl bg-card p-4 ring-1 ring-border md:col-span-2">
+          <div className="mb-4 flex items-center gap-2">
+            <ShieldCheck className="size-4 text-primary" />
+            <p className="font-mono text-muted-foreground text-xs">WORKBENCH_RULES</p>
+          </div>
+          <div className="grid divide-y divide-border overflow-hidden rounded-lg border md:grid-cols-3 md:divide-x md:divide-y-0">
+            {workbenchItems.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <div key={item.title} className="p-4">
+                  <Icon className="mb-3 size-4 text-primary" />
+                  <p className="font-medium text-sm">{item.title}</p>
+                  <p className="mt-2 text-muted-foreground text-xs leading-5">
+                    {item.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <aside className="rounded-xl bg-card p-4 ring-1 ring-border">
+          <p className="font-mono text-muted-foreground text-xs">NEXT_STEP</p>
+          <p className="mt-3 text-sm leading-6">
+            Replace this demo content with your product surface. The generated stack is already wired.
+          </p>
+        </aside>
+      </section>
+    </main>
   );
 }
 `],
@@ -27811,6 +29275,7 @@ User-agent: *
 Disallow:
 `],
   ["frontend/solid/src/components/header.tsx.hbs", `import { Link } from "@tanstack/solid-router";
+import { Search } from "lucide-solid";
 {{#if (eq auth "better-auth")}}
 import UserMenu from "./user-menu";
 {{/if}}
@@ -27818,7 +29283,7 @@ import { For } from "solid-js";
 
 export default function Header() {
   const links = [
-    { to: "/", label: "Home" },
+    { to: "/", label: "Demo" },
     {{#if (eq auth "better-auth")}}
     { to: "/dashboard", label: "Dashboard" },
     {{/if}}
@@ -27831,21 +29296,74 @@ export default function Header() {
   ];
 
   return (
-    <div>
-      <div class="flex flex-row items-center justify-between px-2 py-1">
-        <nav class="flex gap-4 text-lg">
-          <For each={links}>
-            {(link) => <Link to={link.to}>{link.label}</Link>}
-          </For>
-        </nav>
+    <header class="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur">
+      <div class="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+        <div class="flex min-w-0 items-center gap-6">
+          <div class="flex min-w-0 items-center gap-3">
+            <div class="grid size-5 shrink-0 grid-cols-2 gap-0.5" aria-hidden="true">
+              <span class="bg-foreground" />
+              <span class="bg-foreground" />
+              <span class="bg-foreground" />
+              <span class="bg-foreground/20" />
+            </div>
+            <span class="truncate font-semibold text-sm tracking-wide">
+              {{projectName}}
+            </span>
+          </div>
+
+          <nav class="hidden items-center gap-2 lg:flex" aria-label="Main navigation">
+            <For each={links}>
+              {(link) => (
+                <Link
+                  to={link.to}
+                  class="rounded-md px-2 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground"
+                >
+                  {link.label}
+                </Link>
+              )}
+            </For>
+            <a
+              href="https://better-t-stack.dev/docs"
+              class="rounded-md px-2 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground"
+            >
+              Docs
+            </a>
+          </nav>
+        </div>
+
         <div class="flex items-center gap-2">
+          <a
+            href="https://better-t-stack.dev/docs"
+            class="hidden h-9 w-64 items-center gap-2 rounded-full border border-border bg-background px-3 text-left text-muted-foreground text-sm shadow-sm transition-colors hover:bg-muted/50 hover:text-foreground xl:flex"
+            aria-label="Search docs"
+          >
+            <Search class="size-4" />
+            <span class="flex-1">Search docs</span>
+            <kbd class="rounded-md border border-border bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">⌘</kbd>
+            <kbd class="rounded-md border border-border bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">K</kbd>
+          </a>
+          <div class="flex items-center gap-1 rounded-full border border-border bg-background p-0.5 shadow-sm">
+            <a
+              href="https://github.com/AmanVarshney01/create-better-t-stack"
+              class="inline-flex size-7 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted"
+              aria-label="GitHub repository"
+            >
+              <svg
+                class="size-4"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.6 7.6 0 0 1 8 3.86c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
+              </svg>
+            </a>
+          </div>
           {{#if (eq auth "better-auth")}}
           <UserMenu />
           {{/if}}
         </div>
       </div>
-      <hr />
-    </div>
+    </header>
   );
 }
 `],
@@ -27939,30 +29457,14 @@ function RootComponent() {
   ["frontend/solid/src/routes/index.tsx.hbs", `import { createFileRoute } from "@tanstack/solid-router";
 {{#if (eq api "orpc")}}
 import { useQuery } from "@tanstack/solid-query";
-import { orpc } from "../utils/orpc";
 import { Match, Switch } from "solid-js";
-{{else}}
+
+import { orpc } from "../utils/orpc";
 {{/if}}
 
 export const Route = createFileRoute("/")({
   component: App,
 });
-
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-    ██║       ███████╗   ██║   ███████║██║     █████╔╝
-    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
 
 function App() {
   {{#if (eq api "orpc")}}
@@ -27970,49 +29472,250 @@ function App() {
   {{/if}}
 
   return (
-    <div class="container mx-auto max-w-3xl px-4 py-2">
-      <pre class="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div class="grid gap-6">
-        {{#if (eq api "orpc")}}
-        <section class="rounded-lg border p-4">
-          <h2 class="mb-2 font-medium">API Status</h2>
-          <Switch>
-            <Match when={healthCheck.isPending}>
-              <div class="flex items-center gap-2">
-                <div class="h-2 w-2 rounded-full bg-gray-500 animate-pulse" />{" "}
-                <span class="text-sm text-muted-foreground">Checking...</span>
+    <main class="min-h-svh bg-background text-foreground">
+      <section class="relative isolate overflow-hidden border-b">
+    <div class="absolute inset-0 -z-10 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:28px_28px] opacity-60"></div>
+    <div class="absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(ellipse_at_top_left,oklch(0.9_0.06_62_/_0.28),transparent_58%)]"></div>
+    <div class="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+        <div class="rounded-2xl bg-card/95 p-3 shadow-sm ring-1 ring-foreground/10">
+          <div class="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <section class="flex min-h-[26rem] flex-col justify-between rounded-xl border bg-background p-4">
+              <div>
+                <div class="mb-5 flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-2">
+                    <span class="size-4 rounded-sm border border-primary/40 bg-primary/15" />
+                    <span class="font-bold font-mono text-lg sm:text-xl">GENERATED_STACK</span>
+                  </div>
+                  <span class="rounded-md bg-primary/15 px-2 py-1 font-mono text-primary text-xs">
+                    READY
+                  </span>
+                </div>
+
+                <h1 class="max-w-2xl font-semibold text-3xl tracking-tight sm:text-4xl">
+                  A generated app shell that already feels designed.
+                </h1>
+                <p class="mt-3 max-w-2xl text-muted-foreground text-sm leading-6">
+                  Better T Stack wires the project, then leaves you with a clean demo surface: neutral shadcn tokens, compact navigation, typed status, and no custom component fork.
+                </p>
               </div>
-            </Match>
-            <Match when={healthCheck.isError}>
-              <div class="flex items-center gap-2">
-                <div class="h-2 w-2 rounded-full bg-red-500" />
-                <span class="text-sm text-muted-foreground">Disconnected</span>
+
+              <div class="mt-8 space-y-3">
+                <div class="rounded-md bg-muted/20 p-3">
+                  <div class="mb-3 flex items-center gap-2 text-muted-foreground text-xs">
+                    <span class="size-3.5 rounded-sm bg-primary/25" />
+                    <span class="font-mono">CLI_COMMAND</span>
+                  </div>
+                  <div class="flex items-center gap-2 overflow-x-auto font-mono text-sm">
+                    <span class="text-primary">$</span>
+                    <span>{{packageManager}} run dev</span>
+                  </div>
+                </div>
               </div>
-            </Match>
-            <Match when={healthCheck.isSuccess}>
-              <div class="flex items-center gap-2">
-                <div
-                  class={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-                />
-                <span class="text-sm text-muted-foreground">
-                  {healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
+            </section>
+
+            <section class="rounded-xl border bg-background p-4">
+              <div class="mb-4 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                  <span class="size-4 rounded-full bg-primary/20 ring-1 ring-primary/30" />
+                  <h2 class="font-bold font-mono text-lg sm:text-xl">PROJECT_STATUS</h2>
+                </div>
+                <span class="rounded-md bg-muted/35 px-2 py-1 font-mono text-muted-foreground text-xs">
+                  APPS/WEB
                 </span>
               </div>
-            </Match>
-          </Switch>
+
+              <p class="mb-5 text-muted-foreground text-xs leading-5">
+                Live checks from the generated application shell.
+              </p>
+
+              <div class="space-y-5">
+                <div class="rounded-md bg-muted/20 p-3">
+                  {{#if (eq api "orpc")}}
+                  <Switch>
+                    <Match when={healthCheck.isPending}>
+                      <div class="flex items-start gap-3">
+                        <span class="mt-1 size-2.5 animate-pulse rounded-full bg-primary" />
+                        <div>
+                          <p class="font-medium text-sm">API Checking</p>
+                          <p class="mt-1 text-muted-foreground text-xs leading-5">
+                            The app is asking the generated API for a health response.
+                          </p>
+                        </div>
+                      </div>
+                    </Match>
+                    <Match when={healthCheck.isError}>
+                      <div class="flex items-start gap-3">
+                        <span class="mt-1 size-2.5 rounded-full bg-destructive" />
+                        <div>
+                          <p class="font-medium text-sm">API Disconnected</p>
+                          <p class="mt-1 text-muted-foreground text-xs leading-5">
+                            The client rendered, but the health endpoint did not return data.
+                          </p>
+                        </div>
+                      </div>
+                    </Match>
+                    <Match when={healthCheck.isSuccess}>
+                      <div class="flex items-start gap-3">
+                        <span
+                          class={\`mt-1 size-2.5 rounded-full \${healthCheck.data ? "bg-emerald-500" : "bg-destructive"}\`}
+                        />
+                        <div>
+                          <p class="font-medium text-sm">
+                            API {healthCheck.data ? "Connected" : "Disconnected"}
+                          </p>
+                          <p class="mt-1 text-muted-foreground text-xs leading-5">
+                            {healthCheck.data
+                              ? "The generated client can reach the backend health endpoint."
+                              : "The health endpoint did not return data."}
+                          </p>
+                        </div>
+                      </div>
+                    </Match>
+                  </Switch>
+                  {{else}}
+                  <div class="flex items-start gap-3">
+                    <span class="mt-1 size-2.5 rounded-full bg-muted-foreground" />
+                    <div>
+                      <p class="font-medium text-sm">API No API</p>
+                      <p class="mt-1 text-muted-foreground text-xs leading-5">
+                        This project was generated without an API layer.
+                      </p>
+                    </div>
+                  </div>
+                  {{/if}}
+                </div>
+
+                <dl class="grid gap-2">
+                  <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                    <dt class="font-mono text-muted-foreground text-xs">Frontend</dt>
+                    <dd>
+                      <span class="block font-medium text-sm">Solid</span>
+                      <span class="block text-muted-foreground text-xs">TanStack Solid Router</span>
+                    </dd>
+                  </div>
+                  <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                    <dt class="font-mono text-muted-foreground text-xs">Backend</dt>
+                    <dd>
+                      <span class="block font-medium text-sm">{{backend}}</span>
+                      <span class="block text-muted-foreground text-xs">{{runtime}} runtime</span>
+                    </dd>
+                  </div>
+                  <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                    <dt class="font-mono text-muted-foreground text-xs">API</dt>
+                    <dd>
+                      <span class="block font-medium text-sm">{{#if (eq api "orpc")}}oRPC{{else}}None{{/if}}</span>
+                      <span class="block text-muted-foreground text-xs">Type-safe boundary</span>
+                    </dd>
+                  </div>
+                  <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                    <dt class="font-mono text-muted-foreground text-xs">Data</dt>
+                    <dd>
+                      <span class="block font-medium text-sm">{{#if (eq database "none")}}None{{else}}{{database}} + {{orm}}{{/if}}</span>
+                      <span class="block text-muted-foreground text-xs">{{#if (eq dbSetup "none")}}Manual setup{{else}}{{dbSetup}} setup{{/if}}</span>
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <section class="rounded-lg bg-card p-4 ring-1 ring-border/70">
+          <div class="grid gap-5 lg:grid-cols-[13rem_1fr]">
+            <div>
+              <p class="font-mono text-muted-foreground text-xs">WORKBENCH_RULES</p>
+              <h2 class="mt-3 font-semibold text-lg tracking-tight">Built to be replaced</h2>
+            </div>
+            <div class="grid gap-3 text-sm sm:grid-cols-3">
+              <p class="rounded-md bg-muted/20 p-3">Typed defaults stay visible at the edge.</p>
+              <p class="rounded-md bg-muted/20 p-3">The shell proves wiring, then gets out of the way.</p>
+              <p class="rounded-md bg-muted/20 p-3">Tokens carry the style, not component forks.</p>
+            </div>
+          </div>
         </section>
-        {{/if}}
-      </div>
     </div>
+  </section>
+</main>
   );
 }
 `],
   ["frontend/solid/src/styles.css", `@import "tailwindcss";
 
+@theme inline {
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(0.955 0.004 279);
+  --foreground: oklch(0.19 0.01 279);
+  --card: oklch(0.99 0.003 279);
+  --card-foreground: oklch(0.19 0.01 279);
+  --popover: oklch(0.99 0.003 279);
+  --popover-foreground: oklch(0.19 0.01 279);
+  --primary: oklch(0.22 0.012 279);
+  --primary-foreground: oklch(0.99 0.006 279);
+  --secondary: oklch(0.92 0.005 279);
+  --secondary-foreground: oklch(0.22 0.012 279);
+  --muted: oklch(0.92 0.005 279);
+  --muted-foreground: oklch(0.55 0.012 279);
+  --accent: oklch(0.92 0.005 279);
+  --accent-foreground: oklch(0.22 0.012 279);
+  --border: oklch(0.88 0.006 279);
+  --input: oklch(0.88 0.006 279);
+  --ring: oklch(0.7 0.012 279);
+  --destructive: oklch(0.58 0.22 27);
+}
+
+.dark {
+  --background: oklch(0.15 0.01 279);
+  --foreground: oklch(0.985 0.004 279);
+  --card: oklch(0.21 0.01 279);
+  --card-foreground: oklch(0.985 0.004 279);
+  --popover: oklch(0.21 0.01 279);
+  --popover-foreground: oklch(0.985 0.004 279);
+  --primary: oklch(0.92 0.006 279);
+  --primary-foreground: oklch(0.21 0.01 279);
+  --secondary: oklch(0.27 0.01 279);
+  --secondary-foreground: oklch(0.985 0.004 279);
+  --muted: oklch(0.27 0.01 279);
+  --muted-foreground: oklch(0.72 0.008 279);
+  --accent: oklch(0.27 0.01 279);
+  --accent-foreground: oklch(0.985 0.004 279);
+  --border: oklch(0.985 0.004 279 / 10%);
+  --input: oklch(0.985 0.004 279 / 15%);
+  --ring: oklch(0.56 0.012 279);
+  --destructive: oklch(0.7 0.19 22);
+}
+
 body {
-  @apply bg-neutral-950 text-neutral-100;
+  @apply bg-background font-sans text-foreground;
 }
 `],
   ["frontend/solid/tsconfig.json.hbs", `{
@@ -28120,8 +29823,81 @@ vite.config.ts.timestamp-*
 `],
   ["frontend/svelte/src/app.css", `@import "tailwindcss";
 
+@theme inline {
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(0.955 0.004 279);
+  --foreground: oklch(0.19 0.01 279);
+  --card: oklch(0.99 0.003 279);
+  --card-foreground: oklch(0.19 0.01 279);
+  --popover: oklch(0.99 0.003 279);
+  --popover-foreground: oklch(0.19 0.01 279);
+  --primary: oklch(0.22 0.012 279);
+  --primary-foreground: oklch(0.99 0.006 279);
+  --secondary: oklch(0.92 0.005 279);
+  --secondary-foreground: oklch(0.22 0.012 279);
+  --muted: oklch(0.92 0.005 279);
+  --muted-foreground: oklch(0.55 0.012 279);
+  --accent: oklch(0.92 0.005 279);
+  --accent-foreground: oklch(0.22 0.012 279);
+  --border: oklch(0.88 0.006 279);
+  --input: oklch(0.88 0.006 279);
+  --ring: oklch(0.7 0.012 279);
+  --destructive: oklch(0.58 0.22 27);
+}
+
+.dark {
+  --background: oklch(0.15 0.01 279);
+  --foreground: oklch(0.985 0.004 279);
+  --card: oklch(0.21 0.01 279);
+  --card-foreground: oklch(0.985 0.004 279);
+  --popover: oklch(0.21 0.01 279);
+  --popover-foreground: oklch(0.985 0.004 279);
+  --primary: oklch(0.92 0.006 279);
+  --primary-foreground: oklch(0.21 0.01 279);
+  --secondary: oklch(0.27 0.01 279);
+  --secondary-foreground: oklch(0.985 0.004 279);
+  --muted: oklch(0.27 0.01 279);
+  --muted-foreground: oklch(0.72 0.008 279);
+  --accent: oklch(0.27 0.01 279);
+  --accent-foreground: oklch(0.985 0.004 279);
+  --border: oklch(0.985 0.004 279 / 10%);
+  --input: oklch(0.985 0.004 279 / 15%);
+  --ring: oklch(0.56 0.012 279);
+  --destructive: oklch(0.7 0.19 22);
+}
+
 body {
-  @apply bg-neutral-950 text-neutral-100;
+  @apply bg-background font-sans text-foreground;
 }
 `],
   ["frontend/svelte/src/app.d.ts.hbs", `{{#if (eq webDeploy "cloudflare")}}
@@ -28179,28 +29955,59 @@ export {};
 
 </script>
 
-<div>
-	<div class="flex flex-row items-center justify-between px-4 py-2 md:px-6">
-		<nav class="flex gap-4 text-lg">
-			<a href="/" class="hover:text-neutral-400 transition-colors">Home</a>
+<header class="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur">
+	<div class="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+		<div class="flex min-w-0 items-center gap-6">
+			<div class="flex min-w-0 items-center gap-3">
+				<div class="grid size-5 shrink-0 grid-cols-2 gap-0.5" aria-hidden="true">
+					<span class="bg-foreground"></span>
+					<span class="bg-foreground"></span>
+					<span class="bg-foreground"></span>
+					<span class="bg-foreground/20"></span>
+				</div>
+				<span class="truncate font-semibold text-sm tracking-wide">{{projectName}}</span>
+			</div>
+
+			<nav class="hidden items-center gap-2 lg:flex" aria-label="Main navigation">
+			<a href="/" class="rounded-md px-2 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground">Demo</a>
 		    {{#if (eq auth "better-auth")}}
-			<a href="/dashboard" class="hover:text-neutral-400 transition-colors">Dashboard</a>
+			<a href="/dashboard" class="rounded-md px-2 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground">Dashboard</a>
 		    {{/if}}
 		    {{#if (includes examples "todo")}}
-			<a href="/todos" class="hover:text-neutral-400 transition-colors">Todos</a>
+			<a href="/todos" class="rounded-md px-2 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground">Todos</a>
 		    {{/if}}
 		    {{#if (includes examples "ai")}}
-			<a href="/ai" class="hover:text-neutral-400 transition-colors">AI Chat</a>
+			<a href="/ai" class="rounded-md px-2 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground">AI Chat</a>
 		    {{/if}}
-		</nav>
+			<a href="https://better-t-stack.dev/docs" class="rounded-md px-2 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground">Docs</a>
+			</nav>
+		</div>
 		<div class="flex items-center gap-2">
+			<a
+				href="https://better-t-stack.dev/docs"
+				class="hidden h-9 w-64 items-center gap-2 rounded-full border border-border bg-background px-3 text-left text-muted-foreground text-sm shadow-sm transition-colors hover:bg-muted/50 hover:text-foreground xl:flex"
+				aria-label="Search docs"
+			>
+				<span class="text-base leading-none">⌕</span>
+				<span class="flex-1">Search docs</span>
+				<kbd class="rounded-md border border-border bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">⌘</kbd>
+				<kbd class="rounded-md border border-border bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">K</kbd>
+			</a>
+			<div class="flex items-center gap-1 rounded-full border border-border bg-background p-0.5 shadow-sm">
+				<a
+					href="https://github.com/AmanVarshney01/create-better-t-stack"
+					class="inline-flex size-7 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted"
+					aria-label="GitHub repository"
+				>
+					<span class="font-semibold text-sm">GH</span>
+				</a>
+			</div>
 		    {{#if (eq auth "better-auth")}}
             <UserMenu />
              {{/if}}
 		</div>
 	</div>
-	<hr class="border-neutral-800" />
-</div>
+</header>
 `],
   ["frontend/svelte/src/lib/index.ts", `// place files you want to import through the \`$lib\` alias in this folder.
 export {};
@@ -28262,96 +30069,190 @@ export {};
 `],
   ["frontend/svelte/src/routes/+page.svelte.hbs", `{{#if (eq backend "convex")}}
 <script lang="ts">
-import { useQuery } from 'convex-svelte';
-import { api } from "@{{projectName}}/backend/convex/_generated/api";
+	import { useQuery } from 'convex-svelte';
+	import { api } from "@{{projectName}}/backend/convex/_generated/api";
 
-const healthCheck = useQuery(api.healthCheck.get, {});
-
-const TITLE_TEXT = \`
-   ██████╗ ███████╗████████╗████████╗███████╗██████╗
-   ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
-   ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
-   ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
-   ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
-   ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
-   ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
-   ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-      ██║       ███████╗   ██║   ███████║██║     █████╔╝
-      ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-      ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-      ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
-   \`;
+	const healthCheck = useQuery(api.healthCheck.get, {});
 </script>
-
-<div class="container mx-auto max-w-3xl px-4 py-2">
-	<pre class="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-	<div class="grid gap-6">
-		<section class="rounded-lg border p-4">
-			<h2 class="mb-2 font-medium">API Status</h2>
-			<div class="flex items-center gap-2">
-				<div
-					class={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-				></div>
-				<span class="text-muted-foreground text-sm">
-					{healthCheck.isLoading
-						? "Checking..."
-						: healthCheck.data
-							? "Connected"
-							: "Disconnected"}
-				</span>
-			</div>
-		</section>
-	</div>
-</div>
 {{else}}
 <script lang="ts">
 {{#if (eq api "orpc")}}
-import { orpc } from "$lib/orpc";
-import { createQuery } from "@tanstack/svelte-query";
-const healthCheck = createQuery(orpc.healthCheck.queryOptions());
+	import { createQuery } from '@tanstack/svelte-query';
+	import { orpc } from "$lib/orpc";
+
+	const healthCheck = createQuery(orpc.healthCheck.queryOptions());
+{{/if}}
+</script>
 {{/if}}
 
-const TITLE_TEXT = \`
-   ██████╗ ███████╗████████╗████████╗███████╗██████╗
-   ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
-   ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
-   ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
-   ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
-   ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
+<main class="min-h-svh bg-background text-foreground">
+	<section class="relative isolate overflow-hidden border-b">
+    <div class="absolute inset-0 -z-10 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:28px_28px] opacity-60"></div>
+    <div class="absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(ellipse_at_top_left,oklch(0.9_0.06_62_/_0.28),transparent_58%)]"></div>
+    <div class="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+		<div class="rounded-2xl bg-card/95 p-3 shadow-sm ring-1 ring-foreground/10">
+			<div class="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+				<section class="flex min-h-[26rem] flex-col justify-between rounded-xl border bg-background p-4">
+					<div>
+						<div class="mb-5 flex items-center justify-between gap-3">
+							<div class="flex items-center gap-2">
+								<span class="size-4 rounded-sm border border-primary/40 bg-primary/15"></span>
+								<span class="font-bold font-mono text-lg sm:text-xl">GENERATED_STACK</span>
+							</div>
+							<span class="rounded-md bg-primary/15 px-2 py-1 font-mono text-primary text-xs">
+								READY
+							</span>
+						</div>
 
-   ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
-   ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-      ██║       ███████╗   ██║   ███████║██║     █████╔╝
-      ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-      ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-      ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
-   \`;
-</script>
+						<h1 class="max-w-2xl font-semibold text-3xl tracking-tight sm:text-4xl">
+							A generated app shell that already feels designed.
+						</h1>
+						<p class="mt-3 max-w-2xl text-muted-foreground text-sm leading-6">
+							Better T Stack wires the project, then leaves you with a clean demo surface: neutral shadcn tokens, compact navigation, typed status, and no custom component fork.
+						</p>
+					</div>
 
-<div class="container mx-auto max-w-3xl px-4 py-2">
-	<pre class="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-	<div class="grid gap-6">
-	    {{#if (eq api "orpc")}}
-		<section class="rounded-lg border p-4">
-			<h2 class="mb-2 font-medium">API Status</h2>
-			<div class="flex items-center gap-2">
-				<div
-					class={\`h-2 w-2 rounded-full \${$healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-				></div>
-				<span class="text-muted-foreground text-sm">
-					{$healthCheck.isLoading
-						? "Checking..."
-						: $healthCheck.data
-							? "Connected"
-							: "Disconnected"}
-				</span>
+					<div class="mt-8 space-y-3">
+						<div class="rounded-md bg-muted/20 p-3">
+							<div class="mb-3 flex items-center gap-2 text-muted-foreground text-xs">
+								<span class="size-3.5 rounded-sm bg-primary/25"></span>
+								<span class="font-mono">CLI_COMMAND</span>
+							</div>
+							<div class="flex items-center gap-2 overflow-x-auto font-mono text-sm">
+								<span class="text-primary">$</span>
+								<span>{{packageManager}} run dev</span>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<section class="rounded-xl border bg-background p-4">
+					<div class="mb-4 flex items-center justify-between gap-3">
+						<div class="flex items-center gap-2">
+							<span class="size-4 rounded-full bg-primary/20 ring-1 ring-primary/30"></span>
+							<h2 class="font-bold font-mono text-lg sm:text-xl">PROJECT_STATUS</h2>
+						</div>
+						<span class="rounded-md bg-muted/35 px-2 py-1 font-mono text-muted-foreground text-xs">
+							APPS/WEB
+						</span>
+					</div>
+
+					<p class="mb-5 text-muted-foreground text-xs leading-5">
+						Live checks from the generated application shell.
+					</p>
+
+					<div class="space-y-5">
+						<div class="rounded-md bg-muted/20 p-3">
+							{{#if (eq backend "convex")}}
+							<div class="flex items-start gap-3">
+								<span
+									class={\`mt-1 size-2.5 rounded-full \${healthCheck.data === "OK" ? "bg-emerald-500" : healthCheck.isLoading ? "animate-pulse bg-primary" : "bg-destructive"}\`}
+								></span>
+								<div>
+									<p class="font-medium text-sm">
+										{healthCheck.isLoading
+											? "API Checking"
+											: healthCheck.data === "OK"
+												? "API Connected"
+												: "API Error"}
+									</p>
+									<p class="mt-1 text-muted-foreground text-xs leading-5">
+										{healthCheck.isLoading
+											? "The app is asking the generated API for a health response."
+											: healthCheck.data === "OK"
+												? "The generated client can reach the backend health endpoint."
+												: "The backend health check returned an unexpected response."}
+									</p>
+								</div>
+							</div>
+							{{else}}
+							{{#if (eq api "orpc")}}
+							<div class="flex items-start gap-3">
+								<span
+									class={\`mt-1 size-2.5 rounded-full \${$healthCheck.isLoading ? "animate-pulse bg-primary" : $healthCheck.data ? "bg-emerald-500" : "bg-destructive"}\`}
+								></span>
+								<div>
+									<p class="font-medium text-sm">
+										{$healthCheck.isLoading
+											? "API Checking"
+											: $healthCheck.data
+												? "API Connected"
+												: "API Disconnected"}
+									</p>
+									<p class="mt-1 text-muted-foreground text-xs leading-5">
+										{$healthCheck.isLoading
+											? "The app is asking the generated API for a health response."
+											: $healthCheck.data
+												? "The generated client can reach the backend health endpoint."
+												: "The client rendered, but the health endpoint did not return data."}
+									</p>
+								</div>
+							</div>
+							{{else}}
+							<div class="flex items-start gap-3">
+								<span class="mt-1 size-2.5 rounded-full bg-muted-foreground"></span>
+								<div>
+									<p class="font-medium text-sm">API No API</p>
+									<p class="mt-1 text-muted-foreground text-xs leading-5">
+										This project was generated without an API layer.
+									</p>
+								</div>
+							</div>
+							{{/if}}
+							{{/if}}
+						</div>
+
+						<dl class="grid gap-2">
+							<div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+								<dt class="font-mono text-muted-foreground text-xs">Frontend</dt>
+								<dd>
+									<span class="block font-medium text-sm">Svelte</span>
+									<span class="block text-muted-foreground text-xs">SvelteKit web app</span>
+								</dd>
+							</div>
+							<div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+								<dt class="font-mono text-muted-foreground text-xs">Backend</dt>
+								<dd>
+									<span class="block font-medium text-sm">{{#if (eq backend "convex")}}Convex{{else}}{{backend}}{{/if}}</span>
+									<span class="block text-muted-foreground text-xs">{{#if (eq runtime "none")}}No separate runtime{{else}}{{runtime}} runtime{{/if}}</span>
+								</dd>
+							</div>
+							<div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+								<dt class="font-mono text-muted-foreground text-xs">API</dt>
+								<dd>
+									<span class="block font-medium text-sm">{{#if (eq api "orpc")}}oRPC{{else}}None{{/if}}</span>
+									<span class="block text-muted-foreground text-xs">Type-safe boundary</span>
+								</dd>
+							</div>
+							<div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+								<dt class="font-mono text-muted-foreground text-xs">Data</dt>
+								<dd>
+									<span class="block font-medium text-sm">{{#if (eq backend "convex")}}Convex{{else if (eq database "none")}}None{{else}}{{database}} + {{orm}}{{/if}}</span>
+									<span class="block text-muted-foreground text-xs">{{#if (eq dbSetup "none")}}Manual setup{{else}}{{dbSetup}} setup{{/if}}</span>
+								</dd>
+							</div>
+						</dl>
+					</div>
+				</section>
+			</div>
+		</div>
+
+		<section class="rounded-lg bg-card p-4 ring-1 ring-border/70">
+			<div class="grid gap-5 lg:grid-cols-[13rem_1fr]">
+				<div>
+					<p class="font-mono text-muted-foreground text-xs">WORKBENCH_RULES</p>
+					<h2 class="mt-3 font-semibold text-lg tracking-tight">Built to be replaced</h2>
+				</div>
+				<div class="grid gap-3 text-sm sm:grid-cols-3">
+					<p class="rounded-md bg-muted/20 p-3">Typed defaults stay visible at the edge.</p>
+					<p class="rounded-md bg-muted/20 p-3">The shell proves wiring, then gets out of the way.</p>
+					<p class="rounded-md bg-muted/20 p-3">Tokens carry the style, not component forks.</p>
+				</div>
 			</div>
 		</section>
-	    {{/if}}
-	</div>
-</div>
-{{/if}}
+    </div>
+  </section>
+</main>
 `],
   ["frontend/svelte/static/favicon.png", `[Binary file]`],
   ["frontend/svelte/svelte.config.js.hbs", `{{#if (eq webDeploy "cloudflare")}}
@@ -29238,7 +31139,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@{{projectName}}/ui/lib/utils"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-none border border-transparent bg-clip-padding text-xs font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-1 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -29256,12 +31157,12 @@ const buttonVariants = cva(
       size: {
         default:
           "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        xs: "h-6 gap-1 rounded-none px-2 text-xs has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-7 gap-1 rounded-none px-2.5 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
+        xs: "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
+        sm: "h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
+        lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
         icon: "size-8",
-        "icon-xs": "size-6 rounded-none [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm": "size-7 rounded-none",
+        "icon-xs": "size-6 rounded-[min(var(--radius-md),10px)] [&_svg:not([class*='size-'])]:size-3",
+        "icon-sm": "size-7 rounded-[min(var(--radius-md),12px)]",
         "icon-lg": "size-9",
       },
     },
@@ -29303,7 +31204,7 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "group/card flex flex-col gap-4 overflow-hidden rounded-none bg-card py-4 text-xs/relaxed text-card-foreground ring-1 ring-foreground/10 has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-2 data-[size=sm]:py-3 data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-none *:[img:last-child]:rounded-none",
+        "group/card flex flex-col gap-4 overflow-hidden rounded-xl bg-card py-4 text-sm text-card-foreground ring-1 ring-foreground/10 has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-3 data-[size=sm]:py-3 data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
         className
       )}
       {...props}
@@ -29316,7 +31217,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-header"
       className={cn(
-        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-none px-4 group-data-[size=sm]/card:px-3 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-4 group-data-[size=sm]/card:[.border-b]:pb-3",
+        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-xl px-4 group-data-[size=sm]/card:px-3 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-4 group-data-[size=sm]/card:[.border-b]:pb-3",
         className
       )}
       {...props}
@@ -29329,7 +31230,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-title"
       className={cn(
-        "text-sm font-medium group-data-[size=sm]/card:text-sm",
+        "font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm",
         className
       )}
       {...props}
@@ -29341,7 +31242,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("text-xs/relaxed text-muted-foreground", className)}
+      className={cn("text-sm text-muted-foreground", className)}
       {...props}
     />
   )
@@ -29375,7 +31276,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-footer"
       className={cn(
-        "flex items-center rounded-none border-t p-4 group-data-[size=sm]/card:p-3",
+        "flex items-center rounded-b-xl border-t bg-muted/50 p-4 group-data-[size=sm]/card:p-3",
         className
       )}
       {...props}
@@ -29405,7 +31306,7 @@ function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
     <CheckboxPrimitive.Root
       data-slot="checkbox"
       className={cn(
-        "peer relative flex size-4 shrink-0 items-center justify-center rounded-none border border-input transition-colors outline-none group-has-disabled/field:opacity-50 after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-1 aria-invalid:ring-destructive/20 aria-invalid:aria-checked:border-primary dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground dark:data-checked:bg-primary",
+        "peer relative flex size-4 shrink-0 items-center justify-center rounded-[4px] border border-input transition-colors outline-none group-has-disabled/field:opacity-50 after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 aria-invalid:aria-checked:border-primary dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground dark:data-checked:bg-primary",
         className
       )}
       {...props}
@@ -29466,7 +31367,7 @@ function DropdownMenuContent({
         <MenuPrimitive.Popup
           data-slot="dropdown-menu-content"
           className={cn(
-            "z-50 max-h-(--available-height) w-(--anchor-width) min-w-32 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-none bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 outline-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-hidden data-closed:fade-out-0 data-closed:zoom-out-95",
+            "z-50 max-h-(--available-height) w-(--anchor-width) min-w-32 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 outline-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-hidden data-closed:fade-out-0 data-closed:zoom-out-95",
             className
           )}
           {...props}
@@ -29492,7 +31393,7 @@ function DropdownMenuLabel({
       data-slot="dropdown-menu-label"
       data-inset={inset}
       className={cn(
-        "px-2 py-2 text-xs text-muted-foreground data-inset:pl-7",
+        "px-1.5 py-1 text-xs font-medium text-muted-foreground data-inset:pl-7",
         className
       )}
       {...props}
@@ -29515,7 +31416,7 @@ function DropdownMenuItem({
       data-inset={inset}
       data-variant={variant}
       className={cn(
-        "group/dropdown-menu-item relative flex cursor-default items-center gap-2 rounded-none px-2 py-2 text-xs outline-hidden select-none focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-inset:pl-7 data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive dark:data-[variant=destructive]:focus:bg-destructive/20 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 data-[variant=destructive]:*:[svg]:text-destructive",
+        "group/dropdown-menu-item relative flex cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-inset:pl-7 data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive dark:data-[variant=destructive]:focus:bg-destructive/20 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 data-[variant=destructive]:*:[svg]:text-destructive",
         className
       )}
       {...props}
@@ -29540,7 +31441,7 @@ function DropdownMenuSubTrigger({
       data-slot="dropdown-menu-sub-trigger"
       data-inset={inset}
       className={cn(
-        "flex cursor-default items-center gap-2 rounded-none px-2 py-2 text-xs outline-hidden select-none focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-inset:pl-7 data-popup-open:bg-accent data-popup-open:text-accent-foreground data-open:bg-accent data-open:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "flex cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-inset:pl-7 data-popup-open:bg-accent data-popup-open:text-accent-foreground data-open:bg-accent data-open:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
@@ -29563,7 +31464,7 @@ function DropdownMenuSubContent({
     <DropdownMenuContent
       data-slot="dropdown-menu-sub-content"
       className={cn(
-        "w-auto min-w-[96px] rounded-none bg-popover text-popover-foreground shadow-lg ring-1 ring-foreground/10 duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+        "w-auto min-w-[96px] rounded-lg bg-popover text-popover-foreground shadow-lg ring-1 ring-foreground/10 duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
         className
       )}
       align={align}
@@ -29589,7 +31490,7 @@ function DropdownMenuCheckboxItem({
       data-slot="dropdown-menu-checkbox-item"
       data-inset={inset}
       className={cn(
-        "relative flex cursor-default items-center gap-2 rounded-none py-2 pr-8 pl-2 text-xs outline-hidden select-none focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground data-inset:pl-7 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "relative flex cursor-default items-center gap-1.5 rounded-md py-1 pr-8 pl-1.5 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground data-inset:pl-7 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       checked={checked}
@@ -29630,7 +31531,7 @@ function DropdownMenuRadioItem({
       data-slot="dropdown-menu-radio-item"
       data-inset={inset}
       className={cn(
-        "relative flex cursor-default items-center gap-2 rounded-none py-2 pr-8 pl-2 text-xs outline-hidden select-none focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground data-inset:pl-7 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "relative flex cursor-default items-center gap-1.5 rounded-md py-1 pr-8 pl-1.5 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground data-inset:pl-7 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
@@ -29655,7 +31556,7 @@ function DropdownMenuSeparator({
   return (
     <MenuPrimitive.Separator
       data-slot="dropdown-menu-separator"
-      className={cn("-mx-1 h-px bg-border", className)}
+      className={cn("-mx-1 my-1 h-px bg-border", className)}
       {...props}
     />
   )
@@ -29706,7 +31607,7 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
       type={type}
       data-slot="input"
       className={cn(
-        "h-8 w-full min-w-0 rounded-none border border-input bg-transparent px-2.5 py-1 text-xs transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-xs file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-1 aria-invalid:ring-destructive/20 md:text-xs dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
+        "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
         className
       )}
       {...props}
@@ -29725,7 +31626,7 @@ function Label({ className, ...props }: React.ComponentProps<"label">) {
     <label
       data-slot="label"
       className={cn(
-        "flex items-center gap-2 text-xs leading-none select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
+        "flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
         className
       )}
       {...props}
@@ -29741,7 +31642,7 @@ function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="skeleton"
-      className={cn("animate-pulse rounded-none bg-muted", className)}
+      className={cn("animate-pulse rounded-md bg-muted", className)}
       {...props}
     />
   )
@@ -29816,76 +31717,78 @@ export function cn(...inputs: ClassValue[]) {
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --background: oklch(0.955 0.004 279);
+  --foreground: oklch(0.19 0.01 279);
+  --card: oklch(0.99 0.003 279);
+  --card-foreground: oklch(0.19 0.01 279);
+  --popover: oklch(0.99 0.003 279);
+  --popover-foreground: oklch(0.19 0.01 279);
+  --primary: oklch(0.22 0.012 279);
+  --primary-foreground: oklch(0.985 0.004 279);
+  --secondary: oklch(0.92 0.005 279);
+  --secondary-foreground: oklch(0.22 0.012 279);
+  --muted: oklch(0.92 0.005 279);
+  --muted-foreground: oklch(0.55 0.012 279);
+  --accent: oklch(0.92 0.005 279);
+  --accent-foreground: oklch(0.22 0.012 279);
   --destructive: oklch(0.58 0.22 27);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.809 0.105 251.813);
-  --chart-2: oklch(0.623 0.214 259.815);
-  --chart-3: oklch(0.546 0.245 262.881);
-  --chart-4: oklch(0.488 0.243 264.376);
-  --chart-5: oklch(0.424 0.199 265.638);
+  --border: oklch(0.88 0.006 279);
+  --input: oklch(0.88 0.006 279);
+  --ring: oklch(0.7 0.012 279);
+  --chart-1: oklch(0.87 0.01 279);
+  --chart-2: oklch(0.56 0.012 279);
+  --chart-3: oklch(0.44 0.012 279);
+  --chart-4: oklch(0.37 0.012 279);
+  --chart-5: oklch(0.27 0.012 279);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: oklch(0.975 0.004 279);
+  --sidebar-foreground: oklch(0.19 0.01 279);
+  --sidebar-primary: oklch(0.22 0.012 279);
+  --sidebar-primary-foreground: oklch(0.985 0.004 279);
+  --sidebar-accent: oklch(0.96 0.006 279);
+  --sidebar-accent-foreground: oklch(0.22 0.012 279);
+  --sidebar-border: oklch(0.91 0.006 279);
+  --sidebar-ring: oklch(0.7 0.012 279);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.87 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.371 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.809 0.105 251.813);
-  --chart-2: oklch(0.623 0.214 259.815);
-  --chart-3: oklch(0.546 0.245 262.881);
-  --chart-4: oklch(0.488 0.243 264.376);
-  --chart-5: oklch(0.424 0.199 265.638);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: oklch(0.15 0.01 279);
+  --foreground: oklch(0.985 0.004 279);
+  --card: oklch(0.21 0.01 279);
+  --card-foreground: oklch(0.985 0.004 279);
+  --popover: oklch(0.21 0.01 279);
+  --popover-foreground: oklch(0.985 0.004 279);
+  --primary: oklch(0.92 0.006 279);
+  --primary-foreground: oklch(0.21 0.01 279);
+  --secondary: oklch(0.27 0.01 279);
+  --secondary-foreground: oklch(0.985 0.004 279);
+  --muted: oklch(0.27 0.01 279);
+  --muted-foreground: oklch(0.72 0.008 279);
+  --accent: oklch(0.27 0.01 279);
+  --accent-foreground: oklch(0.985 0.004 279);
+  --destructive: oklch(0.7 0.19 22);
+  --border: oklch(0.985 0.004 279 / 10%);
+  --input: oklch(0.985 0.004 279 / 15%);
+  --ring: oklch(0.56 0.012 279);
+  --chart-1: oklch(0.87 0.01 279);
+  --chart-2: oklch(0.56 0.012 279);
+  --chart-3: oklch(0.44 0.012 279);
+  --chart-4: oklch(0.37 0.012 279);
+  --chart-5: oklch(0.27 0.012 279);
+  --sidebar: oklch(0.21 0.01 279);
+  --sidebar-foreground: oklch(0.985 0.004 279);
+  --sidebar-primary: oklch(0.92 0.006 279);
+  --sidebar-primary-foreground: oklch(0.21 0.01 279);
+  --sidebar-accent: oklch(0.27 0.01 279);
+  --sidebar-accent-foreground: oklch(0.985 0.004 279);
+  --sidebar-border: oklch(0.985 0.004 279 / 10%);
+  --sidebar-ring: oklch(0.56 0.012 279);
 }
 
 @theme inline {
-  --font-sans: 'Inter Variable', sans-serif;
+  --font-heading: var(--font-sans);
+  --font-sans: var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-mono: var(--font-geist-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -29921,9 +31824,9 @@ export function cn(...inputs: ClassValue[]) {
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 @layer base {
@@ -29935,6 +31838,10 @@ export function cn(...inputs: ClassValue[]) {
   }
   html {
     @apply font-sans;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
 }
 `],
@@ -30109,4 +32016,4 @@ function SuccessPage() {
 `]
 ]);
 
-export const TEMPLATE_COUNT = 472;
+export const TEMPLATE_COUNT = 473;

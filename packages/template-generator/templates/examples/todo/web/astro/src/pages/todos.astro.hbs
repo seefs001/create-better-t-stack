@@ -25,7 +25,7 @@ import Layout from "../layouts/Layout.astro";
     <div id="loading" class="text-neutral-400">Loading...</div>
     <div id="empty" class="hidden text-neutral-400">No todos yet.</div>
     <ul id="todo-list" class="space-y-1 hidden"></ul>
-    <p id="error" class="mt-4 text-red-500 hidden"></p>
+    <p id="error" class="mt-4 text-destructive hidden"></p>
   </div>
 </Layout>
 
@@ -79,7 +79,7 @@ import Layout from "../layouts/Layout.astro";
           </label>
         </div>
         <button
-          class="delete-btn text-red-500 px-2 hover:text-red-400 transition-colors"
+          class="delete-btn text-destructive px-2 hover:text-destructive/80 transition-colors"
           aria-label="Delete todo"
         >
           X

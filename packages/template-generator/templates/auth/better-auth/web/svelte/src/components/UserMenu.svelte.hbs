@@ -25,25 +25,38 @@
 
 <div class="relative">
 	{#if $sessionQuery.isPending}
-		<div class="h-8 w-24 animate-pulse rounded bg-neutral-700"></div>
+		<div class="h-8 w-24 animate-pulse rounded-md bg-muted"></div>
 	{:else if $sessionQuery.data?.user}
 		{@const user = $sessionQuery.data.user}
-		<div class="flex items-center gap-3">
-			<span class="text-sm text-neutral-300 hidden sm:inline" title={user.email}>
-				{user.name || user.email?.split('@')[0] || 'User'}
-			</span>
-			<button
-				onclick={handleSignOut}
-				class="rounded px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white transition-colors"
+		<details class="group relative">
+			<summary
+				class="flex h-8 max-w-48 cursor-pointer list-none items-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted [&::-webkit-details-marker]:hidden"
+				title={user.email}
 			>
-				Sign Out
-			</button>
-		</div>
+				<span class="truncate">
+					{user.name || user.email?.split('@')[0] || 'User'}
+				</span>
+			</summary>
+			<div class="absolute right-0 z-50 mt-2 w-56 rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10">
+				<div class="px-1.5 py-1 text-xs font-medium text-muted-foreground">
+					My Account
+				</div>
+				<div class="rounded-md px-1.5 py-1 text-sm text-muted-foreground">
+					{user.email}
+				</div>
+				<button
+					onclick={handleSignOut}
+					class="flex w-full items-center rounded-md px-1.5 py-1 text-sm text-destructive transition-colors hover:bg-destructive/10"
+				>
+					Sign Out
+				</button>
+			</div>
+		</details>
 	{:else}
 		<div class="flex items-center gap-2">
 			<button
 				onclick={goToLogin}
-				class="rounded px-3 py-1 text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-colors"
+				class="inline-flex h-8 items-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
 			>
 				Sign In
 			</button>

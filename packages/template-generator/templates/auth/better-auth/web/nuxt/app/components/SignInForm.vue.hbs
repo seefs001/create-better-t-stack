@@ -61,18 +61,18 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
 <template>
   <div class="flex flex-col items-center justify-center gap-4 p-4">
-    <UPageCard class="w-full max-w-md">
+    <UPageCard class="w-full max-w-md rounded-2xl p-5 shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
       <UAuthForm
         :schema="schema"
         :fields="fields"
-        title="Welcome Back"
+        title="Sign In"
         icon="i-lucide-log-in"
-        :submit="{ label: 'Sign In', loading }"
+        :submit="{ label: 'Sign In', loading, class: 'h-11 rounded-full bg-[oklch(0.62_0.22_255)] text-sm font-semibold text-[oklch(0.99_0.004_279)] hover:bg-[oklch(0.57_0.23_255)]' }"
         @submit="onSubmit"
       >
         <template #description>
-          Need an account?
-          <ULink class="text-primary font-medium" @click="$emit('switchToSignUp')">
+          Need to create an account?
+          <ULink class="font-medium text-[oklch(0.62_0.22_255)]" @click="$emit('switchToSignUp')">
             Sign Up
           </ULink>
         </template>

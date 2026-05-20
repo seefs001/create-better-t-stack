@@ -1,30 +1,14 @@
 import { createFileRoute } from "@tanstack/solid-router";
 {{#if (eq api "orpc")}}
 import { useQuery } from "@tanstack/solid-query";
-import { orpc } from "../utils/orpc";
 import { Match, Switch } from "solid-js";
-{{else}}
+
+import { orpc } from "../utils/orpc";
 {{/if}}
 
 export const Route = createFileRoute("/")({
   component: App,
 });
-
-const TITLE_TEXT = `
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-    ██║       ███████╗   ██║   ███████║██║     █████╔╝
-    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- `;
 
 function App() {
   {{#if (eq api "orpc")}}
@@ -32,41 +16,169 @@ function App() {
   {{/if}}
 
   return (
-    <div class="container mx-auto max-w-3xl px-4 py-2">
-      <pre class="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div class="grid gap-6">
-        {{#if (eq api "orpc")}}
-        <section class="rounded-lg border p-4">
-          <h2 class="mb-2 font-medium">API Status</h2>
-          <Switch>
-            <Match when={healthCheck.isPending}>
-              <div class="flex items-center gap-2">
-                <div class="h-2 w-2 rounded-full bg-gray-500 animate-pulse" />{" "}
-                <span class="text-sm text-muted-foreground">Checking...</span>
+    <main class="min-h-svh bg-background text-foreground">
+      <section class="relative isolate overflow-hidden border-b">
+    <div class="absolute inset-0 -z-10 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:28px_28px] opacity-60"></div>
+    <div class="absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(ellipse_at_top_left,oklch(0.9_0.06_62_/_0.28),transparent_58%)]"></div>
+    <div class="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+        <div class="rounded-2xl bg-card/95 p-3 shadow-sm ring-1 ring-foreground/10">
+          <div class="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <section class="flex min-h-[26rem] flex-col justify-between rounded-xl border bg-background p-4">
+              <div>
+                <div class="mb-5 flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-2">
+                    <span class="size-4 rounded-sm border border-primary/40 bg-primary/15" />
+                    <span class="font-bold font-mono text-lg sm:text-xl">GENERATED_STACK</span>
+                  </div>
+                  <span class="rounded-md bg-primary/15 px-2 py-1 font-mono text-primary text-xs">
+                    READY
+                  </span>
+                </div>
+
+                <h1 class="max-w-2xl font-semibold text-3xl tracking-tight sm:text-4xl">
+                  A generated app shell that already feels designed.
+                </h1>
+                <p class="mt-3 max-w-2xl text-muted-foreground text-sm leading-6">
+                  Better T Stack wires the project, then leaves you with a clean demo surface: neutral shadcn tokens, compact navigation, typed status, and no custom component fork.
+                </p>
               </div>
-            </Match>
-            <Match when={healthCheck.isError}>
-              <div class="flex items-center gap-2">
-                <div class="h-2 w-2 rounded-full bg-red-500" />
-                <span class="text-sm text-muted-foreground">Disconnected</span>
+
+              <div class="mt-8 space-y-3">
+                <div class="rounded-md bg-muted/20 p-3">
+                  <div class="mb-3 flex items-center gap-2 text-muted-foreground text-xs">
+                    <span class="size-3.5 rounded-sm bg-primary/25" />
+                    <span class="font-mono">CLI_COMMAND</span>
+                  </div>
+                  <div class="flex items-center gap-2 overflow-x-auto font-mono text-sm">
+                    <span class="text-primary">$</span>
+                    <span>{{packageManager}} run dev</span>
+                  </div>
+                </div>
               </div>
-            </Match>
-            <Match when={healthCheck.isSuccess}>
-              <div class="flex items-center gap-2">
-                <div
-                  class={`h-2 w-2 rounded-full ${healthCheck.data ? "bg-green-500" : "bg-red-500"}`}
-                />
-                <span class="text-sm text-muted-foreground">
-                  {healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
+            </section>
+
+            <section class="rounded-xl border bg-background p-4">
+              <div class="mb-4 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                  <span class="size-4 rounded-full bg-primary/20 ring-1 ring-primary/30" />
+                  <h2 class="font-bold font-mono text-lg sm:text-xl">PROJECT_STATUS</h2>
+                </div>
+                <span class="rounded-md bg-muted/35 px-2 py-1 font-mono text-muted-foreground text-xs">
+                  APPS/WEB
                 </span>
               </div>
-            </Match>
-          </Switch>
+
+              <p class="mb-5 text-muted-foreground text-xs leading-5">
+                Live checks from the generated application shell.
+              </p>
+
+              <div class="space-y-5">
+                <div class="rounded-md bg-muted/20 p-3">
+                  {{#if (eq api "orpc")}}
+                  <Switch>
+                    <Match when={healthCheck.isPending}>
+                      <div class="flex items-start gap-3">
+                        <span class="mt-1 size-2.5 animate-pulse rounded-full bg-primary" />
+                        <div>
+                          <p class="font-medium text-sm">API Checking</p>
+                          <p class="mt-1 text-muted-foreground text-xs leading-5">
+                            The app is asking the generated API for a health response.
+                          </p>
+                        </div>
+                      </div>
+                    </Match>
+                    <Match when={healthCheck.isError}>
+                      <div class="flex items-start gap-3">
+                        <span class="mt-1 size-2.5 rounded-full bg-destructive" />
+                        <div>
+                          <p class="font-medium text-sm">API Disconnected</p>
+                          <p class="mt-1 text-muted-foreground text-xs leading-5">
+                            The client rendered, but the health endpoint did not return data.
+                          </p>
+                        </div>
+                      </div>
+                    </Match>
+                    <Match when={healthCheck.isSuccess}>
+                      <div class="flex items-start gap-3">
+                        <span
+                          class={`mt-1 size-2.5 rounded-full ${healthCheck.data ? "bg-emerald-500" : "bg-destructive"}`}
+                        />
+                        <div>
+                          <p class="font-medium text-sm">
+                            API {healthCheck.data ? "Connected" : "Disconnected"}
+                          </p>
+                          <p class="mt-1 text-muted-foreground text-xs leading-5">
+                            {healthCheck.data
+                              ? "The generated client can reach the backend health endpoint."
+                              : "The health endpoint did not return data."}
+                          </p>
+                        </div>
+                      </div>
+                    </Match>
+                  </Switch>
+                  {{else}}
+                  <div class="flex items-start gap-3">
+                    <span class="mt-1 size-2.5 rounded-full bg-muted-foreground" />
+                    <div>
+                      <p class="font-medium text-sm">API No API</p>
+                      <p class="mt-1 text-muted-foreground text-xs leading-5">
+                        This project was generated without an API layer.
+                      </p>
+                    </div>
+                  </div>
+                  {{/if}}
+                </div>
+
+                <dl class="grid gap-2">
+                  <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                    <dt class="font-mono text-muted-foreground text-xs">Frontend</dt>
+                    <dd>
+                      <span class="block font-medium text-sm">Solid</span>
+                      <span class="block text-muted-foreground text-xs">TanStack Solid Router</span>
+                    </dd>
+                  </div>
+                  <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                    <dt class="font-mono text-muted-foreground text-xs">Backend</dt>
+                    <dd>
+                      <span class="block font-medium text-sm">{{backend}}</span>
+                      <span class="block text-muted-foreground text-xs">{{runtime}} runtime</span>
+                    </dd>
+                  </div>
+                  <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                    <dt class="font-mono text-muted-foreground text-xs">API</dt>
+                    <dd>
+                      <span class="block font-medium text-sm">{{#if (eq api "orpc")}}oRPC{{else}}None{{/if}}</span>
+                      <span class="block text-muted-foreground text-xs">Type-safe boundary</span>
+                    </dd>
+                  </div>
+                  <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                    <dt class="font-mono text-muted-foreground text-xs">Data</dt>
+                    <dd>
+                      <span class="block font-medium text-sm">{{#if (eq database "none")}}None{{else}}{{database}} + {{orm}}{{/if}}</span>
+                      <span class="block text-muted-foreground text-xs">{{#if (eq dbSetup "none")}}Manual setup{{else}}{{dbSetup}} setup{{/if}}</span>
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <section class="rounded-lg bg-card p-4 ring-1 ring-border/70">
+          <div class="grid gap-5 lg:grid-cols-[13rem_1fr]">
+            <div>
+              <p class="font-mono text-muted-foreground text-xs">WORKBENCH_RULES</p>
+              <h2 class="mt-3 font-semibold text-lg tracking-tight">Built to be replaced</h2>
+            </div>
+            <div class="grid gap-3 text-sm sm:grid-cols-3">
+              <p class="rounded-md bg-muted/20 p-3">Typed defaults stay visible at the edge.</p>
+              <p class="rounded-md bg-muted/20 p-3">The shell proves wiring, then gets out of the way.</p>
+              <p class="rounded-md bg-muted/20 p-3">Tokens carry the style, not component forks.</p>
+            </div>
+          </div>
         </section>
-        {{/if}}
-      </div>
     </div>
+  </section>
+</main>
   );
 }

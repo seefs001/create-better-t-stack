@@ -129,7 +129,7 @@
 						onclick={() => handleDeleteTodo(todo._id)}
 						disabled={isDisabled}
 						aria-label="Delete todo"
-						class="text-red-500 px-1 disabled:opacity-50"
+						class="text-destructive px-1 disabled:opacity-50"
 					>
 						{#if isDeletingThis}Deleting...{:else}X{/if}
 					</button>
@@ -139,22 +139,22 @@
 	{/if}
 
 	{#if todosQuery.error}
-		<p class="mt-4 text-red-500">
+		<p class="mt-4 text-destructive">
 			Error loading: {todosQuery.error?.message ?? 'Unknown error'}
 		</p>
 	{/if}
 	{#if addError}
-		<p class="mt-4 text-red-500">
+		<p class="mt-4 text-destructive">
 			Error adding: {addError.message ?? 'Unknown error'}
 		</p>
 	{/if}
 	{#if toggleError}
-		<p class="mt-4 text-red-500">
+		<p class="mt-4 text-destructive">
 			Error updating: {toggleError.message ?? 'Unknown error'}
 		</p>
 	{/if}
 	{#if deleteError}
-		<p class="mt-4 text-red-500">
+		<p class="mt-4 text-destructive">
 			Error deleting: {deleteError.message ?? 'Unknown error'}
 		</p>
 	{/if}
@@ -284,7 +284,7 @@
 						onclick={() => handleDeleteTodo(todo.id)}
 						disabled={isDisabled}
 						aria-label="Delete todo"
-						class="text-red-500 px-1 disabled:opacity-50"
+						class="text-destructive px-1 disabled:opacity-50"
 					>
 						{#if isDeleting}Deleting...{:else}X{/if}
 					</button>
@@ -294,22 +294,22 @@
 	{/if}
 
 	{#if $todosQuery.isError}
-		<p class="mt-4 text-red-500">
+		<p class="mt-4 text-destructive">
 			Error loading: {$todosQuery.error?.message ?? 'Unknown error'}
 		</p>
 	{/if}
 	{#if $addMutation.isError}
-		<p class="mt-4 text-red-500">
+		<p class="mt-4 text-destructive">
 			Error adding: {$addMutation.error?.message ?? 'Unknown error'}
 		</p>
 	{/if}
 	{#if $toggleMutation.isError}
-		<p class="mt-4 text-red-500">
+		<p class="mt-4 text-destructive">
 			Error updating: {$toggleMutation.error?.message ?? 'Unknown error'}
 		</p>
 	{/if}
 	{#if $deleteMutation.isError}
-		<p class="mt-4 text-red-500">
+		<p class="mt-4 text-destructive">
 			Error deleting: {$deleteMutation.error?.message ?? 'Unknown error'}
 		</p>
 	{/if}

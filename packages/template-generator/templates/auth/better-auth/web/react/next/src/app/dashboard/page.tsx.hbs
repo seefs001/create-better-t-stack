@@ -39,10 +39,25 @@ export default async function DashboardPage() {
 	{{/if}}
 
 	return (
-		<div>
-			<h1>Dashboard</h1>
-			<p>Welcome {session.user.name}</p>
+		<main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+			<section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+				<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+					<div>
+						<p className="font-mono text-muted-foreground text-xs">AUTH_SESSION</p>
+						<h1 className="mt-2 font-semibold text-2xl tracking-tight">
+							Dashboard
+						</h1>
+						<p className="mt-2 text-muted-foreground text-sm">
+							Signed in as {session.user.name || session.user.email}.
+						</p>
+					</div>
+					<div className="rounded-lg bg-muted/50 px-3 py-2 text-sm ring-1 ring-border/60">
+						<p className="font-mono text-muted-foreground text-xs">EMAIL</p>
+						<p className="mt-1 break-all font-medium">{session.user.email}</p>
+					</div>
+				</div>
+			</section>
 			<Dashboard session={session} {{#if (eq payments "polar")}}customerState={customerState}{{/if}} />
-		</div>
+		</main>
 	);
 }

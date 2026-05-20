@@ -21,14 +21,14 @@ export default function UserMenu() {
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="outline" />}>
-                {user?.name}
+            <DropdownMenuTrigger render={<Button variant="outline" className="max-w-[12rem] gap-2 px-2.5" />}>
+                <span className="truncate">{user?.name || user?.email || "Account"}</span>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-card">
+            <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuGroup>
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>{user?.email}</DropdownMenuItem>
+                    <DropdownMenuItem className="text-muted-foreground">{user?.email}</DropdownMenuItem>
                     <DropdownMenuItem
                         variant="destructive"
                         onClick={() => {

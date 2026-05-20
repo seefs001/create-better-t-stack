@@ -19,16 +19,39 @@ function PrivateDashboardContent() {
   const privateData = useQuery(api.privateData.get);
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <p>privateData: {privateData?.message}</p>
-      <UserMenu />
-    </div>
+    <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+      <section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="font-mono text-muted-foreground text-xs">CONVEX_AUTH</p>
+            <h1 className="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+            <p className="mt-2 text-muted-foreground text-sm">
+              This route is protected by Convex Auth and Better Auth.
+            </p>
+          </div>
+          <UserMenu />
+        </div>
+      </section>
+      <section className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+          <h2 className="mt-2 font-medium text-lg">Protected route</h2>
+          <p className="mt-3 text-muted-foreground text-sm leading-6">
+            The dashboard content only renders after the authenticated state is ready.
+          </p>
+        </div>
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
+          <h2 className="mt-2 font-medium text-lg">Convex response</h2>
+          <p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
+        </div>
+      </section>
+    </main>
   );
 }
 
 function RouteComponent() {
-  const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(true);
 
   return (
     <>
@@ -36,14 +59,18 @@ function RouteComponent() {
         <PrivateDashboardContent />
       </Authenticated>
       <Unauthenticated>
-        {showSignIn ? (
-          <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-        ) : (
-          <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
-        )}
+        <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+          {showSignIn ? (
+            <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
+          ) : (
+            <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+          )}
+        </main>
       </Unauthenticated>
       <AuthLoading>
-        <div>Loading...</div>
+        <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+          <div className="h-8 w-28 animate-pulse rounded-md bg-muted" />
+        </main>
       </AuthLoading>
     </>
   );

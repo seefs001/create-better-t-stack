@@ -3,101 +3,214 @@
 import { api } from "@{{ projectName }}/backend/convex/_generated/api";
 import { useConvexQuery } from "convex-vue";
 {{else}}
-  {{#unless (eq api "none")}}
-const { $orpc } = useNuxtApp()
-import { useQuery } from '@tanstack/vue-query'
-  {{/unless}}
+{{#unless (eq api "none")}}
+import { useQuery } from "@tanstack/vue-query";
+{{/unless}}
 {{/if}}
-
-const TITLE_TEXT = `
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-    ██║       ███████╗   ██║   ███████║██║     █████╔╝
-    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- `;
 
 {{#if (eq backend "convex")}}
 const healthCheck = useConvexQuery(api.healthCheck.get, {});
 {{else}}
-  {{#unless (eq api "none")}}
-const healthCheck = useQuery($orpc.healthCheck.queryOptions())
+{{#unless (eq api "none")}}
+const { $orpc } = useNuxtApp();
+const healthCheck = useQuery($orpc.healthCheck.queryOptions());
 
 onServerPrefetch(async () => {
   try {
-    await healthCheck.suspense()
+    await healthCheck.suspense();
   } catch {}
-})
-  {{/unless}}
+});
+{{/unless}}
 {{/if}}
 </script>
 
 <template>
-  <UContainer class="py-8">
-    <pre class="overflow-x-auto font-mono text-sm whitespace-pre-wrap">\{{ TITLE_TEXT }}</pre>
+  <main class="min-h-svh bg-background text-foreground">
+    <section class="relative isolate overflow-hidden border-b">
+    <div class="absolute inset-0 -z-10 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:28px_28px] opacity-60"></div>
+    <div class="absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(ellipse_at_top_left,oklch(0.9_0.06_62_/_0.28),transparent_58%)]"></div>
+    <div class="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <div class="rounded-2xl bg-card/95 p-3 shadow-sm ring-1 ring-foreground/10">
+        <div class="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+          <section class="flex min-h-[26rem] flex-col justify-between rounded-xl border bg-background p-4">
+            <div>
+              <div class="mb-5 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                  <span class="size-4 rounded-sm border border-primary/40 bg-primary/15"></span>
+                  <span class="font-bold font-mono text-lg sm:text-xl">GENERATED_STACK</span>
+                </div>
+                <span class="rounded-md bg-primary/15 px-2 py-1 font-mono text-primary text-xs">
+                  READY
+                </span>
+              </div>
 
-    <div class="grid gap-6 mt-6">
-      <UCard>
-        <template #header>
-          <div class="font-medium">API Status</div>
-        </template>
+              <h1 class="max-w-2xl font-semibold text-3xl tracking-tight sm:text-4xl">
+                A generated app shell that already feels designed.
+              </h1>
+              <p class="mt-3 max-w-2xl text-muted-foreground text-sm leading-6">
+                Better T Stack wires the project, then leaves you with a clean demo surface: neutral shadcn tokens, compact navigation, typed status, and no custom component fork.
+              </p>
+            </div>
 
-        {{#if (eq backend "convex")}}
-        <div class="flex items-center gap-2">
-          <UIcon
-            :name="healthCheck === undefined ? 'i-lucide-loader-2' : healthCheck.data.value === 'OK' ? 'i-lucide-check-circle' : 'i-lucide-x-circle'"
-            :class="[
-              healthCheck === undefined ? 'animate-spin text-muted' : '',
-              healthCheck?.data.value === 'OK' ? 'text-success' : 'text-error'
-            ]"
-          />
-          <span class="text-sm">
-            \{{
-              healthCheck === undefined
-                ? "Checking..."
-                : healthCheck.data.value === "OK"
-                  ? "Connected"
-                  : "Error"
-            }}
-          </span>
+            <div class="mt-8 space-y-3">
+              <div class="rounded-md bg-muted/20 p-3">
+                <div class="mb-3 flex items-center gap-2 text-muted-foreground text-xs">
+                  <span class="size-3.5 rounded-sm bg-primary/25"></span>
+                  <span class="font-mono">CLI_COMMAND</span>
+                </div>
+                <div class="flex items-center gap-2 overflow-x-auto font-mono text-sm">
+                  <span class="text-primary">$</span>
+                  <span>{{packageManager}} run dev</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="rounded-xl border bg-background p-4">
+            <div class="mb-4 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <span class="size-4 rounded-full bg-primary/20 ring-1 ring-primary/30"></span>
+                <h2 class="font-bold font-mono text-lg sm:text-xl">PROJECT_STATUS</h2>
+              </div>
+              <span class="rounded-md bg-muted/35 px-2 py-1 font-mono text-muted-foreground text-xs">
+                APPS/WEB
+              </span>
+            </div>
+
+            <p class="mb-5 text-muted-foreground text-xs leading-5">
+              Live checks from the generated application shell.
+            </p>
+
+            <div class="space-y-5">
+              <div class="rounded-md bg-muted/20 p-3">
+                {{#if (eq backend "convex")}}
+                <div class="flex items-start gap-3">
+                  <span
+                    :class="[
+                      'mt-1 size-2.5 rounded-full',
+                      healthCheck === undefined ? 'animate-pulse bg-primary' : '',
+                      healthCheck?.data.value === 'OK' ? 'bg-emerald-500' : '',
+                      healthCheck !== undefined && healthCheck?.data.value !== 'OK' ? 'bg-destructive' : ''
+                    ]"
+                  ></span>
+                  <div>
+                    <p class="font-medium text-sm">
+                      \{{
+                        healthCheck === undefined
+                          ? "API Checking"
+                          : healthCheck.data.value === "OK"
+                            ? "API Connected"
+                            : "API Error"
+                      }}
+                    </p>
+                    <p class="mt-1 text-muted-foreground text-xs leading-5">
+                      \{{
+                        healthCheck === undefined
+                          ? "The app is asking the generated API for a health response."
+                          : healthCheck.data.value === "OK"
+                            ? "The generated client can reach the backend health endpoint."
+                            : "The backend health check returned an unexpected response."
+                      }}
+                    </p>
+                  </div>
+                </div>
+                {{else}}
+                {{#unless (eq api "none")}}
+                <div class="flex items-start gap-3">
+                  <span
+                    :class="[
+                      'mt-1 size-2.5 rounded-full',
+                      healthCheck.isLoading.value ? 'animate-pulse bg-primary' : '',
+                      healthCheck.isSuccess.value ? 'bg-emerald-500' : '',
+                      healthCheck.isError.value ? 'bg-destructive' : ''
+                    ]"
+                  ></span>
+                  <div>
+                    <p class="font-medium text-sm">
+                      <template v-if="healthCheck.isLoading.value">API Checking</template>
+                      <template v-else-if="healthCheck.isSuccess.value">API Connected</template>
+                      <template v-else-if="healthCheck.isError.value">API Error</template>
+                      <template v-else>API Idle</template>
+                    </p>
+                    <p class="mt-1 text-muted-foreground text-xs leading-5">
+                      <template v-if="healthCheck.isLoading.value">
+                        The app is asking the generated API for a health response.
+                      </template>
+                      <template v-else-if="healthCheck.isSuccess.value">
+                        The generated client can reach the backend health endpoint.
+                      </template>
+                      <template v-else-if="healthCheck.isError.value">
+                        \{{ healthCheck.error.value?.message || 'Failed to connect' }}
+                      </template>
+                      <template v-else>
+                        Waiting for the generated API client.
+                      </template>
+                    </p>
+                  </div>
+                </div>
+                {{else}}
+                <div class="flex items-start gap-3">
+                  <span class="mt-1 size-2.5 rounded-full bg-muted-foreground"></span>
+                  <div>
+                    <p class="font-medium text-sm">API No API</p>
+                    <p class="mt-1 text-muted-foreground text-xs leading-5">
+                      This project was generated without an API layer.
+                    </p>
+                  </div>
+                </div>
+                {{/unless}}
+                {{/if}}
+              </div>
+
+              <dl class="grid gap-2">
+                <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                  <dt class="font-mono text-muted-foreground text-xs">Frontend</dt>
+                  <dd>
+                    <span class="block font-medium text-sm">Nuxt</span>
+                    <span class="block text-muted-foreground text-xs">Vue web app</span>
+                  </dd>
+                </div>
+                <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                  <dt class="font-mono text-muted-foreground text-xs">Backend</dt>
+                  <dd>
+                    <span class="block font-medium text-sm">{{#if (eq backend "convex")}}Convex{{else}}{{backend}}{{/if}}</span>
+                    <span class="block text-muted-foreground text-xs">{{#if (eq runtime "none")}}No separate runtime{{else}}{{runtime}} runtime{{/if}}</span>
+                  </dd>
+                </div>
+                <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                  <dt class="font-mono text-muted-foreground text-xs">API</dt>
+                  <dd>
+                    <span class="block font-medium text-sm">{{#if (eq api "orpc")}}oRPC{{else}}None{{/if}}</span>
+                    <span class="block text-muted-foreground text-xs">Type-safe boundary</span>
+                  </dd>
+                </div>
+                <div class="grid grid-cols-[6rem_1fr] gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
+                  <dt class="font-mono text-muted-foreground text-xs">Data</dt>
+                  <dd>
+                    <span class="block font-medium text-sm">{{#if (eq backend "convex")}}Convex{{else if (eq database "none")}}None{{else}}{{database}} + {{orm}}{{/if}}</span>
+                    <span class="block text-muted-foreground text-xs">{{#if (eq dbSetup "none")}}Manual setup{{else}}{{dbSetup}} setup{{/if}}</span>
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </section>
         </div>
-        {{else}}
-        {{#unless (eq api "none")}}
-        <div class="flex items-center gap-2">
-          <UIcon
-            :name="healthCheck.isLoading.value ? 'i-lucide-loader-2' : healthCheck.isSuccess.value ? 'i-lucide-check-circle' : 'i-lucide-x-circle'"
-            :class="[
-              healthCheck.isLoading.value ? 'animate-spin text-muted' : '',
-              healthCheck.isSuccess.value ? 'text-success' : '',
-              healthCheck.isError.value ? 'text-error' : ''
-            ]"
-          />
-          <span class="text-sm">
-            <template v-if="healthCheck.isLoading.value">
-              Checking...
-            </template>
-            <template v-else-if="healthCheck.isSuccess.value">
-              Connected (\{{ healthCheck.data.value }})
-            </template>
-            <template v-else-if="healthCheck.isError.value">
-              Error: \{{ healthCheck.error.value?.message || 'Failed to connect' }}
-            </template>
-            <template v-else>
-              Idle
-            </template>
-          </span>
+      </div>
+
+      <section class="rounded-lg bg-card p-4 ring-1 ring-border/70">
+        <div class="grid gap-5 lg:grid-cols-[13rem_1fr]">
+          <div>
+            <p class="font-mono text-muted-foreground text-xs">WORKBENCH_RULES</p>
+            <h2 class="mt-3 font-semibold text-lg tracking-tight">Built to be replaced</h2>
+          </div>
+          <div class="grid gap-3 text-sm sm:grid-cols-3">
+            <p class="rounded-md bg-muted/20 p-3">Typed defaults stay visible at the edge.</p>
+            <p class="rounded-md bg-muted/20 p-3">The shell proves wiring, then gets out of the way.</p>
+            <p class="rounded-md bg-muted/20 p-3">Tokens carry the style, not component forks.</p>
+          </div>
         </div>
-        {{/unless}}
-        {{/if}}
-      </UCard>
+      </section>
     </div>
-  </UContainer>
+  </section>
+</main>
 </template>

@@ -42,8 +42,8 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
   }));
 
   return (
-    <div class="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 class="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+    <div class="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+      <h1 class="text-2xl font-semibold tracking-tight">Sign In</h1>
 
       <form
         onSubmit={(e) => {
@@ -51,24 +51,25 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
           e.stopPropagation();
           form.handleSubmit();
         }}
-        class="space-y-4"
+        class="mt-6 flex flex-col gap-5"
       >
         <div>
           <form.Field name="email">
             {(field) => (
               <div class="space-y-2">
-                <label for={field().name}>Email</label>
+                <label for={field().name} class="text-sm font-medium">Email</label>
                 <input
                   id={field().name}
                   name={field().name}
                   type="email"
+                  placeholder="Enter your email"
                   value={field().state.value}
                   onBlur={field().handleBlur}
                   onInput={(e) => field().handleChange(e.currentTarget.value)}
-                  class="w-full rounded border p-2"
+                  class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
                 />
                 <For each={field().state.meta.errors}>
-                  {(error) => <p class="text-sm text-red-600">{error?.message}</p>}
+                  {(error) => <p class="text-destructive text-xs">{error?.message}</p>}
                 </For>
               </div>
             )}
@@ -79,18 +80,19 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
           <form.Field name="password">
             {(field) => (
               <div class="space-y-2">
-                <label for={field().name}>Password</label>
+                <label for={field().name} class="text-sm font-medium">Password</label>
                 <input
                   id={field().name}
                   name={field().name}
                   type="password"
+                  placeholder="Enter your password"
                   value={field().state.value}
                   onBlur={field().handleBlur}
                   onInput={(e) => field().handleChange(e.currentTarget.value)}
-                  class="w-full rounded border p-2"
+                  class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
                 />
                 <For each={field().state.meta.errors}>
-                  {(error) => <p class="text-sm text-red-600">{error?.message}</p>}
+                  {(error) => <p class="text-destructive text-xs">{error?.message}</p>}
                 </For>
               </div>
             )}
@@ -101,7 +103,7 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
           {(state) => (
             <button
               type="submit"
-              class="w-full rounded bg-indigo-600 p-2 text-white hover:bg-indigo-700 disabled:opacity-50"
+              class="inline-flex h-11 w-full items-center justify-center rounded-full bg-[oklch(0.62_0.22_255)] px-4 text-sm font-semibold text-[oklch(0.99_0.004_279)] transition-colors hover:bg-[oklch(0.57_0.23_255)] disabled:pointer-events-none disabled:opacity-50"
               disabled={!state().canSubmit || state().isSubmitting}
             >
               {state().isSubmitting ? "Submitting..." : "Sign In"}
@@ -110,13 +112,14 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
         </form.Subscribe>
       </form>
 
-      <div class="mt-4 text-center">
+      <div class="mt-5 flex flex-col items-center gap-3 text-center">
         <button
           type="button"
           onClick={onSwitchToSignUp}
-          class="text-sm text-indigo-600 hover:text-indigo-800 hover:underline"
+          class="inline-flex h-auto gap-1.5 rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground"
         >
-          Need an account? Sign Up
+          <span>Need to create an account?</span>
+          <span class="text-[oklch(0.62_0.22_255)]">Sign Up</span>
         </button>
       </div>
     </div>

@@ -1,0 +1,282 @@
+import type { LucideIcon } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Code2,
+  Database,
+  FileCode2,
+  GitBranch,
+  Layers3,
+  PackageCheck,
+  ShieldCheck,
+  Terminal,
+} from "lucide-react";
+
+import { Button } from "@{{projectName}}/ui/components/button";
+
+export type ApiStatus = "checking" | "connected" | "disconnected" | "error" | "not-configured";
+
+type StackItem = {
+  label: string;
+  value: string;
+  detail: string;
+};
+
+type WorkbenchItem = {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+};
+
+type HomeContentProps = {
+  apiStatus: ApiStatus;
+};
+
+const stackItems: StackItem[] = [
+  {
+    label: "Frontend",
+    value: `{{#if (includes frontend "next")}}Next.js{{else if (includes frontend "tanstack-router")}}TanStack Router{{else if (includes frontend "tanstack-start")}}TanStack Start{{else if (includes frontend "react-router")}}React Router{{else}}React{{/if}}`,
+    detail: "Generated web shell",
+  },
+  {
+    label: "Backend",
+    value: `{{#if (eq backend "self")}}Full-stack{{else if (eq backend "none")}}None{{else if (eq backend "convex")}}Convex{{else}}{{backend}}{{/if}}`,
+    detail: `{{#if (eq runtime "none")}}No separate runtime{{else}}{{runtime}} runtime{{/if}}`,
+  },
+  {
+    label: "API",
+    value: `{{#if (eq api "trpc")}}tRPC{{else if (eq api "orpc")}}oRPC{{else}}None{{/if}}`,
+    detail: "Typed request boundary",
+  },
+  {
+    label: "Data",
+    value: `{{#if (eq backend "convex")}}Convex{{else if (eq database "none")}}None{{else}}{{database}} + {{orm}}{{/if}}`,
+    detail: `{{#if (eq dbSetup "none")}}Manual setup{{else}}{{dbSetup}} setup{{/if}}`,
+  },
+];
+
+const workbenchItems: WorkbenchItem[] = [
+  {
+    title: "Minimal files",
+    description: "The template keeps the first screen useful without hiding the generated project shape.",
+    icon: FileCode2,
+  },
+  {
+    title: "Replaceable UI",
+    description: "Base UI-backed shadcn components stay easy to swap, extend, or remove.",
+    icon: Layers3,
+  },
+  {
+    title: "Typed boundaries",
+    description: "Routes, API calls, auth, database access, and runtime choices remain explicit.",
+    icon: ShieldCheck,
+  },
+];
+
+const apiCopy: Record<ApiStatus, { label: string; description: string; className: string }> = {
+  checking: {
+    label: "Checking",
+    description: "The app is asking the generated API for a health response.",
+    className: "bg-primary",
+  },
+  connected: {
+    label: "Connected",
+    description: "The generated client can reach the backend health endpoint.",
+    className: "bg-emerald-500",
+  },
+  disconnected: {
+    label: "Disconnected",
+    description: "The client rendered, but the health endpoint did not return data.",
+    className: "bg-destructive",
+  },
+  error: {
+    label: "Error",
+    description: "The backend health check returned an unexpected response.",
+    className: "bg-destructive",
+  },
+  "not-configured": {
+    label: "No API",
+    description: "This project was generated without an API layer.",
+    className: "bg-muted-foreground",
+  },
+};
+
+export function HomeContent({ apiStatus }: HomeContentProps) {
+  const status = apiCopy[apiStatus];
+
+  return (
+    <main className="min-h-svh bg-background text-foreground">
+      <section className="relative isolate overflow-hidden border-b bg-background">
+        <div
+          className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:28px_28px] opacity-45"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute inset-x-0 top-0 -z-10 h-64 bg-[radial-gradient(ellipse_at_top_left,oklch(0.9_0.06_62_/_0.18),transparent_58%)]"
+          aria-hidden="true"
+        />
+        <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1.02fr_0.98fr] lg:py-14">
+          <div className="flex min-h-[28rem] flex-col justify-between">
+            <div>
+              <div className="mb-8 inline-flex items-center gap-2 rounded-full border bg-background/80 px-3 py-1 text-muted-foreground text-xs shadow-sm">
+                <Terminal className="size-3.5 text-foreground" />
+                <span className="font-mono">GENERATED_STACK</span>
+                <span className="h-3 w-px bg-border" />
+                <span>{{packageManager}} workspace</span>
+              </div>
+
+              <h1 className="max-w-3xl text-balance font-semibold text-4xl tracking-tight sm:text-5xl">
+                A generated app shell that already feels designed.
+              </h1>
+              <p className="mt-5 max-w-2xl text-muted-foreground text-sm leading-6 sm:text-base">
+                Better T Stack wires the project, then leaves you with a clean demo surface:
+                neutral shadcn tokens, compact navigation, typed status, and no custom component fork.
+              </p>
+            </div>
+
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+              <Button
+                render={<a href="https://better-t-stack.dev/docs" />}
+                nativeButton={false}
+                size="lg"
+              >
+                Read the docs
+                <ArrowRight data-icon="inline-end" className="size-4" />
+              </Button>
+              <Button
+                render={<a href="https://github.com/AmanVarshney01/create-better-t-stack" />}
+                nativeButton={false}
+                variant="outline"
+                size="lg"
+              >
+                View on GitHub
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-card p-2.5 shadow-[0_16px_48px_oklch(0.2_0.01_279_/_0.08)] ring-1 ring-border">
+            <div className="rounded-xl border bg-background">
+              <div className="flex items-center justify-between border-b px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <span className="size-2.5 rounded-full bg-destructive" />
+                  <span className="size-2.5 rounded-full bg-muted-foreground/40" />
+                  <span className="size-2.5 rounded-full bg-emerald-500" />
+                </div>
+                <span className="font-mono text-muted-foreground text-xs">apps/web</span>
+              </div>
+
+              <div className="grid gap-0 lg:grid-cols-[0.92fr_1.08fr]">
+                <div className="border-b p-4 lg:border-r lg:border-b-0">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <PackageCheck className="size-4 text-primary" />
+                      <p className="font-mono font-medium text-sm">PROJECT_STATUS</p>
+                    </div>
+                    <span className="rounded-md bg-primary/10 px-2 py-1 font-mono text-primary text-xs">
+                      READY
+                    </span>
+                  </div>
+
+                  <div className="rounded-lg bg-muted/40 p-3">
+                    <div className="flex items-start gap-3">
+                      <span className={`mt-1 size-2.5 rounded-full ${status.className}`} />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm">API {status.label}</p>
+                          {apiStatus === "connected" ? (
+                            <CheckCircle2 className="size-4 text-emerald-500" />
+                          ) : null}
+                        </div>
+                        <p className="mt-1 text-muted-foreground text-xs leading-5">
+                          {status.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-2">
+                    {stackItems.map((item) => (
+                      <div
+                        key={item.label}
+                        className="grid grid-cols-[5.5rem_1fr] gap-3 border-t py-3 first:border-t-0 first:pt-0"
+                      >
+                        <span className="font-mono text-muted-foreground text-xs">
+                          {item.label}
+                        </span>
+                        <span>
+                          <span className="block font-medium text-sm">{item.value}</span>
+                          <span className="block text-muted-foreground text-xs">{item.detail}</span>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-4">
+                  <div className="mb-3 flex items-center gap-2 text-muted-foreground text-xs">
+                    <Code2 className="size-3.5 text-primary" />
+                    <span className="font-mono">CLI_COMMAND</span>
+                  </div>
+                  <div className="overflow-x-auto rounded-lg bg-muted/40 p-3 font-mono text-sm">
+                    <span className="text-primary">$</span> {{packageManager}} run dev
+                  </div>
+
+                  <div className="mt-4 rounded-lg border bg-background">
+                    <div className="border-b px-3 py-2 font-mono text-muted-foreground text-xs">
+                      FILE_PREVIEW
+                    </div>
+                    <div className="grid gap-1 p-3 font-mono text-xs">
+                      <div className="flex items-center gap-2 rounded-md bg-muted/50 px-2 py-1.5 text-foreground">
+                        <GitBranch className="size-3.5" />
+                        <span>apps/web</span>
+                      </div>
+                      <div className="flex items-center gap-2 px-2 py-1.5 text-muted-foreground">
+                        <Database className="size-3.5" />
+                        <span>packages/server</span>
+                      </div>
+                      <div className="flex items-center gap-2 px-2 py-1.5 text-muted-foreground">
+                        <FileCode2 className="size-3.5" />
+                        <span>packages/ui</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto grid w-full max-w-6xl gap-4 px-4 py-5 sm:px-6 md:grid-cols-3">
+        <div className="rounded-xl bg-card p-4 ring-1 ring-border md:col-span-2">
+          <div className="mb-4 flex items-center gap-2">
+            <ShieldCheck className="size-4 text-primary" />
+            <p className="font-mono text-muted-foreground text-xs">WORKBENCH_RULES</p>
+          </div>
+          <div className="grid divide-y divide-border overflow-hidden rounded-lg border md:grid-cols-3 md:divide-x md:divide-y-0">
+            {workbenchItems.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <div key={item.title} className="p-4">
+                  <Icon className="mb-3 size-4 text-primary" />
+                  <p className="font-medium text-sm">{item.title}</p>
+                  <p className="mt-2 text-muted-foreground text-xs leading-5">
+                    {item.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <aside className="rounded-xl bg-card p-4 ring-1 ring-border">
+          <p className="font-mono text-muted-foreground text-xs">NEXT_STEP</p>
+          <p className="mt-3 text-sm leading-6">
+            Replace this demo content with your product surface. The generated stack is already wired.
+          </p>
+        </aside>
+      </section>
+    </main>
+  );
+}

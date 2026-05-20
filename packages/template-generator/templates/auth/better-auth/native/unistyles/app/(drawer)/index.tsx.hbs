@@ -29,7 +29,8 @@ export default function Home() {
     <Container>
       <ScrollView>
         <View style={styles.pageContainer}>
-          <Text style={styles.headerTitle}>BETTER T STACK</Text>
+          <Text style={styles.headerEyebrow}>GENERATED_STACK</Text>
+          <Text style={styles.headerTitle}>Better T Stack</Text>
           {session?.user ? (
             <View style={styles.sessionInfoCard}>
               <View style={styles.sessionUserRow}>
@@ -58,7 +59,7 @@ export default function Home() {
           ) : null}
           {{#unless (eq api "none")}}
           <View style={styles.apiStatusCard}>
-            <Text style={styles.cardTitle}>API Status</Text>
+            <Text style={styles.cardTitle}>PROJECT_STATUS</Text>
             <View style={styles.apiStatusRow}>
               <View
                 style={[
@@ -109,6 +110,13 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: 30,
     fontWeight: "bold",
     marginBottom: 16,
+  },
+  headerEyebrow: {
+    color: theme?.colors?.primary,
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+    marginBottom: 6,
   },
   sessionInfoCard: {
     marginBottom: 24,

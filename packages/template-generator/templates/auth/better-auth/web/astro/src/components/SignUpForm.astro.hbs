@@ -2,61 +2,62 @@
 import { authClient } from "../lib/auth-client";
 ---
 
-<div class="mx-auto mt-10 w-full max-w-md p-6">
-  <h1 class="mb-6 text-center font-bold text-3xl text-white">Create Account</h1>
+<div class="mx-auto my-auto w-full max-w-md rounded-2xl bg-card p-5 text-card-foreground shadow-[0_18px_50px_oklch(0.2_0.01_279_/_0.10)] ring-1 ring-border sm:p-6">
+  <h1 class="text-2xl font-semibold tracking-tight">Sign Up</h1>
 
-  <form id="signup-form" class="space-y-4">
-    <div class="space-y-1">
-      <label for="name" class="block text-sm font-medium text-neutral-300">Name</label>
+  <form id="signup-form" class="mt-6 flex flex-col gap-5">
+    <div class="space-y-2">
+      <label for="name" class="block text-sm font-medium">Name</label>
       <input
         id="name"
         name="name"
         type="text"
         required
-        class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-white placeholder-neutral-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        placeholder="John Doe"
+        class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
+        placeholder="Enter your name"
       />
     </div>
 
-    <div class="space-y-1">
-      <label for="email" class="block text-sm font-medium text-neutral-300">Email</label>
+    <div class="space-y-2">
+      <label for="email" class="block text-sm font-medium">Email</label>
       <input
         id="email"
         name="email"
         type="email"
         required
-        class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-white placeholder-neutral-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        placeholder="you@example.com"
+        class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
+        placeholder="Enter your email"
       />
     </div>
 
-    <div class="space-y-1">
-      <label for="password" class="block text-sm font-medium text-neutral-300">Password</label>
+    <div class="space-y-2">
+      <label for="password" class="block text-sm font-medium">Password</label>
       <input
         id="password"
         name="password"
         type="password"
         required
         minlength="8"
-        class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-white placeholder-neutral-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        placeholder="••••••••"
+        class="h-11 w-full min-w-0 rounded-2xl border border-transparent bg-muted px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/50"
+        placeholder="Enter your password"
       />
-      <p class="text-xs text-neutral-500">Must be at least 8 characters</p>
+      <p class="text-muted-foreground text-xs">Must be at least 8 characters</p>
     </div>
 
-    <p id="form-error" class="text-sm text-red-500 hidden"></p>
+    <p id="form-error" class="hidden text-destructive text-xs"></p>
 
     <button
       type="submit"
-      class="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      class="inline-flex h-11 w-full items-center justify-center rounded-full bg-[oklch(0.62_0.22_255)] px-4 text-sm font-semibold text-[oklch(0.99_0.004_279)] transition-colors hover:bg-[oklch(0.57_0.23_255)] focus:outline-none focus:ring-3 focus:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
     >
       Sign Up
     </button>
   </form>
 
-  <div class="mt-4 text-center">
-    <a href="/login" class="text-indigo-400 hover:text-indigo-300 text-sm">
-      Already have an account? Sign In
+  <div class="mt-5 flex flex-col items-center gap-3 text-center">
+    <a href="/login" class="inline-flex h-auto gap-1.5 rounded-none px-0 text-sm font-medium text-muted-foreground hover:text-muted-foreground">
+      <span>Already have an account?</span>
+      <span class="text-[oklch(0.62_0.22_255)]">Sign In</span>
     </a>
   </div>
 </div>

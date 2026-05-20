@@ -59,8 +59,9 @@ export default function Home() {
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
       >
+        <Text style={styles.heroEyebrow}>GENERATED_STACK</Text>
         <Text style={styles.heroTitle}>
-          BETTER T STACK
+          Better T Stack
         </Text>
 
         {{#unless (and (eq backend "convex") (eq auth "better-auth"))}}
@@ -194,7 +195,7 @@ export default function Home() {
           </View>
         ) : null}
         <View style={styles.apiStatusCard}>
-          <Text style={styles.apiStatusTitle}>API Status</Text>
+          <Text style={styles.apiStatusTitle}>PROJECT_STATUS</Text>
           <View style={styles.apiStatusRow}>
             <View
               style={[
@@ -238,6 +239,13 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.foreground,
     marginBottom: theme.spacing.sm,
   },
+  heroEyebrow: {
+    fontSize: theme.fontSize.xs,
+    fontWeight: "700",
+    color: theme.colors.primary,
+    letterSpacing: 0.5,
+    marginBottom: theme.spacing.xs,
+  },
   heroSubtitle: {
     fontSize: theme.fontSize.lg,
     color: theme.colors.mutedForeground,
@@ -247,7 +255,7 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.card,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    borderRadius: theme.borderRadius.xl,
+    borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.lg,
     marginBottom: theme.spacing.lg,
     shadowColor: "#000",

@@ -5,8 +5,10 @@
 	let showSignIn = $state(true);
 </script>
 
-{#if showSignIn}
-	<SignInForm switchToSignUp={() => showSignIn = false} />
-{:else}
-	<SignUpForm switchToSignIn={() => showSignIn = true} />
-{/if}
+<main class="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+	{#if showSignIn}
+		<SignInForm switchToSignUp={() => showSignIn = false} />
+	{:else}
+		<SignUpForm switchToSignIn={() => showSignIn = true} />
+	{/if}
+</main>

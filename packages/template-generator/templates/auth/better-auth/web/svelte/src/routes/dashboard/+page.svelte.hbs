@@ -33,27 +33,87 @@
 </script>
 
 {#if $sessionQuery.isPending}
-	<div>Loading...</div>
+	<main class="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+		<div class="h-8 w-28 animate-pulse rounded-md bg-muted"></div>
+	</main>
 {:else if !$sessionQuery.data}
-	<div>Redirecting to login...</div>
+	<main class="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+		<p class="text-muted-foreground text-sm">Redirecting to login...</p>
+	</main>
 {:else}
-	<div>
-		<h1>Dashboard</h1>
-		<p>Welcome {$sessionQuery.data.user.name}</p>
+	<main class="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+		<section class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+			<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+				<div>
+					<p class="font-mono text-muted-foreground text-xs">AUTH_SESSION</p>
+					<h1 class="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+					<p class="mt-2 text-muted-foreground text-sm">
+						Signed in as {$sessionQuery.data.user.name || $sessionQuery.data.user.email}.
+					</p>
+				</div>
+				<div class="rounded-lg bg-muted/50 px-3 py-2 text-sm ring-1 ring-border/60">
+					<p class="font-mono text-muted-foreground text-xs">EMAIL</p>
+					<p class="mt-1 break-all font-medium">{$sessionQuery.data.user.email}</p>
+				</div>
+			</div>
+		</section>
+		<section class="grid gap-4 md:grid-cols-2">
+			<div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+				<p class="font-mono text-muted-foreground text-xs">ACCOUNT</p>
+				<h2 class="mt-2 font-medium text-lg">Profile</h2>
+				<dl class="mt-4 space-y-3 text-sm">
+					<div class="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+						<dt class="text-muted-foreground">Name</dt>
+						<dd class="font-medium">{$sessionQuery.data.user.name || 'User'}</dd>
+					</div>
+					<div class="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+						<dt class="text-muted-foreground">Email</dt>
+						<dd class="break-all font-medium">{$sessionQuery.data.user.email}</dd>
+					</div>
+				</dl>
+			</div>
+			<div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+				<p class="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+				<h2 class="mt-2 font-medium text-lg">Protected route</h2>
+				<p class="mt-3 text-muted-foreground text-sm leading-6">
+					This page is rendered only after Better Auth returns an active session.
+				</p>
+			</div>
 		{{#if (eq api "orpc")}}
-		<p>API: {$privateDataQuery.data?.message}</p>
+			<div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+				<p class="font-mono text-muted-foreground text-xs">PRIVATE_API</p>
+				<h2 class="mt-2 font-medium text-lg">oRPC response</h2>
+				<p class="mt-3 text-sm">{$privateDataQuery.data?.message ?? 'Waiting for private data...'}</p>
+			</div>
 		{{/if}}
 		{{#if (eq payments "polar")}}
-		<p>Plan: {customerState?.activeSubscriptions?.length > 0 ? "Pro" : "Free"}</p>
-		{#if customerState?.activeSubscriptions?.length > 0}
-			<button onclick={async () => await authClient.customer.portal()}>
-				Manage Subscription
-			</button>
-		{:else}
-			<button onclick={async () => await authClient.checkout({ slug: "pro" })}>
-				Upgrade to Pro
-			</button>
-		{/if}
+			<div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+				<p class="font-mono text-muted-foreground text-xs">BILLING</p>
+				<h2 class="mt-2 font-medium text-lg">
+					{customerState?.activeSubscriptions?.length > 0 ? "Pro plan" : "Free plan"}
+				</h2>
+				<p class="mt-3 text-muted-foreground text-sm leading-6">
+					Manage the generated Polar customer state from this protected surface.
+				</p>
+				<div class="mt-4">
+					{#if customerState?.activeSubscriptions?.length > 0}
+						<button
+							class="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
+							onclick={async () => await authClient.customer.portal()}
+						>
+							Manage Subscription
+						</button>
+					{:else}
+						<button
+							class="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
+							onclick={async () => await authClient.checkout({ slug: "pro" })}
+						>
+							Upgrade to Pro
+						</button>
+					{/if}
+				</div>
+			</div>
 		{{/if}}
-	</div>
+		</section>
+	</main>
 {/if}

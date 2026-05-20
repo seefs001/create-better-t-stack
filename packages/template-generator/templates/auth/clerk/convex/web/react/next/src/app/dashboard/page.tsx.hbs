@@ -11,18 +11,44 @@ export default function Dashboard() {
   return (
     <>
       <Authenticated>
-        <div>
-          <h1>Dashboard</h1>
-          <p>Welcome {user.user?.fullName}</p>
-          <p>privateData: {privateData?.message}</p>
-          <UserButton />
-        </div>
+        <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+          <section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="font-mono text-muted-foreground text-xs">CLERK_SESSION</p>
+                <h1 className="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+                <p className="mt-2 text-muted-foreground text-sm">
+                  Signed in as {user.user?.fullName || user.user?.primaryEmailAddress?.emailAddress}.
+                </p>
+              </div>
+              <UserButton />
+            </div>
+          </section>
+          <section className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+              <p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+              <h2 className="mt-2 font-medium text-lg">Protected route</h2>
+              <p className="mt-3 text-muted-foreground text-sm leading-6">
+                This page is rendered only after Clerk returns an active session.
+              </p>
+            </div>
+            <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+              <p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
+              <h2 className="mt-2 font-medium text-lg">Convex response</h2>
+              <p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
+            </div>
+          </section>
+        </main>
       </Authenticated>
       <Unauthenticated>
-        <SignInButton />
+        <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+          <SignInButton />
+        </main>
       </Unauthenticated>
       <AuthLoading>
-        <div>Loading...</div>
+        <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+          <div className="h-8 w-28 animate-pulse rounded-md bg-muted" />
+        </main>
       </AuthLoading>
     </>
   );

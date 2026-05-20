@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from '@nuxt/ui'
 {{#if (eq auth "better-auth")}}
 import UserMenu from './UserMenu.vue'
 {{/if}}
 
 const route = useRoute()
 
-const items = computed<NavigationMenuItem[]>(() => [
-    { label: "Home", to: "/", active: route.path === "/" },
+const items = computed(() => [
+    { label: "Demo", to: "/", active: route.path === "/" },
     {{#if (or (eq auth "better-auth") (eq auth "clerk"))}}
     { label: "Dashboard", to: "/dashboard", active: route.path.startsWith("/dashboard") },
     {{/if}}
@@ -21,20 +20,68 @@ const items = computed<NavigationMenuItem[]>(() => [
 </script>
 
 <template>
-  <UHeader>
-    <template #left>
-      <UNavigationMenu :items="items" />
-    </template>
+  <header class="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur">
+    <div class="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+      <div class="flex min-w-0 items-center gap-6">
+        <div class="flex min-w-0 items-center gap-3">
+          <div class="grid size-5 shrink-0 grid-cols-2 gap-0.5" aria-hidden="true">
+            <span class="bg-foreground" />
+            <span class="bg-foreground" />
+            <span class="bg-foreground" />
+            <span class="bg-foreground/20" />
+          </div>
+          <span class="truncate font-semibold text-sm tracking-wide">{{projectName}}</span>
+        </div>
 
-    <template #right>
-      <UColorModeButton />
+        <nav class="hidden items-center gap-2 lg:flex" aria-label="Main navigation">
+          <NuxtLink
+            v-for="item in items"
+            :key="item.to"
+            :to="item.to"
+            :class="[
+              'rounded-md px-2 py-1 text-sm transition-colors hover:bg-muted/60 hover:text-foreground',
+              item.active ? 'text-foreground' : 'text-muted-foreground'
+            ]"
+          >
+            \{{ item.label }}
+          </NuxtLink>
+          <NuxtLink
+            to="https://better-t-stack.dev/docs"
+            external
+            class="rounded-md px-2 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground"
+          >
+            Docs
+          </NuxtLink>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-2">
+      <NuxtLink
+        to="https://better-t-stack.dev/docs"
+        external
+        class="hidden h-9 w-64 items-center gap-2 rounded-full border border-border bg-background px-3 text-left text-muted-foreground text-sm shadow-sm transition-colors hover:bg-muted/50 hover:text-foreground xl:flex"
+        aria-label="Search docs"
+      >
+        <UIcon name="i-lucide-search" class="size-4" />
+        <span class="flex-1">Search docs</span>
+        <kbd class="rounded-md border border-border bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">⌘</kbd>
+        <kbd class="rounded-md border border-border bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">K</kbd>
+      </NuxtLink>
+      <div class="flex items-center gap-1 rounded-full border border-border bg-background p-0.5 shadow-sm">
+      <UColorModeButton variant="ghost" />
+      <NuxtLink
+        to="https://github.com/AmanVarshney01/create-better-t-stack"
+        external
+        class="inline-flex size-7 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted"
+        aria-label="GitHub repository"
+      >
+        <UIcon name="i-lucide-github" class="size-4" />
+      </NuxtLink>
+      </div>
       {{#if (eq auth "better-auth")}}
       <UserMenu />
       {{/if}}
-    </template>
-
-    <template #body>
-      <UNavigationMenu :items="items" orientation="vertical" class="-mx-2.5" />
-    </template>
-  </UHeader>
+      </div>
+    </div>
+  </header>
 </template>

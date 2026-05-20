@@ -1,0 +1,223 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-20T11:32:26+08:00",
+  "title": "Design System: Better T Stack",
+  "extensions": {
+    "strategy": {
+      "register": "product",
+      "northStar": "The Typed Workbench",
+      "summary": "A compact developer workbench for configuring, previewing, and generating type-safe TypeScript projects.",
+      "colorStrategy": "Restrained neutral system with one action color. Accent is reserved for action, selection, focus, and state.",
+      "tone": ["precise", "terminal-native", "restrained"],
+      "scene": "A developer is evaluating and generating a stack from a browser or terminal while comparing commands, files, options, and docs."
+    },
+    "colorMeta": {
+      "background-light": {
+        "role": "surface",
+        "displayName": "Light Workbench Canvas",
+        "canonical": "oklch(0.955 0.004 279)",
+        "usage": "Default generated-template background and wide app canvas."
+      },
+      "card-light": {
+        "role": "surface",
+        "displayName": "Light Card Surface",
+        "canonical": "oklch(0.99 0.003 279)",
+        "usage": "Cards, auth panels, popovers, and primary content surfaces."
+      },
+      "primary-light": {
+        "role": "action",
+        "displayName": "Neutral Ink Primary",
+        "canonical": "oklch(0.22 0.012 279)",
+        "usage": "Primary actions, selected state, focus affordances, and command prompts."
+      },
+      "muted-light": {
+        "role": "supporting-surface",
+        "displayName": "Muted Utility Surface",
+        "canonical": "oklch(0.92 0.005 279)",
+        "usage": "Inputs, secondary controls, command surfaces, hover states, and low-emphasis panels."
+      },
+      "border-light": {
+        "role": "boundary",
+        "displayName": "Light Workbench Border",
+        "canonical": "oklch(0.88 0.006 279)",
+        "usage": "Panel boundaries, input borders, separators, and header dividers."
+      },
+      "foreground-light": {
+        "role": "text",
+        "displayName": "Ink Text",
+        "canonical": "oklch(0.19 0.01 279)",
+        "usage": "Primary text in light mode."
+      },
+      "muted-foreground-light": {
+        "role": "text",
+        "displayName": "Dim Metadata",
+        "canonical": "oklch(0.55 0.012 279)",
+        "usage": "Secondary copy, metadata, hints, and inactive navigation."
+      },
+      "background-dark": {
+        "role": "surface",
+        "displayName": "Dark Workbench Canvas",
+        "canonical": "oklch(0.15 0.01 279)",
+        "usage": "Dark mode app canvas and code-adjacent surfaces."
+      },
+      "card-dark": {
+        "role": "surface",
+        "displayName": "Dark Card Surface",
+        "canonical": "oklch(0.21 0.01 279)",
+        "usage": "Dark mode cards, popovers, and primary panels."
+      },
+      "primary-dark": {
+        "role": "action",
+        "displayName": "Soft Neutral Primary",
+        "canonical": "oklch(0.92 0.006 279)",
+        "usage": "Primary actions, selected state, and focus in dark mode."
+      },
+      "muted-dark": {
+        "role": "supporting-surface",
+        "displayName": "Dark Muted Utility",
+        "canonical": "oklch(0.27 0.01 279)",
+        "usage": "Dark mode input surfaces, hover states, badges, and low-emphasis panels."
+      },
+      "border-dark": {
+        "role": "boundary",
+        "displayName": "Dark Workbench Border",
+        "canonical": "oklch(0.985 0.004 279 / 10%)",
+        "usage": "Dark mode dividers, panel outlines, and input borders."
+      },
+      "destructive": {
+        "role": "semantic",
+        "displayName": "Validation Red",
+        "canonical": "oklch(0.58 0.22 27)",
+        "usage": "Validation errors, destructive actions, failed generation, and compatibility failures."
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Mono Tool Title",
+        "purpose": "Page-level tool headings, shell labels, command titles, and file-like labels."
+      },
+      "headline": {
+        "displayName": "Compact Panel Heading",
+        "purpose": "Panel headings, form titles, auth headings, and workbench section titles."
+      },
+      "body": {
+        "displayName": "Compact Product Body",
+        "purpose": "Descriptions, helper text, status copy, and generated shell content."
+      },
+      "label": {
+        "displayName": "Uppercase Metadata",
+        "purpose": "Object names, command labels, section labels, badges, and technical metadata."
+      }
+    },
+    "radius": {
+      "strategy": "Small product radii by default, with rounded auth controls only where the form pattern benefits from softness.",
+      "tokens": {
+        "base": "0.625rem",
+        "panel": "0.875rem",
+        "auth-card": "1rem",
+        "auth-control": "1rem",
+        "pill-action": "999px"
+      }
+    },
+    "spacing": {
+      "strategy": "Compact product spacing with clear grouping. Avoid same-size padding everywhere.",
+      "tokens": {
+        "compact": "0.5rem",
+        "control-gap": "0.75rem",
+        "panel": "1rem",
+        "section": "1.5rem",
+        "page": "2rem"
+      }
+    },
+    "elevation": {
+      "strategy": "Flat by default. Use tonal layering and borders first, shadows only for overlays, hover states, and focused cards.",
+      "tokens": {
+        "panel-ring": "ring-1 ring-border/35",
+        "light-surface": "0px 4px 6px 0px hsl(240 30% 25% / 0.12), 0px 1px 2px -1px hsl(240 30% 25% / 0.12)",
+        "dark-overlay": "0px 4px 8px 0px hsl(240 30% 5% / 0.2), 0px 1px 2px -1px hsl(240 30% 5% / 0.15)"
+      }
+    },
+    "motion": {
+      "duration": {
+        "fast": "100ms",
+        "base": "150ms",
+        "slow": "250ms"
+      },
+      "easing": "ease-out-quart or sharper",
+      "rules": [
+        "Motion conveys state, loading, reveal, collapse, or feedback.",
+        "Do not animate layout properties for decoration.",
+        "Respect reduced motion."
+      ]
+    },
+    "breakpoints": {
+      "mobile": "below 640px",
+      "desktopBuilder": "640px and up",
+      "wide": "1024px and up"
+    },
+    "componentMeta": {
+      "button": {
+        "source": "apps/web/src/components/ui/button.tsx",
+        "basePrimitive": "@base-ui/react/button",
+        "rules": [
+          "Default shape is compact and predictable.",
+          "Primary color is reserved for the main action.",
+          "Focus state must remain visible.",
+          "Do not create one-off button styles by editing shared shadcn/Base UI templates."
+        ]
+      },
+      "header": {
+        "source": "packages/template-generator/templates/frontend/react/web-base/src/components/header.tsx.hbs",
+        "rules": [
+          "Keep the header narrow, utility-focused, and close to better-auth-ui's restrained shell.",
+          "Search-looking controls must link somewhere real or open a real search experience.",
+          "Use familiar navigation, theme controls, repository actions, and auth entry points."
+        ]
+      },
+      "auth-form": {
+        "source": "packages/template-generator/templates/auth/better-auth/web/react/next/src/components/sign-in-form.tsx.hbs",
+        "rules": [
+          "Use a compact centered card, not an oversized marketing panel.",
+          "Labels, inputs, and submit actions must feel coherent with the shell.",
+          "Only show passkey, OAuth, reset, or provider actions when the generated stack supports them."
+        ]
+      },
+      "stack-builder": {
+        "source": "apps/web/src/app/(home)/new/_components/stack-builder/index.tsx",
+        "rules": [
+          "Left side controls configuration and command output.",
+          "Right side previews files and code.",
+          "Use mono labels for object identity.",
+          "Treat configuration, compatibility, command output, and preview as the primary content."
+        ]
+      },
+      "generated-home-shell": {
+        "source": "packages/template-generator/templates/frontend/react/web-base/src/components/home-content.tsx.hbs",
+        "rules": [
+          "Mirror the builder's compact workbench feel.",
+          "Use shared UI package components where available.",
+          "Keep generated templates polished but easy to replace.",
+          "Avoid marketing-heavy heroes, fake metrics, and repetitive icon-card grids."
+        ]
+      }
+    },
+    "rules": {
+      "do": [
+        "Use neutral primary for action, selection, focus, and command prompts.",
+        "Use mono uppercase labels for technical objects.",
+        "Layer surfaces with muted backgrounds, borders, and rings.",
+        "Keep generated templates attractive but easy to replace.",
+        "Keep auth, header, dashboard, and generated home layouts visually coherent.",
+        "Make every visible affordance real."
+      ],
+      "dont": [
+        "Do not use gradient text.",
+        "Do not use glassmorphism as the default visual language.",
+        "Do not use decorative motion.",
+        "Do not fork shared shadcn/Base UI components for local style changes.",
+        "Do not use colored side stripes wider than 1px.",
+        "Do not add fake provider buttons, fake search, or fake settings controls."
+      ]
+    }
+  }
+}

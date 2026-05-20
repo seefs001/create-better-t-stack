@@ -6,25 +6,56 @@
 
 </script>
 
-<div>
-	<div class="flex flex-row items-center justify-between px-4 py-2 md:px-6">
-		<nav class="flex gap-4 text-lg">
-			<a href="/" class="hover:text-neutral-400 transition-colors">Home</a>
+<header class="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur">
+	<div class="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+		<div class="flex min-w-0 items-center gap-6">
+			<div class="flex min-w-0 items-center gap-3">
+				<div class="grid size-5 shrink-0 grid-cols-2 gap-0.5" aria-hidden="true">
+					<span class="bg-foreground"></span>
+					<span class="bg-foreground"></span>
+					<span class="bg-foreground"></span>
+					<span class="bg-foreground/20"></span>
+				</div>
+				<span class="truncate font-semibold text-sm tracking-wide">{{projectName}}</span>
+			</div>
+
+			<nav class="hidden items-center gap-2 lg:flex" aria-label="Main navigation">
+			<a href="/" class="rounded-md px-2 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground">Demo</a>
 		    {{#if (eq auth "better-auth")}}
-			<a href="/dashboard" class="hover:text-neutral-400 transition-colors">Dashboard</a>
+			<a href="/dashboard" class="rounded-md px-2 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground">Dashboard</a>
 		    {{/if}}
 		    {{#if (includes examples "todo")}}
-			<a href="/todos" class="hover:text-neutral-400 transition-colors">Todos</a>
+			<a href="/todos" class="rounded-md px-2 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground">Todos</a>
 		    {{/if}}
 		    {{#if (includes examples "ai")}}
-			<a href="/ai" class="hover:text-neutral-400 transition-colors">AI Chat</a>
+			<a href="/ai" class="rounded-md px-2 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground">AI Chat</a>
 		    {{/if}}
-		</nav>
+			<a href="https://better-t-stack.dev/docs" class="rounded-md px-2 py-1 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground">Docs</a>
+			</nav>
+		</div>
 		<div class="flex items-center gap-2">
+			<a
+				href="https://better-t-stack.dev/docs"
+				class="hidden h-9 w-64 items-center gap-2 rounded-full border border-border bg-background px-3 text-left text-muted-foreground text-sm shadow-sm transition-colors hover:bg-muted/50 hover:text-foreground xl:flex"
+				aria-label="Search docs"
+			>
+				<span class="text-base leading-none">⌕</span>
+				<span class="flex-1">Search docs</span>
+				<kbd class="rounded-md border border-border bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">⌘</kbd>
+				<kbd class="rounded-md border border-border bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">K</kbd>
+			</a>
+			<div class="flex items-center gap-1 rounded-full border border-border bg-background p-0.5 shadow-sm">
+				<a
+					href="https://github.com/AmanVarshney01/create-better-t-stack"
+					class="inline-flex size-7 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted"
+					aria-label="GitHub repository"
+				>
+					<span class="font-semibold text-sm">GH</span>
+				</a>
+			</div>
 		    {{#if (eq auth "better-auth")}}
             <UserMenu />
              {{/if}}
 		</div>
 	</div>
-	<hr class="border-neutral-800" />
-</div>
+</header>

@@ -72,6 +72,9 @@ const isLoading = healthCheck?.isLoading;
 return (
 <Container className="px-4 pb-4">
   <View className="py-6 mb-5">
+    <Text className="text-primary text-xs font-bold mb-1">
+      GENERATED_STACK
+    </Text>
     <Text className="text-3xl font-semibold text-foreground tracking-tight">
       Better T Stack
     </Text>
@@ -79,7 +82,7 @@ return (
   </View>
 
   {{#unless (or (eq backend "none") (and (eq backend "convex") (eq auth "better-auth")))}}
-  <Surface variant="secondary" className="p-4 rounded-xl">
+  <Surface variant="secondary" className="p-4 rounded-lg">
     <View className="flex-row items-center justify-between mb-3">
       <Text className="text-foreground font-medium">System Status</Text>
       <Chip variant="secondary" color={isConnected ? "success" : "danger" } size="sm">
@@ -126,7 +129,7 @@ return (
 
   {{#if (and (eq backend "convex") (eq auth "clerk"))}}
   <Authenticated>
-    <Surface variant="secondary" className="mt-5 p-4 rounded-xl">
+    <Surface variant="secondary" className="mt-5 p-4 rounded-lg">
       <View className="flex-row items-center justify-between">
         <View className="flex-1">
           <Text className="text-foreground font-medium">{user?.emailAddresses[0].emailAddress}</Text>
@@ -159,7 +162,7 @@ return (
     <Spinner size="sm" />
   </View>
   ) : isSignedIn ? (
-  <Surface variant="secondary" className="mt-5 p-4 rounded-xl">
+  <Surface variant="secondary" className="mt-5 p-4 rounded-lg">
     <View className="flex-row items-center justify-between">
       <View className="flex-1">
         <Text className="text-foreground font-medium">
@@ -186,7 +189,7 @@ return (
 
   {{#if (and (eq backend "convex") (eq auth "better-auth"))}}
   {user ? (
-  <Surface variant="secondary" className="mb-4 p-4 rounded-xl">
+  <Surface variant="secondary" className="mb-4 p-4 rounded-lg">
     <View className="flex-row items-center justify-between">
       <View className="flex-1">
         <Text className="text-foreground font-medium">{user.name}</Text>
@@ -204,8 +207,8 @@ return (
     </View>
   </Surface>
   ) : null}
-  <Surface variant="secondary" className="p-4 rounded-xl">
-    <Text className="text-foreground font-medium mb-2">API Status</Text>
+  <Surface variant="secondary" className="p-4 rounded-lg">
+    <Text className="text-foreground font-medium mb-2">PROJECT_STATUS</Text>
     <View className="flex-row items-center gap-2">
       <View className={`w-2 h-2 rounded-full ${healthCheck==="OK" ? "bg-success" : "bg-danger" }`} />
       <Text className="text-muted text-xs">

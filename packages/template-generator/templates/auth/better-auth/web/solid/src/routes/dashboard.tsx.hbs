@@ -42,26 +42,80 @@ function RouteComponent() {
 	{{/if}}
 
 	return (
-		<div>
-			<h1>Dashboard</h1>
-			<p>Welcome {session.data?.user.name}</p>
+		<main class="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+			<section class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+				<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+					<div>
+						<p class="font-mono text-muted-foreground text-xs">AUTH_SESSION</p>
+						<h1 class="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+						<p class="mt-2 text-muted-foreground text-sm">
+							Signed in as {session.data?.user.name || session.data?.user.email}.
+						</p>
+					</div>
+					<div class="rounded-lg bg-muted/50 px-3 py-2 text-sm ring-1 ring-border/60">
+						<p class="font-mono text-muted-foreground text-xs">EMAIL</p>
+						<p class="mt-1 break-all font-medium">{session.data?.user.email}</p>
+					</div>
+				</div>
+			</section>
+			<section class="grid gap-4 md:grid-cols-2">
+				<div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+					<p class="font-mono text-muted-foreground text-xs">ACCOUNT</p>
+					<h2 class="mt-2 font-medium text-lg">Profile</h2>
+					<dl class="mt-4 space-y-3 text-sm">
+						<div class="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+							<dt class="text-muted-foreground">Name</dt>
+							<dd class="font-medium">{session.data?.user.name || "User"}</dd>
+						</div>
+						<div class="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
+							<dt class="text-muted-foreground">Email</dt>
+							<dd class="break-all font-medium">{session.data?.user.email}</dd>
+						</div>
+					</dl>
+				</div>
+				<div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+					<p class="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+					<h2 class="mt-2 font-medium text-lg">Protected route</h2>
+					<p class="mt-3 text-muted-foreground text-sm leading-6">
+						This page is rendered only after Better Auth returns an active session.
+					</p>
+				</div>
 			{{#if (eq api "orpc")}}
-			<p>API: {privateData.data?.message}</p>
+				<div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+					<p class="font-mono text-muted-foreground text-xs">PRIVATE_API</p>
+					<h2 class="mt-2 font-medium text-lg">oRPC response</h2>
+					<p class="mt-3 text-sm">{privateData.data?.message ?? "Waiting for private data..."}</p>
+				</div>
 			{{/if}}
 			{{#if (eq payments "polar")}}
-			<p>Plan: {hasProSubscription() ? "Pro" : "Free"}</p>
-			{hasProSubscription() ? (
-				<button onClick={async () => await authClient.customer.portal()}>
-					Manage Subscription
-				</button>
-			) : (
-				<button
-					onClick={async () => await authClient.checkout({ slug: "pro" })}
-				>
-					Upgrade to Pro
-				</button>
-			)}
+				<div class="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+					<p class="font-mono text-muted-foreground text-xs">BILLING</p>
+					<h2 class="mt-2 font-medium text-lg">
+						{hasProSubscription() ? "Pro plan" : "Free plan"}
+					</h2>
+					<p class="mt-3 text-muted-foreground text-sm leading-6">
+						Manage the generated Polar customer state from this protected surface.
+					</p>
+					<div class="mt-4">
+						{hasProSubscription() ? (
+							<button
+								class="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
+								onClick={async () => await authClient.customer.portal()}
+							>
+								Manage Subscription
+							</button>
+						) : (
+							<button
+								class="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
+								onClick={async () => await authClient.checkout({ slug: "pro" })}
+							>
+								Upgrade to Pro
+							</button>
+						)}
+					</div>
+				</div>
 			{{/if}}
-		</div>
+			</section>
+		</main>
 	);
 }
