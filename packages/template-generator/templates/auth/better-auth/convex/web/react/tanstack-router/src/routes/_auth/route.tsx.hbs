@@ -1,0 +1,35 @@
+import SignInForm from "@/components/sign-in-form";
+import SignUpForm from "@/components/sign-up-form";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
+import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
+import { useState } from "react";
+
+export const Route = createFileRoute("/_auth")({
+  component: AuthLayout,
+});
+
+function AuthLayout() {
+  const [showSignIn, setShowSignIn] = useState(true);
+
+  return (
+    <>
+      <Authenticated>
+        <Outlet />
+      </Authenticated>
+      <Unauthenticated>
+        <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+          {showSignIn ? (
+            <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
+          ) : (
+            <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+          )}
+        </main>
+      </Unauthenticated>
+      <AuthLoading>
+        <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
+          <div className="h-8 w-28 animate-pulse rounded-md bg-muted" />
+        </main>
+      </AuthLoading>
+    </>
+  );
+}

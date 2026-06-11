@@ -8,7 +8,7 @@ import { orpc } from "@/utils/orpc";
 {{#if (eq api "trpc")}}
 import { trpc } from "@/utils/trpc";
 {{/if}}
-{{#if ( or (eq api "orpc") (eq api "trpc"))}}
+{{#if (or (eq api "orpc") (eq api "trpc"))}}
 import { useQuery } from "@tanstack/react-query";
 {{/if}}
 import { useEffect, useState } from "react";
@@ -94,13 +94,13 @@ export default function Dashboard() {
             This page is rendered only after Better Auth returns an active session.
           </p>
         </div>
-      {{#if ( or (eq api "orpc") (eq api "trpc"))}}
+        {{#if (or (eq api "orpc") (eq api "trpc"))}}
         <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
           <p className="font-mono text-muted-foreground text-xs">PRIVATE_API</p>
           <h2 className="mt-2 font-medium text-lg">API response</h2>
           <p className="mt-3 text-sm">{privateData.data?.message ?? "Waiting for private data..."}</p>
         </div>
-      {{/if}}
+        {{/if}}
       {{#if (eq payments "polar")}}
         <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
           <p className="font-mono text-muted-foreground text-xs">BILLING</p>

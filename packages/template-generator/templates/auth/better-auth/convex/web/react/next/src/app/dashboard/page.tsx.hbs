@@ -3,6 +3,10 @@
 import SignInForm from "@/components/sign-in-form";
 import SignUpForm from "@/components/sign-up-form";
 import UserMenu from "@/components/user-menu";
+{{#if (eq payments "polar")}}
+import { CheckoutLink, CustomerPortalLink } from "@convex-dev/polar/react";
+import { buttonVariants } from "@{{projectName}}/ui/components/button";
+{{/if}}
 import { api } from "@{{projectName}}/backend/convex/_generated/api";
 import {
     Authenticated,
@@ -12,43 +16,93 @@ import {
 } from "convex/react";
 import { useState } from "react";
 
+function DashboardContent() {
+    const privateData = useQuery(api.privateData.get);
+    {{#if (eq payments "polar")}}
+    const products = useQuery(api.polar.listAllProducts);
+    const subscription = useQuery(api.polar.getCurrentSubscription);
+
+    const product = products?.find((product: { isRecurring?: boolean }) => product.isRecurring);
+    const hasActiveSubscription = Boolean(subscription);
+    {{/if}}
+
+    return (
+        <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+            <section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <p className="font-mono text-muted-foreground text-xs">CONVEX_AUTH</p>
+                        <h1 className="mt-2 font-semibold text-2xl tracking-tight">
+                            Dashboard
+                        </h1>
+                        <p className="mt-2 text-muted-foreground text-sm">
+                            This route is protected by Convex Auth and Better Auth.
+                        </p>
+                    </div>
+                    <UserMenu />
+                </div>
+            </section>
+            <section className="grid gap-4 md:grid-cols-2">
+                <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+                    <p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+                    <h2 className="mt-2 font-medium text-lg">Protected route</h2>
+                    <p className="mt-3 text-muted-foreground text-sm leading-6">
+                        The dashboard content only renders after the authenticated state is ready.
+                    </p>
+                </div>
+                <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+                    <p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
+                    <h2 className="mt-2 font-medium text-lg">Convex response</h2>
+                    <p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
+                </div>
+                {{#if (eq payments "polar")}}
+                <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+                    <p className="font-mono text-muted-foreground text-xs">BILLING</p>
+                    <h2 className="mt-2 font-medium text-lg">
+                        {hasActiveSubscription ? "Active plan" : "Free plan"}
+                    </h2>
+                    <p className="mt-3 text-muted-foreground text-sm leading-6">
+                        Manage the generated Polar subscription from this protected surface.
+                    </p>
+                    <div className="mt-4">
+                        {subscription === undefined ? (
+                            <p className="text-muted-foreground text-sm">Loading subscription options...</p>
+                        ) : hasActiveSubscription ? (
+                            <CustomerPortalLink
+                                polarApi={api.polar}
+                                className={buttonVariants({ variant: "outline" })}
+                            >
+                                Manage Subscription
+                            </CustomerPortalLink>
+                        ) : products === undefined ? (
+                            <p className="text-muted-foreground text-sm">Loading subscription options...</p>
+                        ) : product ? (
+                            <CheckoutLink
+                                polarApi={api.polar}
+                                productIds={[product.id]}
+                                embed={false}
+                                className={buttonVariants({ variant: "default" })}
+                            >
+                                Upgrade
+                            </CheckoutLink>
+                        ) : (
+                            <p className="text-muted-foreground text-sm">No recurring plans available.</p>
+                        )}
+                    </div>
+                </div>
+                {{/if}}
+            </section>
+        </main>
+    );
+}
+
 export default function DashboardPage() {
     const [showSignIn, setShowSignIn] = useState(true);
-    const privateData = useQuery(api.privateData.get);
 
     return (
         <>
             <Authenticated>
-                <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
-                    <section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                            <div>
-                                <p className="font-mono text-muted-foreground text-xs">CONVEX_AUTH</p>
-                                <h1 className="mt-2 font-semibold text-2xl tracking-tight">
-                                    Dashboard
-                                </h1>
-                                <p className="mt-2 text-muted-foreground text-sm">
-                                    This route is protected by Convex Auth and Better Auth.
-                                </p>
-                            </div>
-                            <UserMenu />
-                        </div>
-                    </section>
-                    <section className="grid gap-4 md:grid-cols-2">
-                        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
-                            <p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
-                            <h2 className="mt-2 font-medium text-lg">Protected route</h2>
-                            <p className="mt-3 text-muted-foreground text-sm leading-6">
-                                The dashboard content only renders after the authenticated state is ready.
-                            </p>
-                        </div>
-                        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
-                            <p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
-                            <h2 className="mt-2 font-medium text-lg">Convex response</h2>
-                            <p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
-                        </div>
-                    </section>
-                </main>
+                <DashboardContent />
             </Authenticated>
             <Unauthenticated>
                 <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">

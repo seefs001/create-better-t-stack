@@ -1,8 +1,6 @@
-import { getUser } from "@/functions/get-user";
 {{#if (eq payments "polar") }}
 import { Button } from "@{{projectName}}/ui/components/button";
 import { authClient } from "@/lib/auth-client";
-import { getPayment } from "@/functions/get-payment";
 {{/if}}
 {{#if (eq api "trpc") }}
 import { useTRPC } from "@/utils/trpc";
@@ -12,26 +10,10 @@ import { useQuery } from "@tanstack/react-query";
 import { orpc } from "@/utils/orpc";
 import { useQuery } from "@tanstack/react-query";
 {{/if}}
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_auth/dashboard")({
   component: RouteComponent,
-  beforeLoad: async () => {
-    const session = await getUser();
-    {{#if (eq payments "polar") }}
-    const customerState = await getPayment();
-    return { session, customerState };
-    {{else}}
-    return { session };
-    {{/if}}
-  },
-  loader: async ({ context }) => {
-    if (!context.session) {
-      throw redirect({
-        to: "/login",
-      });
-    }
-  },
 });
 
 function RouteComponent() {
@@ -57,12 +39,22 @@ function RouteComponent() {
             <p className="font-mono text-muted-foreground text-xs">AUTH_SESSION</p>
             <h1 className="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
             <p className="mt-2 text-muted-foreground text-sm">
+              {{#if (eq backend "self")}}
               Signed in as {session?.user.name || session?.user.email}.
+              {{else}}
+              Signed in as {session.data?.user.name || session.data?.user.email}.
+              {{/if}}
             </p>
           </div>
           <div className="rounded-lg bg-muted/50 px-3 py-2 text-sm ring-1 ring-border/60">
             <p className="font-mono text-muted-foreground text-xs">EMAIL</p>
-            <p className="mt-1 break-all font-medium">{session?.user.email}</p>
+            <p className="mt-1 break-all font-medium">
+              {{#if (eq backend "self")}}
+              {session?.user.email}
+              {{else}}
+              {session.data?.user.email}
+              {{/if}}
+            </p>
           </div>
         </div>
       </section>
@@ -73,11 +65,23 @@ function RouteComponent() {
           <dl className="mt-4 space-y-3 text-sm">
             <div className="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
               <dt className="text-muted-foreground">Name</dt>
-              <dd className="font-medium">{session?.user.name || "User"}</dd>
+              <dd className="font-medium">
+                {{#if (eq backend "self")}}
+                {session?.user.name || "User"}
+                {{else}}
+                {session.data?.user.name || "User"}
+                {{/if}}
+              </dd>
             </div>
             <div className="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
               <dt className="text-muted-foreground">Email</dt>
-              <dd className="break-all font-medium">{session?.user.email}</dd>
+              <dd className="break-all font-medium">
+                {{#if (eq backend "self")}}
+                {session?.user.email}
+                {{else}}
+                {session.data?.user.email}
+                {{/if}}
+              </dd>
             </div>
           </dl>
         </div>

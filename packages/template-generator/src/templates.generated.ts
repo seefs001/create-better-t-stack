@@ -145,11 +145,11 @@ export default {
   "type": "module",
   "scripts": {},
   "dependencies": {
-    "electrobun": "^1.15.1"
+    "electrobun": "^1.18.1"
   },
   "devDependencies": {
-    "@types/bun": "^1.3.4",
-    "concurrently": "^9.1.0",
+    "@types/bun": "^1.3.14",
+    "concurrently": "^10.0.3",
     "typescript": "^6"
   }
 }
@@ -226,6 +226,10 @@ pre-commit:
       stage_fixed: true
     - name: oxfmt
       run: {{packageManager}} oxfmt --write {staged_files}
+      stage_fixed: true
+{{else if (includes addons "vite-plus")}}
+    - name: vite-plus
+      run: {{packageManager}} vp staged
       stage_fixed: true
 {{else}}
     # Add your pre-commit commands here
@@ -1373,18 +1377,29 @@ import { getClerkAuthToken } from "@/utils/clerk-auth";
 {{/if}}
 {{/if}}
 
-export const queryClient = new QueryClient({
-	queryCache: new QueryCache({
-		onError: (error, query) => {
-			toast.error(\`Error: \${error.message}\`, {
-				action: {
-					label: "retry",
-					onClick: query.invalidate,
-				},
-			});
-		},
-	}),
-});
+export function createQueryClient() {
+	return new QueryClient({
+		queryCache: new QueryCache({
+			onError: (error, query) => {
+				toast.error(\`Error: \${error.message}\`, {
+					action: {
+						label: "retry",
+						onClick: () => {
+							query.invalidate();
+						},
+					},
+				});
+			},
+		}),
+{{#if (includes frontend "tanstack-start")}}
+		defaultOptions: { queries: { staleTime: 60 * 1000 } },
+{{/if}}
+	});
+}
+
+{{#unless (includes frontend "tanstack-start")}}
+export const queryClient = createQueryClient();
+{{/unless}}
 
 {{#if (and (includes frontend "tanstack-start") (eq backend "self"))}}
 const getORPCClient = createIsomorphicFn()
@@ -2084,7 +2099,9 @@ export const queryClient = new QueryClient({
 			toast.error(error.message, {
 				action: {
 					label: "retry",
-					onClick: query.invalidate,
+					onClick: () => {
+						query.invalidate();
+					},
 				},
 			});
 		},
@@ -2154,7 +2171,9 @@ export const queryClient = new QueryClient({
 			toast.error(error.message, {
 				action: {
 					label: "retry",
-					onClick: query.invalidate,
+					onClick: () => {
+						query.invalidate();
+					},
 				},
 			});
 		},
@@ -2266,13 +2285,55 @@ export const getCurrentUser = query({
 `],
   ["auth/better-auth/convex/backend/convex/http.ts.hbs", `import { httpRouter } from "convex/server";
 import { authComponent, createAuth } from "./auth";
+{{#if (and (eq payments "polar") (or (includes frontend "native-bare") (includes frontend "native-uniwind") (includes frontend "native-unistyles")))}}
+import { httpAction } from "./_generated/server";
+{{/if}}
+{{#if (eq payments "polar")}}
+import { polar } from "./polar";
+{{/if}}
 
 const http = httpRouter();
 
+{{#if (and (eq payments "polar") (or (includes frontend "native-bare") (includes frontend "native-uniwind") (includes frontend "native-unistyles")))}}
+const nativeAppUrl = process.env.NATIVE_APP_URL || "{{projectName}}://";
+const allowedNativeProtocols = new Set(["exp:", new URL(nativeAppUrl).protocol]);
+
+http.route({
+  path: "/polar/success",
+  method: "GET",
+  handler: httpAction(async (_ctx, request) => {
+    const requestUrl = new URL(request.url);
+    const returnUrl = requestUrl.searchParams.get("returnUrl") || nativeAppUrl;
+
+    let redirectUrl: URL;
+    try {
+      redirectUrl = new URL(returnUrl);
+    } catch {
+      return new Response("Invalid return URL", { status: 400 });
+    }
+
+    if (!allowedNativeProtocols.has(redirectUrl.protocol)) {
+      return new Response("Invalid return URL", { status: 400 });
+    }
+
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: redirectUrl.toString(),
+      },
+    });
+  }),
+});
+
+{{/if}}
 {{#if (or (includes frontend "native-bare") (includes frontend "native-uniwind") (includes frontend "native-unistyles") (includes frontend "tanstack-router") (includes frontend "react-router") (includes frontend "nuxt") (includes frontend "svelte") (includes frontend "solid"))}}
 authComponent.registerRoutes(http, createAuth, { cors: true });
 {{else}}
 authComponent.registerRoutes(http, createAuth);
+{{/if}}
+{{#if (eq payments "polar")}}
+
+polar.registerRoutes(http);
 {{/if}}
 
 export default http;
@@ -3594,6 +3655,10 @@ export const { GET, POST } = handler;
 import SignInForm from "@/components/sign-in-form";
 import SignUpForm from "@/components/sign-up-form";
 import UserMenu from "@/components/user-menu";
+{{#if (eq payments "polar")}}
+import { CheckoutLink, CustomerPortalLink } from "@convex-dev/polar/react";
+import { buttonVariants } from "@{{projectName}}/ui/components/button";
+{{/if}}
 import { api } from "@{{projectName}}/backend/convex/_generated/api";
 import {
     Authenticated,
@@ -3603,43 +3668,93 @@ import {
 } from "convex/react";
 import { useState } from "react";
 
+function DashboardContent() {
+    const privateData = useQuery(api.privateData.get);
+    {{#if (eq payments "polar")}}
+    const products = useQuery(api.polar.listAllProducts);
+    const subscription = useQuery(api.polar.getCurrentSubscription);
+
+    const product = products?.find((product: { isRecurring?: boolean }) => product.isRecurring);
+    const hasActiveSubscription = Boolean(subscription);
+    {{/if}}
+
+    return (
+        <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+            <section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <p className="font-mono text-muted-foreground text-xs">CONVEX_AUTH</p>
+                        <h1 className="mt-2 font-semibold text-2xl tracking-tight">
+                            Dashboard
+                        </h1>
+                        <p className="mt-2 text-muted-foreground text-sm">
+                            This route is protected by Convex Auth and Better Auth.
+                        </p>
+                    </div>
+                    <UserMenu />
+                </div>
+            </section>
+            <section className="grid gap-4 md:grid-cols-2">
+                <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+                    <p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+                    <h2 className="mt-2 font-medium text-lg">Protected route</h2>
+                    <p className="mt-3 text-muted-foreground text-sm leading-6">
+                        The dashboard content only renders after the authenticated state is ready.
+                    </p>
+                </div>
+                <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+                    <p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
+                    <h2 className="mt-2 font-medium text-lg">Convex response</h2>
+                    <p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
+                </div>
+                {{#if (eq payments "polar")}}
+                <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+                    <p className="font-mono text-muted-foreground text-xs">BILLING</p>
+                    <h2 className="mt-2 font-medium text-lg">
+                        {hasActiveSubscription ? "Active plan" : "Free plan"}
+                    </h2>
+                    <p className="mt-3 text-muted-foreground text-sm leading-6">
+                        Manage the generated Polar subscription from this protected surface.
+                    </p>
+                    <div className="mt-4">
+                        {subscription === undefined ? (
+                            <p className="text-muted-foreground text-sm">Loading subscription options...</p>
+                        ) : hasActiveSubscription ? (
+                            <CustomerPortalLink
+                                polarApi={api.polar}
+                                className={buttonVariants({ variant: "outline" })}
+                            >
+                                Manage Subscription
+                            </CustomerPortalLink>
+                        ) : products === undefined ? (
+                            <p className="text-muted-foreground text-sm">Loading subscription options...</p>
+                        ) : product ? (
+                            <CheckoutLink
+                                polarApi={api.polar}
+                                productIds={[product.id]}
+                                embed={false}
+                                className={buttonVariants({ variant: "default" })}
+                            >
+                                Upgrade
+                            </CheckoutLink>
+                        ) : (
+                            <p className="text-muted-foreground text-sm">No recurring plans available.</p>
+                        )}
+                    </div>
+                </div>
+                {{/if}}
+            </section>
+        </main>
+    );
+}
+
 export default function DashboardPage() {
     const [showSignIn, setShowSignIn] = useState(true);
-    const privateData = useQuery(api.privateData.get);
 
     return (
         <>
             <Authenticated>
-                <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
-                    <section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                            <div>
-                                <p className="font-mono text-muted-foreground text-xs">CONVEX_AUTH</p>
-                                <h1 className="mt-2 font-semibold text-2xl tracking-tight">
-                                    Dashboard
-                                </h1>
-                                <p className="mt-2 text-muted-foreground text-sm">
-                                    This route is protected by Convex Auth and Better Auth.
-                                </p>
-                            </div>
-                            <UserMenu />
-                        </div>
-                    </section>
-                    <section className="grid gap-4 md:grid-cols-2">
-                        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
-                            <p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
-                            <h2 className="mt-2 font-medium text-lg">Protected route</h2>
-                            <p className="mt-3 text-muted-foreground text-sm leading-6">
-                                The dashboard content only renders after the authenticated state is ready.
-                            </p>
-                        </div>
-                        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
-                            <p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
-                            <h2 className="mt-2 font-medium text-lg">Convex response</h2>
-                            <p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
-                        </div>
-                    </section>
-                </main>
+                <DashboardContent />
             </Authenticated>
             <Unauthenticated>
                 <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
@@ -4397,6 +4512,10 @@ export const authClient = createAuthClient({
   ["auth/better-auth/convex/web/react/react-router/src/routes/dashboard.tsx.hbs", `import SignInForm from "@/components/sign-in-form";
 import SignUpForm from "@/components/sign-up-form";
 import UserMenu from "@/components/user-menu";
+{{#if (eq payments "polar")}}
+import { CheckoutLink, CustomerPortalLink } from "@convex-dev/polar/react";
+import { buttonVariants } from "@{{projectName}}/ui/components/button";
+{{/if}}
 import { api } from "@{{projectName}}/backend/convex/_generated/api";
 import {
   Authenticated,
@@ -4408,6 +4527,13 @@ import { useState } from "react";
 
 function PrivateDashboardContent() {
   const privateData = useQuery(api.privateData.get);
+  {{#if (eq payments "polar")}}
+  const products = useQuery(api.polar.listAllProducts);
+  const subscription = useQuery(api.polar.getCurrentSubscription);
+
+  const product = products?.find((product: { isRecurring?: boolean }) => product.isRecurring);
+  const hasActiveSubscription = Boolean(subscription);
+  {{/if}}
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
@@ -4436,6 +4562,42 @@ function PrivateDashboardContent() {
           <h2 className="mt-2 font-medium text-lg">Convex response</h2>
           <p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
         </div>
+        {{#if (eq payments "polar")}}
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">BILLING</p>
+          <h2 className="mt-2 font-medium text-lg">
+            {hasActiveSubscription ? "Active plan" : "Free plan"}
+          </h2>
+          <p className="mt-3 text-muted-foreground text-sm leading-6">
+            Manage the generated Polar subscription from this protected surface.
+          </p>
+          <div className="mt-4">
+            {subscription === undefined ? (
+              <p className="text-muted-foreground text-sm">Loading subscription options...</p>
+            ) : hasActiveSubscription ? (
+              <CustomerPortalLink
+                polarApi={api.polar}
+                className={buttonVariants({ variant: "outline" })}
+              >
+                Manage Subscription
+              </CustomerPortalLink>
+            ) : products === undefined ? (
+              <p className="text-muted-foreground text-sm">Loading subscription options...</p>
+            ) : product ? (
+              <CheckoutLink
+                polarApi={api.polar}
+                productIds={[product.id]}
+                embed={false}
+                className={buttonVariants({ variant: "default" })}
+              >
+                Upgrade
+              </CheckoutLink>
+            ) : (
+              <p className="text-muted-foreground text-sm">No recurring plans available.</p>
+            )}
+          </div>
+        </div>
+        {{/if}}
       </section>
     </main>
   );
@@ -4839,25 +5001,28 @@ export const authClient = createAuthClient({
 	plugins: [convexClient(), crossDomainClient()],
 });
 `],
-  ["auth/better-auth/convex/web/react/tanstack-router/src/routes/dashboard.tsx.hbs", `import SignInForm from "@/components/sign-in-form";
-import SignUpForm from "@/components/sign-up-form";
-import UserMenu from "@/components/user-menu";
+  ["auth/better-auth/convex/web/react/tanstack-router/src/routes/_auth/dashboard.tsx.hbs", `import UserMenu from "@/components/user-menu";
+{{#if (eq payments "polar")}}
+import { CheckoutLink, CustomerPortalLink } from "@convex-dev/polar/react";
+import { buttonVariants } from "@{{projectName}}/ui/components/button";
+{{/if}}
 import { api } from "@{{projectName}}/backend/convex/_generated/api";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Authenticated,
-  AuthLoading,
-  Unauthenticated,
-  useQuery,
-} from "convex/react";
-import { useState } from "react";
+import { useQuery } from "convex/react";
 
-export const Route = createFileRoute("/dashboard")({
-  component: RouteComponent,
+export const Route = createFileRoute("/_auth/dashboard")({
+  component: DashboardContent,
 });
 
-function PrivateDashboardContent() {
+function DashboardContent() {
   const privateData = useQuery(api.privateData.get);
+  {{#if (eq payments "polar")}}
+  const products = useQuery(api.polar.listAllProducts);
+  const subscription = useQuery(api.polar.getCurrentSubscription);
+
+  const product = products?.find((product: { isRecurring?: boolean }) => product.isRecurring);
+  const hasActiveSubscription = Boolean(subscription);
+  {{/if}}
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
@@ -4886,18 +5051,64 @@ function PrivateDashboardContent() {
           <h2 className="mt-2 font-medium text-lg">Convex response</h2>
           <p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
         </div>
+        {{#if (eq payments "polar")}}
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">BILLING</p>
+          <h2 className="mt-2 font-medium text-lg">
+            {hasActiveSubscription ? "Active plan" : "Free plan"}
+          </h2>
+          <p className="mt-3 text-muted-foreground text-sm leading-6">
+            Manage the generated Polar subscription from this protected surface.
+          </p>
+          <div className="mt-4">
+            {subscription === undefined ? (
+              <p className="text-muted-foreground text-sm">Loading subscription options...</p>
+            ) : hasActiveSubscription ? (
+              <CustomerPortalLink
+                polarApi={api.polar}
+                className={buttonVariants({ variant: "outline" })}
+              >
+                Manage Subscription
+              </CustomerPortalLink>
+            ) : products === undefined ? (
+              <p className="text-muted-foreground text-sm">Loading subscription options...</p>
+            ) : product ? (
+              <CheckoutLink
+                polarApi={api.polar}
+                productIds={[product.id]}
+                embed={false}
+                className={buttonVariants({ variant: "default" })}
+              >
+                Upgrade
+              </CheckoutLink>
+            ) : (
+              <p className="text-muted-foreground text-sm">No recurring plans available.</p>
+            )}
+          </div>
+        </div>
+        {{/if}}
       </section>
     </main>
   );
 }
+`],
+  ["auth/better-auth/convex/web/react/tanstack-router/src/routes/_auth/route.tsx.hbs", `import SignInForm from "@/components/sign-in-form";
+import SignUpForm from "@/components/sign-up-form";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
+import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
+import { useState } from "react";
 
-function RouteComponent() {
+export const Route = createFileRoute("/_auth")({
+  component: AuthLayout,
+});
+
+function AuthLayout() {
   const [showSignIn, setShowSignIn] = useState(true);
 
   return (
     <>
       <Authenticated>
-        <PrivateDashboardContent />
+        <Outlet />
       </Authenticated>
       <Unauthenticated>
         <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
@@ -5292,6 +5503,129 @@ export const {
 	convexSiteUrl: env.VITE_CONVEX_SITE_URL,
 });
 `],
+  ["auth/better-auth/convex/web/react/tanstack-start/src/routes/_auth/dashboard.tsx.hbs", `import UserMenu from "@/components/user-menu";
+{{#if (eq payments "polar")}}
+import { CheckoutLink, CustomerPortalLink } from "@convex-dev/polar/react";
+import { buttonVariants } from "@{{projectName}}/ui/components/button";
+{{/if}}
+import { api } from "@{{projectName}}/backend/convex/_generated/api";
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "convex/react";
+
+export const Route = createFileRoute("/_auth/dashboard")({
+  component: DashboardContent,
+});
+
+function DashboardContent() {
+  const privateData = useQuery(api.privateData.get);
+  {{#if (eq payments "polar")}}
+  const products = useQuery(api.polar.listAllProducts);
+  const subscription = useQuery(api.polar.getCurrentSubscription);
+
+  const product = products?.find((product: { isRecurring?: boolean }) => product.isRecurring);
+  const hasActiveSubscription = Boolean(subscription);
+  {{/if}}
+
+  return (
+    <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+      <section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="font-mono text-muted-foreground text-xs">CONVEX_AUTH</p>
+            <h1 className="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+            <p className="mt-2 text-muted-foreground text-sm">
+              This route is protected by Convex Auth and Better Auth.
+            </p>
+          </div>
+          <UserMenu />
+        </div>
+      </section>
+      <section className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+          <h2 className="mt-2 font-medium text-lg">Protected route</h2>
+          <p className="mt-3 text-muted-foreground text-sm leading-6">
+            The dashboard content only renders after the authenticated state is ready.
+          </p>
+        </div>
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
+          <h2 className="mt-2 font-medium text-lg">Convex response</h2>
+          <p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
+        </div>
+        {{#if (eq payments "polar")}}
+        <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+          <p className="font-mono text-muted-foreground text-xs">BILLING</p>
+          <h2 className="mt-2 font-medium text-lg">
+            {hasActiveSubscription ? "Active plan" : "Free plan"}
+          </h2>
+          <p className="mt-3 text-muted-foreground text-sm leading-6">
+            Manage the generated Polar subscription from this protected surface.
+          </p>
+          <div className="mt-4">
+            {subscription === undefined ? (
+              <p className="text-muted-foreground text-sm">Loading subscription options...</p>
+            ) : hasActiveSubscription ? (
+              <CustomerPortalLink
+                polarApi={api.polar}
+                className={buttonVariants({ variant: "outline" })}
+              >
+                Manage Subscription
+              </CustomerPortalLink>
+            ) : products === undefined ? (
+              <p className="text-muted-foreground text-sm">Loading subscription options...</p>
+            ) : product ? (
+              <CheckoutLink
+                polarApi={api.polar}
+                productIds={[product.id]}
+                embed={false}
+                className={buttonVariants({ variant: "default" })}
+              >
+                Upgrade
+              </CheckoutLink>
+            ) : (
+              <p className="text-muted-foreground text-sm">No recurring plans available.</p>
+            )}
+          </div>
+        </div>
+        {{/if}}
+      </section>
+    </main>
+  );
+}
+`],
+  ["auth/better-auth/convex/web/react/tanstack-start/src/routes/_auth/route.tsx.hbs", `import SignInForm from "@/components/sign-in-form";
+import SignUpForm from "@/components/sign-up-form";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
+import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
+import { useState } from "react";
+
+export const Route = createFileRoute("/_auth")({
+  component: AuthLayout,
+});
+
+function AuthLayout() {
+  const [showSignIn, setShowSignIn] = useState(false);
+
+  return (
+    <>
+      <Authenticated>
+        <Outlet />
+      </Authenticated>
+      <Unauthenticated>
+        {showSignIn ? (
+          <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
+        ) : (
+          <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+        )}
+      </Unauthenticated>
+      <AuthLoading>
+        <div>Loading...</div>
+      </AuthLoading>
+    </>
+  );
+}
+`],
   ["auth/better-auth/convex/web/react/tanstack-start/src/routes/api/auth/$.ts.hbs", `import { createFileRoute } from "@tanstack/react-router";
 import { handler } from "@/lib/auth-server";
 
@@ -5303,77 +5637,6 @@ export const Route = createFileRoute("/api/auth/$")({
     },
   },
 });
-`],
-  ["auth/better-auth/convex/web/react/tanstack-start/src/routes/dashboard.tsx.hbs", `import SignInForm from "@/components/sign-in-form";
-import SignUpForm from "@/components/sign-up-form";
-import UserMenu from "@/components/user-menu";
-import { api } from "@{{projectName}}/backend/convex/_generated/api";
-import { createFileRoute } from "@tanstack/react-router";
-import {
-  Authenticated,
-  AuthLoading,
-  Unauthenticated,
-  useQuery,
-} from "convex/react";
-import { useState } from "react";
-
-export const Route = createFileRoute("/dashboard")({
-  component: RouteComponent,
-});
-
-function RouteComponent() {
-  const [showSignIn, setShowSignIn] = useState(true);
-  const privateData = useQuery(api.privateData.get);
-
-  return (
-    <>
-      <Authenticated>
-        <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
-          <section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="font-mono text-muted-foreground text-xs">CONVEX_AUTH</p>
-                <h1 className="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
-                <p className="mt-2 text-muted-foreground text-sm">
-                  This route is protected by Convex Auth and Better Auth.
-                </p>
-              </div>
-              <UserMenu />
-            </div>
-          </section>
-          <section className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
-              <p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
-              <h2 className="mt-2 font-medium text-lg">Protected route</h2>
-              <p className="mt-3 text-muted-foreground text-sm leading-6">
-                The dashboard content only renders after the authenticated state is ready.
-              </p>
-            </div>
-            <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
-              <p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
-              <h2 className="mt-2 font-medium text-lg">Convex response</h2>
-              <p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
-            </div>
-          </section>
-        </main>
-      </Authenticated>
-      <Unauthenticated>
-        <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
-          {showSignIn ? (
-            <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-          ) : (
-            <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
-          )}
-        </main>
-      </Unauthenticated>
-      <AuthLoading>
-        <main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
-          <div className="h-8 w-28 animate-pulse rounded-md bg-muted" />
-        </main>
-      </AuthLoading>
-    </>
-  );
-}
 `],
   ["auth/better-auth/fullstack/astro/src/env.d.ts.hbs", `/// <reference path="../.astro/types.d.ts" />
 
@@ -5522,11 +5785,16 @@ export const Route = createFileRoute('/api/auth/$')({
 })
 `],
   ["auth/better-auth/native/bare/app/(drawer)/index.tsx.hbs", `import { Button, Column, Host, Text as ExpoUIText } from "@expo/ui";
-import { View, ScrollView, StyleSheet } from "react-native";
+import { View, ScrollView, StyleSheet{{#if (eq payments "polar")}}, Alert{{/if}} } from "react-native";
+{{#if (eq payments "polar")}}
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
+import { env } from "@{{projectName}}/env/native";
+{{/if}}
 import { Container } from "@/components/container";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { NAV_THEME } from "@/lib/constants";
-import { authClient } from "@/lib/auth-client";
+import { authClient{{#if (eq payments "polar")}}, polarNativeClient{{/if}} } from "@/lib/auth-client";
 import { SignIn } from "@/components/sign-in";
 import { SignUp } from "@/components/sign-up";
 {{#if (eq api "orpc")}}
@@ -5554,19 +5822,59 @@ const isConnected = healthCheck?.data === "OK";
 const isLoading = healthCheck?.isLoading;
 {{/if}}
 const { data: session } = authClient.useSession();
+{{#if (eq payments "polar")}}
+
+const openPolarLink = async (url: string, returnUrl: string) => {
+	await WebBrowser.openAuthSessionAsync(url, returnUrl);
+};
+
+const getPolarReturnUrl = (returnUrl: string) => {
+	const url = new URL("/polar/success", env.EXPO_PUBLIC_SERVER_URL);
+	url.searchParams.set("returnUrl", returnUrl);
+	return url.toString();
+};
+
+const handlePolarCheckout = async () => {
+	const returnUrl = Linking.createURL("/");
+	const polarReturnUrl = getPolarReturnUrl(returnUrl);
+	const { data, error } = await polarNativeClient.checkout({
+		slug: "pro",
+		redirect: false,
+		successUrl: polarReturnUrl,
+		returnUrl: polarReturnUrl,
+	});
+
+	if (error || !data?.url) {
+		Alert.alert("Checkout unavailable", error?.message ?? "Unable to create a checkout session.");
+		return;
+	}
+
+	await openPolarLink(data.url, returnUrl);
+};
+
+const handlePolarPortal = async () => {
+	const returnUrl = Linking.createURL("/");
+	const { data, error } = await polarNativeClient.customer.portal({ redirect: false });
+
+	if (error || !data?.url) {
+		Alert.alert("Portal unavailable", error?.message ?? "Unable to open the customer portal.");
+		return;
+	}
+
+	await openPolarLink(data.url, returnUrl);
+};
+{{/if}}
 
 return (
 <Container>
-  <ScrollView style={styles.scrollView}>
+  <ScrollView style={styles.scrollView} contentInsetAdjustmentBehavior="never">
     <View style={styles.content}>
-      <Host style={styles.titleHost} matchContents=\\{{ vertical: true }}>
-        <Column>
-          <ExpoUIText
-            textStyle=\\{{ color: theme.text, fontSize: 24, fontWeight: "bold" }}
-          >
-            BETTER T STACK
-          </ExpoUIText>
-        </Column>
+      <Host style={styles.titleHost}>
+        <ExpoUIText
+          textStyle=\\{{ color: theme.text, fontSize: 24, fontWeight: "bold", textAlign: "center" }}
+        >
+          BETTER T STACK
+        </ExpoUIText>
       </Host>
 
       {session?.user ? (
@@ -5599,6 +5907,18 @@ return (
             }}
           />
         </Host>
+        {{#if (eq payments "polar")}}
+        <Host style={styles.paymentActions} matchContents=\\{{ vertical: true }}>
+          <Column spacing={8}>
+            <Button label="Upgrade to Pro" onPress={handlePolarCheckout} />
+            <Button
+              label="Manage Subscription"
+              variant="outlined"
+              onPress={handlePolarPortal}
+            />
+          </Column>
+        </Host>
+        {{/if}}
       </View>
       ) : null}
 
@@ -5680,7 +6000,8 @@ paddingTop: 28,
 paddingBottom: 32,
 },
 titleHost: {
-alignSelf: "center",
+alignSelf: "stretch",
+height: 34,
 marginBottom: 24,
 },
 userCard: {
@@ -5691,6 +6012,9 @@ borderRadius: 16,
 },
 userHeader: {
 marginBottom: 8,
+},
+paymentActions: {
+marginTop: 12,
 },
 statusCard: {
 marginBottom: 16,
@@ -6239,9 +6563,41 @@ export const authClient = createAuthClient({
 		}),
 	],
 });
+{{#if (eq payments "polar")}}
+
+type PolarLinkResponse = {
+	url: string;
+	redirect: boolean;
+};
+
+type PolarClientResponse<T> = Promise<{
+	data: T | null;
+	error: { message?: string } | null;
+}>;
+
+type PolarNativeClient = typeof authClient & {
+	checkout: (data: {
+		slug?: string;
+		products?: string[] | string;
+		redirect?: boolean;
+		successUrl?: string;
+		returnUrl?: string;
+	}) => PolarClientResponse<PolarLinkResponse>;
+	customer: {
+		portal: (data?: { redirect?: boolean }) => PolarClientResponse<PolarLinkResponse>;
+	};
+};
+
+export const polarNativeClient = authClient as PolarNativeClient;
+{{/if}}
 `],
-  ["auth/better-auth/native/unistyles/app/(drawer)/index.tsx.hbs", `import { authClient } from "@/lib/auth-client";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+  ["auth/better-auth/native/unistyles/app/(drawer)/index.tsx.hbs", `import { authClient{{#if (eq payments "polar")}}, polarNativeClient{{/if}} } from "@/lib/auth-client";
+import { ScrollView, Text, TouchableOpacity, View{{#if (eq payments "polar")}}, Alert{{/if}} } from "react-native";
+{{#if (eq payments "polar")}}
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
+import { env } from "@{{projectName}}/env/native";
+{{/if}}
 import { StyleSheet } from "react-native-unistyles";
 
 import { Container } from "@/components/container";
@@ -6266,6 +6622,48 @@ export default function Home() {
     const privateData = useQuery(trpc.privateData.queryOptions());
     {{/if}}
   const { data: session } = authClient.useSession();
+  {{#if (eq payments "polar")}}
+
+  const openPolarLink = async (url: string, returnUrl: string) => {
+    await WebBrowser.openAuthSessionAsync(url, returnUrl);
+  };
+
+  const getPolarReturnUrl = (returnUrl: string) => {
+    const url = new URL("/polar/success", env.EXPO_PUBLIC_SERVER_URL);
+    url.searchParams.set("returnUrl", returnUrl);
+    return url.toString();
+  };
+
+  const handlePolarCheckout = async () => {
+    const returnUrl = Linking.createURL("/");
+    const polarReturnUrl = getPolarReturnUrl(returnUrl);
+    const { data, error } = await polarNativeClient.checkout({
+      slug: "pro",
+      redirect: false,
+      successUrl: polarReturnUrl,
+      returnUrl: polarReturnUrl,
+    });
+
+    if (error || !data?.url) {
+      Alert.alert("Checkout unavailable", error?.message ?? "Unable to create a checkout session.");
+      return;
+    }
+
+    await openPolarLink(data.url, returnUrl);
+  };
+
+  const handlePolarPortal = async () => {
+    const returnUrl = Linking.createURL("/");
+    const { data, error } = await polarNativeClient.customer.portal({ redirect: false });
+
+    if (error || !data?.url) {
+      Alert.alert("Portal unavailable", error?.message ?? "Unable to open the customer portal.");
+      return;
+    }
+
+    await openPolarLink(data.url, returnUrl);
+  };
+  {{/if}}
 
   return (
     <Container>
@@ -6297,6 +6695,22 @@ export default function Home() {
               >
                 <Text style={styles.signOutButtonText}>Sign Out</Text>
               </TouchableOpacity>
+              {{#if (eq payments "polar")}}
+              <View style={styles.paymentActions}>
+                <TouchableOpacity
+                  style={styles.polarPrimaryButton}
+                  onPress={handlePolarCheckout}
+                >
+                  <Text style={styles.polarPrimaryButtonText}>Upgrade to Pro</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.polarSecondaryButton}
+                  onPress={handlePolarPortal}
+                >
+                  <Text style={styles.polarSecondaryButtonText}>Manage Subscription</Text>
+                </TouchableOpacity>
+              </View>
+              {{/if}}
             </View>
           ) : null}
           {{#unless (eq api "none")}}
@@ -6394,6 +6808,32 @@ const styles = StyleSheet.create((theme) => ({
     alignSelf: "flex-start",
   },
   signOutButtonText: {
+    fontWeight: "500",
+  },
+  paymentActions: {
+    marginTop: 12,
+    gap: 8,
+    alignItems: "flex-start",
+  },
+  polarPrimaryButton: {
+    backgroundColor: theme?.colors?.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+  },
+  polarPrimaryButtonText: {
+    color: theme?.colors?.primaryForeground,
+    fontWeight: "500",
+  },
+  polarSecondaryButton: {
+    borderWidth: 1,
+    borderColor: theme?.colors?.border,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+  },
+  polarSecondaryButtonText: {
+    color: theme?.colors?.typography,
     fontWeight: "500",
   },
   apiStatusCard: {
@@ -6900,9 +7340,14 @@ const styles = StyleSheet.create((theme) => ({
   },
 }));
 `],
-  ["auth/better-auth/native/uniwind/app/(drawer)/index.tsx.hbs", `import { Text, View, Pressable } from "react-native";
+  ["auth/better-auth/native/uniwind/app/(drawer)/index.tsx.hbs", `import { Text, View, Pressable{{#if (eq payments "polar")}}, Alert{{/if}} } from "react-native";
+{{#if (eq payments "polar")}}
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
+import { env } from "@{{projectName}}/env/native";
+{{/if}}
 import { Container } from "@/components/container";
-import { authClient } from "@/lib/auth-client";
+import { authClient{{#if (eq payments "polar")}}, polarNativeClient{{/if}} } from "@/lib/auth-client";
 import { Ionicons } from "@expo/vector-icons";
 import { Card, Chip, useThemeColor } from "heroui-native";
 import { SignIn } from "@/components/sign-in";
@@ -6930,6 +7375,48 @@ const isConnected = healthCheck?.data === "OK";
 const isLoading = healthCheck?.isLoading;
 {{/if}}
 const { data: session } = authClient.useSession();
+{{#if (eq payments "polar")}}
+
+const openPolarLink = async (url: string, returnUrl: string) => {
+  await WebBrowser.openAuthSessionAsync(url, returnUrl);
+};
+
+const getPolarReturnUrl = (returnUrl: string) => {
+  const url = new URL("/polar/success", env.EXPO_PUBLIC_SERVER_URL);
+  url.searchParams.set("returnUrl", returnUrl);
+  return url.toString();
+};
+
+const handlePolarCheckout = async () => {
+  const returnUrl = Linking.createURL("/");
+  const polarReturnUrl = getPolarReturnUrl(returnUrl);
+  const { data, error } = await polarNativeClient.checkout({
+    slug: "pro",
+    redirect: false,
+    successUrl: polarReturnUrl,
+    returnUrl: polarReturnUrl,
+  });
+
+  if (error || !data?.url) {
+    Alert.alert("Checkout unavailable", error?.message ?? "Unable to create a checkout session.");
+    return;
+  }
+
+  await openPolarLink(data.url, returnUrl);
+};
+
+const handlePolarPortal = async () => {
+  const returnUrl = Linking.createURL("/");
+  const { data, error } = await polarNativeClient.customer.portal({ redirect: false });
+
+  if (error || !data?.url) {
+    Alert.alert("Portal unavailable", error?.message ?? "Unable to open the customer portal.");
+    return;
+  }
+
+  await openPolarLink(data.url, returnUrl);
+};
+{{/if}}
 
 const mutedColor = useThemeColor("muted");
 const successColor = useThemeColor("success");
@@ -6964,6 +7451,22 @@ return (
       >
       <Text className="text-foreground font-medium">Sign Out</Text>
     </Pressable>
+    {{#if (eq payments "polar")}}
+    <View className="mt-4 gap-3">
+      <Pressable
+        className="bg-primary py-3 px-4 rounded-lg self-start active:opacity-70"
+        onPress={handlePolarCheckout}
+      >
+        <Text className="text-foreground font-medium">Upgrade to Pro</Text>
+      </Pressable>
+      <Pressable
+        className="border border-border py-3 px-4 rounded-lg self-start active:opacity-70"
+        onPress={handlePolarPortal}
+      >
+        <Text className="text-foreground font-medium">Manage Subscription</Text>
+      </Pressable>
+    </View>
+    {{/if}}
   </Card>
   ) : null}
 
@@ -7022,7 +7525,8 @@ return (
   )}
 </Container>
 );
-}`],
+}
+`],
   ["auth/better-auth/native/uniwind/components/sign-in.tsx.hbs", `import { authClient } from "@/lib/auth-client";
 {{#if (eq api "trpc")}}
 import { queryClient } from "@/utils/trpc";
@@ -8681,7 +9185,7 @@ import { authClient } from "../lib/auth-client";
 `],
   ["auth/better-auth/web/astro/src/lib/auth-client.ts.hbs", `import { createAuthClient } from "better-auth/client";
 {{#if (eq payments "polar")}}
-import { polarClient } from "@polar-sh/better-auth";
+import { polarClient } from "@polar-sh/better-auth/client";
 {{/if}}
 {{#if (ne backend "self")}}
 import { PUBLIC_SERVER_URL } from "astro:env/client";
@@ -9284,7 +9788,7 @@ watchEffect(() => {
 `],
   ["auth/better-auth/web/nuxt/app/plugins/auth-client.ts.hbs", `import { createAuthClient } from "better-auth/vue";
 {{#if (eq payments "polar")}}
-import { polarClient } from "@polar-sh/better-auth";
+import { polarClient } from "@polar-sh/better-auth/client";
 {{/if}}
 
 export default defineNuxtPlugin(() => {
@@ -9310,7 +9814,7 @@ export default defineNuxtPlugin(() => {
 `],
   ["auth/better-auth/web/react/base/src/lib/auth-client.ts.hbs", `import { createAuthClient } from "better-auth/react";
 {{#if (eq payments "polar")}}
-import { polarClient } from "@polar-sh/better-auth";
+import { polarClient } from "@polar-sh/better-auth/client";
 {{/if}}
 {{#unless (eq backend "self")}}
 import { env } from "@{{projectName}}/env/web";
@@ -10266,7 +10770,7 @@ import { orpc } from "@/utils/orpc";
 {{#if (eq api "trpc")}}
 import { trpc } from "@/utils/trpc";
 {{/if}}
-{{#if ( or (eq api "orpc") (eq api "trpc"))}}
+{{#if (or (eq api "orpc") (eq api "trpc"))}}
 import { useQuery } from "@tanstack/react-query";
 {{/if}}
 import { useEffect, useState } from "react";
@@ -10352,13 +10856,13 @@ export default function Dashboard() {
             This page is rendered only after Better Auth returns an active session.
           </p>
         </div>
-      {{#if ( or (eq api "orpc") (eq api "trpc"))}}
+        {{#if (or (eq api "orpc") (eq api "trpc"))}}
         <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
           <p className="font-mono text-muted-foreground text-xs">PRIVATE_API</p>
           <h2 className="mt-2 font-medium text-lg">API response</h2>
           <p className="mt-3 text-sm">{privateData.data?.message ?? "Waiting for private data..."}</p>
         </div>
-      {{/if}}
+        {{/if}}
       {{#if (eq payments "polar")}}
         <div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
           <p className="font-mono text-muted-foreground text-xs">BILLING</p>
@@ -10779,38 +11283,23 @@ export default function UserMenu() {
   );
 }
 `],
-  ["auth/better-auth/web/react/tanstack-router/src/routes/dashboard.tsx.hbs", `{{#if (eq payments "polar")}}
+  ["auth/better-auth/web/react/tanstack-router/src/routes/_auth/dashboard.tsx.hbs", `{{#if (eq payments "polar")}}
 import { Button } from "@{{projectName}}/ui/components/button";
-{{/if}}
 import { authClient } from "@/lib/auth-client";
+{{/if}}
 {{#if (eq api "orpc")}}
 import { orpc } from "@/utils/orpc";
 {{/if}}
 {{#if (eq api "trpc")}}
 import { trpc } from "@/utils/trpc";
 {{/if}}
-{{#if ( or (eq api "orpc") (eq api "trpc"))}}
+{{#if (or (eq api "orpc") (eq api "trpc"))}}
 import { useQuery } from "@tanstack/react-query";
 {{/if}}
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_auth/dashboard")({
 	component: RouteComponent,
-	beforeLoad: async () => {
-		const session = await authClient.getSession();
-		if (!session.data) {
-			redirect({
-				to: "/login",
-				throw: true
-			});
-		}
-		{{#if (eq payments "polar")}}
-		const {data: customerState} = await authClient.customer.state()
-		return { session, customerState };
-		{{else}}
-		return { session };
-		{{/if}}
-	}
 });
 
 function RouteComponent() {
@@ -10824,7 +11313,7 @@ function RouteComponent() {
 	{{/if}}
 
 	{{#if (eq payments "polar")}}
-	const hasProSubscription = (customerState?.activeSubscriptions?.length ?? 0) > 0
+	const hasProSubscription = (customerState?.activeSubscriptions?.length ?? 0) > 0;
 	{{/if}}
 
 	return (
@@ -10866,7 +11355,7 @@ function RouteComponent() {
 						This page is rendered only after Better Auth returns an active session.
 					</p>
 				</div>
-			{{#if ( or (eq api "orpc") (eq api "trpc"))}}
+			{{#if (or (eq api "orpc") (eq api "trpc"))}}
 				<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
 					<p className="font-mono text-muted-foreground text-xs">PRIVATE_API</p>
 					<h2 className="mt-2 font-medium text-lg">API response</h2>
@@ -10898,6 +11387,31 @@ function RouteComponent() {
 			</section>
 		</main>
 	);
+}
+`],
+  ["auth/better-auth/web/react/tanstack-router/src/routes/_auth/route.tsx.hbs", `import { authClient } from "@/lib/auth-client";
+import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/_auth")({
+	component: AuthLayout,
+	beforeLoad: async () => {
+		const session = await authClient.getSession();
+		if (!session.data) {
+			throw redirect({
+				to: "/login",
+			});
+		}
+		{{#if (eq payments "polar")}}
+		const { data: customerState } = await authClient.customer.state();
+		return { session, customerState };
+		{{else}}
+		return { session };
+		{{/if}}
+	},
+});
+
+function AuthLayout() {
+	return <Outlet />;
 }
 `],
   ["auth/better-auth/web/react/tanstack-router/src/routes/login.tsx.hbs", `import SignInForm from "@/components/sign-in-form";
@@ -11340,11 +11854,9 @@ export const authMiddleware = createMiddleware().server(
 );
 {{/if}}
 `],
-  ["auth/better-auth/web/react/tanstack-start/src/routes/dashboard.tsx.hbs", `import { getUser } from "@/functions/get-user";
-{{#if (eq payments "polar") }}
+  ["auth/better-auth/web/react/tanstack-start/src/routes/_auth/dashboard.tsx.hbs", `{{#if (eq payments "polar") }}
 import { Button } from "@{{projectName}}/ui/components/button";
 import { authClient } from "@/lib/auth-client";
-import { getPayment } from "@/functions/get-payment";
 {{/if}}
 {{#if (eq api "trpc") }}
 import { useTRPC } from "@/utils/trpc";
@@ -11354,26 +11866,10 @@ import { useQuery } from "@tanstack/react-query";
 import { orpc } from "@/utils/orpc";
 import { useQuery } from "@tanstack/react-query";
 {{/if}}
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_auth/dashboard")({
   component: RouteComponent,
-  beforeLoad: async () => {
-    const session = await getUser();
-    {{#if (eq payments "polar") }}
-    const customerState = await getPayment();
-    return { session, customerState };
-    {{else}}
-    return { session };
-    {{/if}}
-  },
-  loader: async ({ context }) => {
-    if (!context.session) {
-      throw redirect({
-        to: "/login",
-      });
-    }
-  },
 });
 
 function RouteComponent() {
@@ -11399,12 +11895,22 @@ function RouteComponent() {
             <p className="font-mono text-muted-foreground text-xs">AUTH_SESSION</p>
             <h1 className="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
             <p className="mt-2 text-muted-foreground text-sm">
+              {{#if (eq backend "self")}}
               Signed in as {session?.user.name || session?.user.email}.
+              {{else}}
+              Signed in as {session.data?.user.name || session.data?.user.email}.
+              {{/if}}
             </p>
           </div>
           <div className="rounded-lg bg-muted/50 px-3 py-2 text-sm ring-1 ring-border/60">
             <p className="font-mono text-muted-foreground text-xs">EMAIL</p>
-            <p className="mt-1 break-all font-medium">{session?.user.email}</p>
+            <p className="mt-1 break-all font-medium">
+              {{#if (eq backend "self")}}
+              {session?.user.email}
+              {{else}}
+              {session.data?.user.email}
+              {{/if}}
+            </p>
           </div>
         </div>
       </section>
@@ -11415,11 +11921,23 @@ function RouteComponent() {
           <dl className="mt-4 space-y-3 text-sm">
             <div className="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
               <dt className="text-muted-foreground">Name</dt>
-              <dd className="font-medium">{session?.user.name || "User"}</dd>
+              <dd className="font-medium">
+                {{#if (eq backend "self")}}
+                {session?.user.name || "User"}
+                {{else}}
+                {session.data?.user.name || "User"}
+                {{/if}}
+              </dd>
             </div>
             <div className="grid grid-cols-[5rem_1fr] gap-3 border-t pt-3">
               <dt className="text-muted-foreground">Email</dt>
-              <dd className="break-all font-medium">{session?.user.email}</dd>
+              <dd className="break-all font-medium">
+                {{#if (eq backend "self")}}
+                {session?.user.email}
+                {{else}}
+                {session.data?.user.email}
+                {{/if}}
+              </dd>
             </div>
           </dl>
         </div>
@@ -11476,6 +11994,65 @@ function RouteComponent() {
       </section>
     </main>
   );
+}
+`],
+  ["auth/better-auth/web/react/tanstack-start/src/routes/_auth/route.tsx.hbs", `{{#if (eq backend "self")}}
+import { getUser } from "@/functions/get-user";
+{{else}}
+import { authClient } from "@/lib/auth-client";
+{{/if}}
+{{#if (and (eq backend "self") (eq payments "polar"))}}
+import { getPayment } from "@/functions/get-payment";
+{{/if}}
+import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/_auth")({
+  {{#unless (eq backend "self")}}
+  ssr: false,
+  {{/unless}}
+  component: AuthLayout,
+  beforeLoad: async () => {
+    {{#if (eq backend "self")}}
+    const session = await getUser();
+    if (!session) {
+      throw redirect({
+        to: "/login",
+      });
+    }
+    {{#if (eq payments "polar") }}
+    const customerState = await getPayment();
+    return { session, customerState };
+    {{else}}
+    return { session };
+    {{/if}}
+    {{else}}
+    const session = await authClient.getSession();
+    if (!session.data) {
+      throw redirect({
+        to: "/login",
+      });
+    }
+    {{#if (eq payments "polar") }}
+    const { data: customerState } = await authClient.customer.state();
+    return { session, customerState };
+    {{else}}
+    return { session };
+    {{/if}}
+    {{/if}}
+  },
+  {{#if (eq backend "self")}}
+  loader: async ({ context }) => {
+    if (!context.session) {
+      throw redirect({
+        to: "/login",
+      });
+    }
+  },
+  {{/if}}
+});
+
+function AuthLayout() {
+  return <Outlet />;
 }
 `],
   ["auth/better-auth/web/react/tanstack-start/src/routes/login.tsx.hbs", `import SignInForm from "@/components/sign-in-form";
@@ -11850,7 +12427,7 @@ export default function UserMenu() {
 `],
   ["auth/better-auth/web/solid/src/lib/auth-client.ts.hbs", `import { createAuthClient } from "better-auth/solid";
 {{#if (eq payments "polar")}}
-import { polarClient } from "@polar-sh/better-auth";
+import { polarClient } from "@polar-sh/better-auth/client";
 {{/if}}
 import { env } from "@{{projectName}}/env/web";
 
@@ -11901,7 +12478,7 @@ function RouteComponent() {
 
 	{{#if (eq payments "polar")}}
 	const hasProSubscription = () =>
-		customerState?.activeSubscriptions?.length! > 0;
+		(customerState?.activeSubscriptions?.length ?? 0) > 0;
 	{{/if}}
 
 	return (
@@ -12344,7 +12921,7 @@ import { PUBLIC_SERVER_URL } from "$env/static/public";
 {{/unless}}
 import { createAuthClient } from "better-auth/svelte";
 {{#if (eq payments "polar")}}
-import { polarClient } from "@polar-sh/better-auth";
+import { polarClient } from "@polar-sh/better-auth/client";
 {{/if}}
 
 export const authClient = createAuthClient({
@@ -13164,83 +13741,12 @@ export default function Dashboard() {
 	);
 }
 `],
-  ["auth/clerk/convex/web/react/tanstack-router/src/routes/dashboard.tsx.hbs", `import { SignInButton, UserButton, useUser } from "@clerk/react";
+  ["auth/clerk/convex/web/react/tanstack-router/src/routes/_auth/dashboard.tsx.hbs", `import { UserButton, useUser } from "@clerk/react";
 import { api } from "@{{projectName}}/backend/convex/_generated/api";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-	Authenticated,
-	AuthLoading,
-	Unauthenticated,
-	useQuery,
-} from "convex/react";
+import { useQuery } from "convex/react";
 
-export const Route = createFileRoute("/dashboard")({
-	component: RouteComponent,
-});
-
-function RouteComponent() {
-	const privateData = useQuery(api.privateData.get);
-	const user = useUser()
-
-	return (
-		<>
-			<Authenticated>
-				<main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
-					<section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
-						<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-							<div>
-								<p className="font-mono text-muted-foreground text-xs">CLERK_SESSION</p>
-								<h1 className="mt-2 font-semibold text-2xl tracking-tight">
-									Dashboard
-								</h1>
-								<p className="mt-2 text-muted-foreground text-sm">
-									Signed in as {user.user?.fullName || user.user?.primaryEmailAddress?.emailAddress}.
-								</p>
-							</div>
-							<UserButton />
-						</div>
-					</section>
-					<section className="grid gap-4 md:grid-cols-2">
-						<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
-							<p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
-							<h2 className="mt-2 font-medium text-lg">Protected route</h2>
-							<p className="mt-3 text-muted-foreground text-sm leading-6">
-								This page is rendered only after Clerk returns an active session.
-							</p>
-						</div>
-						<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
-							<p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
-							<h2 className="mt-2 font-medium text-lg">Convex response</h2>
-							<p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
-						</div>
-					</section>
-				</main>
-			</Authenticated>
-			<Unauthenticated>
-				<main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
-					<SignInButton />
-				</main>
-			</Unauthenticated>
-			<AuthLoading>
-				<main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
-					<div className="h-8 w-28 animate-pulse rounded-md bg-muted" />
-				</main>
-			</AuthLoading>
-		</>
-	);
-}
-`],
-  ["auth/clerk/convex/web/react/tanstack-start/src/routes/dashboard.tsx.hbs", `import { SignInButton, UserButton, useUser } from "@clerk/tanstack-react-start";
-import { api } from "@{{projectName}}/backend/convex/_generated/api";
-import { createFileRoute } from "@tanstack/react-router";
-import {
-	Authenticated,
-	AuthLoading,
-	Unauthenticated,
-	useQuery,
-} from "convex/react";
-
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_auth/dashboard")({
 	component: RouteComponent,
 });
 
@@ -13249,48 +13755,125 @@ function RouteComponent() {
 	const user = useUser();
 
 	return (
+		<main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+			<section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+				<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+					<div>
+						<p className="font-mono text-muted-foreground text-xs">CLERK_SESSION</p>
+						<h1 className="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+						<p className="mt-2 text-muted-foreground text-sm">
+							Signed in as {user.user?.fullName || user.user?.primaryEmailAddress?.emailAddress}.
+						</p>
+					</div>
+					<UserButton />
+				</div>
+			</section>
+			<section className="grid gap-4 md:grid-cols-2">
+				<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+					<p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+					<h2 className="mt-2 font-medium text-lg">Protected route</h2>
+					<p className="mt-3 text-muted-foreground text-sm leading-6">
+						This page is rendered only after Clerk returns an active session.
+					</p>
+				</div>
+				<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+					<p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
+					<h2 className="mt-2 font-medium text-lg">Convex response</h2>
+					<p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
+				</div>
+			</section>
+		</main>
+	);
+}
+`],
+  ["auth/clerk/convex/web/react/tanstack-router/src/routes/_auth/route.tsx.hbs", `import { SignInButton } from "@clerk/react";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
+import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
+
+export const Route = createFileRoute("/_auth")({
+	component: AuthLayout,
+});
+
+function AuthLayout() {
+	return (
 		<>
 			<Authenticated>
-				<main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
-					<section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
-						<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-							<div>
-								<p className="font-mono text-muted-foreground text-xs">CLERK_SESSION</p>
-								<h1 className="mt-2 font-semibold text-2xl tracking-tight">
-									Dashboard
-								</h1>
-								<p className="mt-2 text-muted-foreground text-sm">
-									Signed in as {user.user?.fullName || user.user?.primaryEmailAddress?.emailAddress}.
-								</p>
-							</div>
-							<UserButton />
-						</div>
-					</section>
-					<section className="grid gap-4 md:grid-cols-2">
-						<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
-							<p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
-							<h2 className="mt-2 font-medium text-lg">Protected route</h2>
-							<p className="mt-3 text-muted-foreground text-sm leading-6">
-								This page is rendered only after Clerk returns an active session.
-							</p>
-						</div>
-						<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
-							<p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
-							<h2 className="mt-2 font-medium text-lg">Convex response</h2>
-							<p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
-						</div>
-					</section>
-				</main>
+				<Outlet />
 			</Authenticated>
 			<Unauthenticated>
-				<main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
-					<SignInButton />
-				</main>
+				<SignInButton />
 			</Unauthenticated>
 			<AuthLoading>
-				<main className="flex min-h-[calc(100svh-3.5rem)] items-center justify-center p-4 md:p-6">
-					<div className="h-8 w-28 animate-pulse rounded-md bg-muted" />
-				</main>
+				<div>Loading...</div>
+			</AuthLoading>
+		</>
+	);
+}
+`],
+  ["auth/clerk/convex/web/react/tanstack-start/src/routes/_auth/dashboard.tsx.hbs", `import { UserButton, useUser } from "@clerk/tanstack-react-start";
+import { api } from "@{{projectName}}/backend/convex/_generated/api";
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "convex/react";
+
+export const Route = createFileRoute("/_auth/dashboard")({
+	component: RouteComponent,
+});
+
+function RouteComponent() {
+	const privateData = useQuery(api.privateData.get);
+	const user = useUser();
+
+	return (
+		<main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+			<section className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10 sm:p-5">
+				<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+					<div>
+						<p className="font-mono text-muted-foreground text-xs">CLERK_SESSION</p>
+						<h1 className="mt-2 font-semibold text-2xl tracking-tight">Dashboard</h1>
+						<p className="mt-2 text-muted-foreground text-sm">
+							Signed in as {user.user?.fullName || user.user?.primaryEmailAddress?.emailAddress}.
+						</p>
+					</div>
+					<UserButton />
+				</div>
+			</section>
+			<section className="grid gap-4 md:grid-cols-2">
+				<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+					<p className="font-mono text-muted-foreground text-xs">AUTH_READY</p>
+					<h2 className="mt-2 font-medium text-lg">Protected route</h2>
+					<p className="mt-3 text-muted-foreground text-sm leading-6">
+						This page is rendered only after Clerk returns an active session.
+					</p>
+				</div>
+				<div className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10">
+					<p className="font-mono text-muted-foreground text-xs">PRIVATE_DATA</p>
+					<h2 className="mt-2 font-medium text-lg">Convex response</h2>
+					<p className="mt-3 text-sm">{privateData?.message ?? "Waiting for private data..."}</p>
+				</div>
+			</section>
+		</main>
+	);
+}
+`],
+  ["auth/clerk/convex/web/react/tanstack-start/src/routes/_auth/route.tsx.hbs", `import { SignInButton } from "@clerk/tanstack-react-start";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
+import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
+
+export const Route = createFileRoute("/_auth")({
+	component: AuthLayout,
+});
+
+function AuthLayout() {
+	return (
+		<>
+			<Authenticated>
+				<Outlet />
+			</Authenticated>
+			<Unauthenticated>
+				<SignInButton />
+			</Unauthenticated>
+			<AuthLoading>
+				<div>Loading...</div>
 			</AuthLoading>
 		</>
 	);
@@ -13966,7 +14549,7 @@ export default function Dashboard() {
   );
 }
 `],
-  ["auth/clerk/web/react/tanstack-router/src/routes/dashboard.tsx.hbs", `{{#if (eq api "orpc")}}
+  ["auth/clerk/web/react/tanstack-router/src/routes/_auth/dashboard.tsx.hbs", `{{#if (eq api "orpc")}}
 import { useQuery } from "@tanstack/react-query";
 import { orpc } from "@/utils/orpc";
 {{/if}}
@@ -13974,10 +14557,10 @@ import { orpc } from "@/utils/orpc";
 import { useQuery } from "@tanstack/react-query";
 import { trpc } from "@/utils/trpc";
 {{/if}}
-import { SignInButton, UserButton, useUser } from "@clerk/react";
+import { UserButton, useUser } from "@clerk/react";
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_auth/dashboard")({
 	component: RouteComponent,
 });
 
@@ -14004,18 +14587,6 @@ function RouteComponent() {
 	});
 	{{/if}}
 
-	if (!user.isLoaded) {
-		return <div className="p-6">Loading...</div>;
-	}
-
-	if (!user.user) {
-		return (
-			<div className="p-6">
-				<SignInButton />
-			</div>
-		);
-	}
-
 	return (
 		<div className="space-y-4 p-6">
 			<h1 className="text-2xl font-semibold">Dashboard</h1>
@@ -14028,7 +14599,32 @@ function RouteComponent() {
 	);
 }
 `],
-  ["auth/clerk/web/react/tanstack-start/src/routes/dashboard.tsx.hbs", `{{#if (eq api "trpc")}}
+  ["auth/clerk/web/react/tanstack-router/src/routes/_auth/route.tsx.hbs", `import { SignInButton, useUser } from "@clerk/react";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/_auth")({
+	component: AuthLayout,
+});
+
+function AuthLayout() {
+	const user = useUser();
+
+	if (!user.isLoaded) {
+		return <div className="p-6">Loading...</div>;
+	}
+
+	if (!user.user) {
+		return (
+			<div className="p-6">
+				<SignInButton />
+			</div>
+		);
+	}
+
+	return <Outlet />;
+}
+`],
+  ["auth/clerk/web/react/tanstack-start/src/routes/_auth/dashboard.tsx.hbs", `{{#if (eq api "trpc")}}
 import { useTRPC } from "@/utils/trpc";
 import { useQuery } from "@tanstack/react-query";
 {{/if}}
@@ -14036,10 +14632,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { orpc } from "@/utils/orpc";
 {{/if}}
-import { SignInButton, UserButton, useUser } from "@clerk/tanstack-react-start";
+import { UserButton, useUser } from "@clerk/tanstack-react-start";
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_auth/dashboard")({
 	component: RouteComponent,
 });
 
@@ -14067,6 +14663,28 @@ function RouteComponent() {
 	});
 	{{/if}}
 
+	return (
+		<div className="space-y-4 p-6">
+			<h1 className="text-2xl font-semibold">Dashboard</h1>
+			<p>Welcome {displayName}</p>
+			{{#if (or (eq api "orpc") (eq api "trpc"))}}
+			<p>API: {privateData.data?.message}</p>
+			{{/if}}
+			<UserButton />
+		</div>
+	);
+}
+`],
+  ["auth/clerk/web/react/tanstack-start/src/routes/_auth/route.tsx.hbs", `import { SignInButton, useUser } from "@clerk/tanstack-react-start";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/_auth")({
+	component: AuthLayout,
+});
+
+function AuthLayout() {
+	const user = useUser();
+
 	if (!user.isLoaded) {
 		return <div className="p-6">Loading...</div>;
 	}
@@ -14079,16 +14697,7 @@ function RouteComponent() {
 		);
 	}
 
-	return (
-		<div className="space-y-4 p-6">
-			<h1 className="text-2xl font-semibold">Dashboard</h1>
-			<p>Welcome {displayName}</p>
-			{{#if (or (eq api "orpc") (eq api "trpc"))}}
-			<p>API: {privateData.data?.message}</p>
-			{{/if}}
-			<UserButton />
-		</div>
-	);
+	return <Outlet />;
 }
 `],
   ["auth/clerk/web/react/tanstack-start/src/start.ts.hbs", `import { clerkMiddleware } from '@clerk/tanstack-react-start/server'
@@ -14183,6 +14792,9 @@ export const httpAction = httpActionGeneric;
 {{#if (eq auth "better-auth")}}
 import betterAuth from "@convex-dev/better-auth/convex.config";
 {{/if}}
+{{#if (eq payments "polar")}}
+import polar from "@convex-dev/polar/convex.config.js";
+{{/if}}
 {{#if (includes examples "ai")}}
 import agent from "@convex-dev/agent/convex.config";
 {{/if}}
@@ -14190,6 +14802,9 @@ import agent from "@convex-dev/agent/convex.config";
 const app = defineApp();
 {{#if (eq auth "better-auth")}}
 app.use(betterAuth);
+{{/if}}
+{{#if (eq payments "polar")}}
+app.use(polar);
 {{/if}}
 {{#if (includes examples "ai")}}
 app.use(agent);
@@ -14514,6 +15129,32 @@ new Elysia()
 {{/if}}
 		}),
 	)
+{{#if (and (eq auth "better-auth") (eq payments "polar") (or (includes frontend "native-bare") (includes frontend "native-uniwind") (includes frontend "native-unistyles")))}}
+	.get("/polar/success", ({ request, status }) => {
+		const nativeAppUrl = "{{projectName}}://";
+		const allowedNativeProtocols = new Set(["exp:", new URL(nativeAppUrl).protocol]);
+		const requestUrl = new URL(request.url);
+		const returnUrl = requestUrl.searchParams.get("returnUrl") || nativeAppUrl;
+
+		let redirectUrl: URL;
+		try {
+			redirectUrl = new URL(returnUrl);
+		} catch {
+			return status(400, "Invalid return URL");
+		}
+
+		if (!allowedNativeProtocols.has(redirectUrl.protocol)) {
+			return status(400, "Invalid return URL");
+		}
+
+		return new Response(null, {
+			status: 302,
+			headers: {
+				Location: redirectUrl.toString(),
+			},
+		});
+	})
+{{/if}}
 {{#if (eq auth "better-auth")}}
 	.all("/api/auth/*", async (context) => {
 		const { request, status } = context;
@@ -14636,6 +15277,31 @@ app.use(clerkMiddleware());
 app.all("/api/auth{/*path}", toNodeHandler(auth));
 {{/if}}
 
+{{#if (and (eq auth "better-auth") (eq payments "polar") (or (includes frontend "native-bare") (includes frontend "native-uniwind") (includes frontend "native-unistyles")))}}
+const nativeAppUrl = "{{projectName}}://";
+const allowedNativeProtocols = new Set(["exp:", new URL(nativeAppUrl).protocol]);
+
+app.get("/polar/success", (req, res) => {
+	const requestUrl = new URL(req.url, env.BETTER_AUTH_URL);
+	const returnUrl = requestUrl.searchParams.get("returnUrl") || nativeAppUrl;
+
+	let redirectUrl: URL;
+	try {
+		redirectUrl = new URL(returnUrl);
+	} catch {
+		res.status(400).send("Invalid return URL");
+		return;
+	}
+
+	if (!allowedNativeProtocols.has(redirectUrl.protocol)) {
+		res.status(400).send("Invalid return URL");
+		return;
+	}
+
+	res.redirect(302, redirectUrl.toString());
+});
+
+{{/if}}
 {{#if (eq api "trpc")}}
 app.use(
 	"/trpc",
@@ -14793,6 +15459,31 @@ fastify.register(clerkPlugin, {
 });
 {{/if}}
 
+{{#if (and (eq auth "better-auth") (eq payments "polar") (or (includes frontend "native-bare") (includes frontend "native-uniwind") (includes frontend "native-unistyles")))}}
+const nativeAppUrl = "{{projectName}}://";
+const allowedNativeProtocols = new Set(["exp:", new URL(nativeAppUrl).protocol]);
+
+fastify.get("/polar/success", async (request, reply) => {
+	const requestUrl = new URL(request.url, env.BETTER_AUTH_URL);
+	const returnUrl = requestUrl.searchParams.get("returnUrl") || nativeAppUrl;
+
+	let redirectUrl: URL;
+	try {
+		redirectUrl = new URL(returnUrl);
+	} catch {
+		reply.status(400).send("Invalid return URL");
+		return;
+	}
+
+	if (!allowedNativeProtocols.has(redirectUrl.protocol)) {
+		reply.status(400).send("Invalid return URL");
+		return;
+	}
+
+	reply.status(302).header("Location", redirectUrl.toString()).send();
+});
+
+{{/if}}
 {{#if (eq api "orpc")}}
 fastify.register(async (rpcApp) => {
 	// Fully utilize oRPC features by letting oRPC parse the request body.
@@ -14967,6 +15658,29 @@ app.on(
 );
 {{/if}}
 
+{{#if (and (eq auth "better-auth") (eq payments "polar") (or (includes frontend "native-bare") (includes frontend "native-uniwind") (includes frontend "native-unistyles")))}}
+const nativeAppUrl = "{{projectName}}://";
+const allowedNativeProtocols = new Set(["exp:", new URL(nativeAppUrl).protocol]);
+
+app.get("/polar/success", (c) => {
+	const requestUrl = new URL(c.req.url);
+	const returnUrl = requestUrl.searchParams.get("returnUrl") || nativeAppUrl;
+
+	let redirectUrl: URL;
+	try {
+		redirectUrl = new URL(returnUrl);
+	} catch {
+		return c.text("Invalid return URL", 400);
+	}
+
+	if (!allowedNativeProtocols.has(redirectUrl.protocol)) {
+		return c.text("Invalid return URL", 400);
+	}
+
+	return c.redirect(redirectUrl.toString(), 302);
+});
+
+{{/if}}
 {{#if (eq api "orpc")}}
 export const apiHandler = new OpenAPIHandler(appRouter, {
 	plugins: [
@@ -15097,6 +15811,9 @@ node_modules
 dist
 build
 *.tsbuildinfo
+
+# Generated files
+apps/web/src/routeTree.gen.ts
 
 # Environment variables
 .env
@@ -23479,7 +24196,12 @@ const styles = StyleSheet.create({
 });
 `],
   ["frontend/native/bare/app/(drawer)/index.tsx.hbs", `import { {{#if (or (eq auth "clerk") (eq auth "better-auth"))}}Button, {{/if}}Column, Host, Text as ExpoUIText } from "@expo/ui";
-import { View, ScrollView, StyleSheet } from "react-native";
+import { View, ScrollView, StyleSheet{{#if (and (eq backend "convex") (eq auth "better-auth") (eq payments "polar"))}}, Alert{{/if}} } from "react-native";
+{{#if (and (eq backend "convex") (eq auth "better-auth") (eq payments "polar"))}}
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
+import { env } from "@{{projectName}}/env/native";
+{{/if}}
 import { Container } from "@/components/container";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { NAV_THEME } from "@/lib/constants";
@@ -23502,7 +24224,7 @@ import { router } from "expo-router";
 import { useAuth, useUser } from "@clerk/expo";
 import { SignOutButton } from "@/components/sign-out-button";
 {{else if (and (eq backend "convex") (eq auth "better-auth"))}}
-import { useConvexAuth, useQuery } from "convex/react";
+import { {{#if (eq payments "polar")}}useAction, {{/if}}useConvexAuth, useQuery } from "convex/react";
 import { api } from "@{{ projectName }}/backend/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { SignIn } from "@/components/sign-in";
@@ -23532,23 +24254,74 @@ const { user } = useUser();
 const healthCheck = useQuery(api.healthCheck.get);
 const { isAuthenticated } = useConvexAuth();
 const user = useQuery(api.auth.getCurrentUser, isAuthenticated ? {} : "skip");
+{{#if (eq payments "polar")}}
+const products = useQuery(api.polar.listAllProducts);
+const subscription = useQuery(api.polar.getCurrentSubscription);
+const generateCheckoutLink = useAction(api.polar.generateCheckoutLink);
+const generateCustomerPortalUrl = useAction(api.polar.generateCustomerPortalUrl);
+const recurringProduct = products?.find((product) => product.isRecurring);
+
+const openPolarLink = async (url: string, returnUrl: string) => {
+	await WebBrowser.openAuthSessionAsync(url, returnUrl);
+};
+
+const getPolarReturnUrl = (returnUrl: string) => {
+	const url = new URL("/polar/success", env.EXPO_PUBLIC_CONVEX_SITE_URL);
+	url.searchParams.set("returnUrl", returnUrl);
+	return url.toString();
+};
+
+const handlePolarCheckout = async () => {
+	try {
+		if (!recurringProduct) {
+			Alert.alert("Checkout unavailable", "No recurring Polar product is available yet.");
+			return;
+		}
+
+		const returnUrl = Linking.createURL("/");
+		const polarReturnUrl = getPolarReturnUrl(returnUrl);
+		const { url } = await generateCheckoutLink({
+			productIds: [recurringProduct.id],
+			origin: env.EXPO_PUBLIC_CONVEX_SITE_URL,
+			successUrl: polarReturnUrl,
+		});
+
+		await openPolarLink(url, returnUrl);
+	} catch {
+		Alert.alert("Checkout failed", "Unable to open Polar checkout. Please try again.");
+	}
+};
+
+const handlePolarPortal = async () => {
+	try {
+		const returnUrl = Linking.createURL("/");
+		const { url } = await generateCustomerPortalUrl({
+			returnUrl: getPolarReturnUrl(returnUrl),
+		});
+
+		await openPolarLink(url, returnUrl);
+	} catch {
+		Alert.alert("Portal unavailable", "Unable to open the customer portal. Please try again.");
+	}
+};
+{{/if}}
 {{else if (eq backend "convex")}}
 const healthCheck = useQuery(api.healthCheck.get);
 {{/if}}
 
 return (
 <Container>
-  <ScrollView style={styles.scrollView}>
+  <ScrollView style={styles.scrollView} contentInsetAdjustmentBehavior="never">
     <View style={styles.content}>
-      <Host style={styles.titleHost} matchContents=\\{{ vertical: true }}>
+      <Host style={styles.titleHost}>
         <Column spacing={4}>
           <ExpoUIText
-            textStyle=\\{{ color: theme.primary, fontSize: 12, fontWeight: "700" }}
+            textStyle=\\{{ color: theme.primary, fontSize: 12, fontWeight: "700", textAlign: "center" }}
           >
             GENERATED_STACK
           </ExpoUIText>
           <ExpoUIText
-            textStyle=\\{{ color: theme.text, fontSize: 24, fontWeight: "bold" }}
+            textStyle=\\{{ color: theme.text, fontSize: 24, fontWeight: "bold", textAlign: "center" }}
           >
             Better T Stack
           </ExpoUIText>
@@ -23746,6 +24519,21 @@ return (
             }}
           />
         </Host>
+        {{#if (eq payments "polar")}}
+        <Host style={styles.paymentActions} matchContents=\\{{ vertical: true }}>
+          <Column spacing={8}>
+            {subscription ? (
+            <Button
+              label="Manage Subscription"
+              variant="outlined"
+              onPress={handlePolarPortal}
+            />
+            ) : (
+            <Button label="Upgrade to Pro" onPress={handlePolarCheckout} />
+            )}
+          </Column>
+        </Host>
+        {{/if}}
       </View>
       ) : (
       <>
@@ -23770,7 +24558,8 @@ paddingTop: 28,
 paddingBottom: 32,
 },
 titleHost: {
-alignSelf: "center",
+alignSelf: "stretch",
+height: 34,
 marginBottom: 24,
 },
 card: {
@@ -23799,6 +24588,9 @@ borderRadius: 16,
 },
 userHeader: {
 marginBottom: 8,
+},
+paymentActions: {
+marginTop: 12,
 },
 authHost: {
 marginBottom: 12,
@@ -23936,7 +24728,10 @@ export function Container({ children }: { children: React.ReactNode }) {
     : NAV_THEME.light.background;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor }]}>
+    <SafeAreaView
+      edges={["left", "right", "bottom"]}
+      style={[styles.container, { backgroundColor }]}
+    >
       {children}
     </SafeAreaView>
   );
@@ -23947,7 +24742,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-
 `],
   ["frontend/native/bare/components/header-button.tsx.hbs", `import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { forwardRef } from "react";
@@ -24053,6 +24847,16 @@ export function useColorScheme() {
 const { getDefaultConfig } = require("expo/metro-config");
 
 const config = getDefaultConfig(__dirname);
+{{#if (or (eq webDeploy "cloudflare") (eq serverDeploy "cloudflare"))}}
+// Alchemy writes runtime state here; block it to avoid Metro refresh loops.
+const blockList = config.resolver.blockList ?? [];
+const blockListPatterns = Array.isArray(blockList) ? blockList : [blockList];
+
+config.resolver.blockList = [
+	...blockListPatterns,
+	/[/\\\\]packages[/\\\\]infra[/\\\\]\\.alchemy(?:[/\\\\]|$)/,
+];
+{{/if}}
 
 module.exports = config;
 `],
@@ -24093,7 +24897,7 @@ module.exports = config;
     "react-native-gesture-handler": "~2.31.1",
     "react-native-reanimated": "4.3.1",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "4.25.1",
+    "react-native-screens": "4.25.2",
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.8.3"
   },
@@ -24652,7 +25456,12 @@ const styles = StyleSheet.create((theme) => ({
   },
 }));
 `],
-  ["frontend/native/unistyles/app/(drawer)/index.tsx.hbs", `import { ScrollView, Text, View, TouchableOpacity } from "react-native";
+  ["frontend/native/unistyles/app/(drawer)/index.tsx.hbs", `import { ScrollView, Text, View, TouchableOpacity{{#if (and (eq backend "convex") (eq auth "better-auth") (eq payments "polar"))}}, Alert{{/if}} } from "react-native";
+{{#if (and (eq backend "convex") (eq auth "better-auth") (eq payments "polar"))}}
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
+import { env } from "@{{projectName}}/env/native";
+{{/if}}
 import { StyleSheet } from "react-native-unistyles";
 import { Container } from "@/components/container";
 
@@ -24675,7 +25484,7 @@ import { Link } from "expo-router";
 import { useAuth, useUser } from "@clerk/expo";
 import { SignOutButton } from "@/components/sign-out-button";
 {{else if (and (eq backend "convex") (eq auth "better-auth"))}}
-import { useConvexAuth, useQuery } from "convex/react";
+import { {{#if (eq payments "polar")}}useAction, {{/if}}useConvexAuth, useQuery } from "convex/react";
 import { api } from "@{{ projectName }}/backend/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { SignIn } from "@/components/sign-in";
@@ -24703,6 +25512,57 @@ export default function Home() {
   const healthCheck = useQuery(api.healthCheck.get);
   const { isAuthenticated } = useConvexAuth();
   const user = useQuery(api.auth.getCurrentUser, isAuthenticated ? {} : "skip");
+  {{#if (eq payments "polar")}}
+  const products = useQuery(api.polar.listAllProducts);
+  const subscription = useQuery(api.polar.getCurrentSubscription);
+  const generateCheckoutLink = useAction(api.polar.generateCheckoutLink);
+  const generateCustomerPortalUrl = useAction(api.polar.generateCustomerPortalUrl);
+  const recurringProduct = products?.find((product) => product.isRecurring);
+
+  const openPolarLink = async (url: string, returnUrl: string) => {
+    await WebBrowser.openAuthSessionAsync(url, returnUrl);
+  };
+
+  const getPolarReturnUrl = (returnUrl: string) => {
+    const url = new URL("/polar/success", env.EXPO_PUBLIC_CONVEX_SITE_URL);
+    url.searchParams.set("returnUrl", returnUrl);
+    return url.toString();
+  };
+
+  const handlePolarCheckout = async () => {
+    try {
+      if (!recurringProduct) {
+        Alert.alert("Checkout unavailable", "No recurring Polar product is available yet.");
+        return;
+      }
+
+      const returnUrl = Linking.createURL("/");
+      const polarReturnUrl = getPolarReturnUrl(returnUrl);
+      const { url } = await generateCheckoutLink({
+        productIds: [recurringProduct.id],
+        origin: env.EXPO_PUBLIC_CONVEX_SITE_URL,
+        successUrl: polarReturnUrl,
+      });
+
+      await openPolarLink(url, returnUrl);
+    } catch {
+      Alert.alert("Checkout failed", "Unable to open Polar checkout. Please try again.");
+    }
+  };
+
+  const handlePolarPortal = async () => {
+    try {
+      const returnUrl = Linking.createURL("/");
+      const { url } = await generateCustomerPortalUrl({
+        returnUrl: getPolarReturnUrl(returnUrl),
+      });
+
+      await openPolarLink(url, returnUrl);
+    } catch {
+      Alert.alert("Portal unavailable", "Unable to open the customer portal. Please try again.");
+    }
+  };
+  {{/if}}
   {{else if (eq backend "convex")}}
   const healthCheck = useQuery(api.healthCheck.get);
   {{/if}}
@@ -24846,6 +25706,25 @@ export default function Home() {
             >
               <Text style={styles.signOutText}>Sign Out</Text>
             </TouchableOpacity>
+            {{#if (eq payments "polar")}}
+            <View style={styles.paymentActions}>
+              {subscription ? (
+                <TouchableOpacity
+                  style={styles.polarSecondaryButton}
+                  onPress={handlePolarPortal}
+                >
+                  <Text style={styles.polarSecondaryButtonText}>Manage Subscription</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={styles.polarPrimaryButton}
+                  onPress={handlePolarCheckout}
+                >
+                  <Text style={styles.polarPrimaryButtonText}>Upgrade to Pro</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            {{/if}}
           </View>
         ) : null}
         <View style={styles.apiStatusCard}>
@@ -25003,6 +25882,31 @@ const styles = StyleSheet.create((theme) => ({
   },
   signOutText: {
     color: theme.colors.destructiveForeground,
+    fontWeight: "500",
+  },
+  paymentActions: {
+    marginTop: theme.spacing.sm,
+    alignItems: "flex-start",
+  },
+  polarPrimaryButton: {
+    backgroundColor: theme.colors.primary,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+  },
+  polarPrimaryButtonText: {
+    color: theme.colors.primaryForeground,
+    fontWeight: "500",
+  },
+  polarSecondaryButton: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+  },
+  polarSecondaryButtonText: {
+    color: theme.colors.foreground,
     fontWeight: "500",
   },
   apiStatusCard: {
@@ -25262,6 +26166,16 @@ import './unistyles';
   ["frontend/native/unistyles/metro.config.js.hbs", `const { getDefaultConfig } = require("expo/metro-config");
 
 const config = getDefaultConfig(__dirname);
+{{#if (or (eq webDeploy "cloudflare") (eq serverDeploy "cloudflare"))}}
+// Alchemy writes runtime state here; block it to avoid Metro refresh loops.
+const blockList = config.resolver.blockList ?? [];
+const blockListPatterns = Array.isArray(blockList) ? blockList : [blockList];
+
+config.resolver.blockList = [
+	...blockListPatterns,
+	/[/\\\\]packages[/\\\\]infra[/\\\\]\\.alchemy(?:[/\\\\]|$)/,
+];
+{{/if}}
 
 module.exports = config;
 `],
@@ -25304,7 +26218,7 @@ module.exports = config;
     "react-native-nitro-modules": "^0.35.7",
     "react-native-reanimated": "4.3.1",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "4.25.1",
+    "react-native-screens": "4.25.2",
     "react-native-unistyles": "^3.2.4",
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.8.3"
@@ -25856,7 +26770,12 @@ export default function TabTwo() {
 	);
 }
 `],
-  ["frontend/native/uniwind/app/(drawer)/index.tsx.hbs", `import { Text, View } from "react-native";
+  ["frontend/native/uniwind/app/(drawer)/index.tsx.hbs", `import { Text, View{{#if (and (eq backend "convex") (eq auth "better-auth") (eq payments "polar"))}}, Alert{{/if}} } from "react-native";
+{{#if (and (eq backend "convex") (eq auth "better-auth") (eq payments "polar"))}}
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
+import { env } from "@{{projectName}}/env/native";
+{{/if}}
 import { Container } from "@/components/container";
 {{#if (eq api "orpc")}}
 import { useQuery } from "@tanstack/react-query";
@@ -25877,7 +26796,7 @@ import { Link } from "expo-router";
 import { useAuth, useUser } from "@clerk/expo";
 import { SignOutButton } from "@/components/sign-out-button";
 {{else if (and (eq backend "convex") (eq auth "better-auth"))}}
-import { useConvexAuth, useQuery } from "convex/react";
+import { {{#if (eq payments "polar")}}useAction, {{/if}}useConvexAuth, useQuery } from "convex/react";
 import { api } from "@{{projectName}}/backend/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { SignIn } from "@/components/sign-in";
@@ -25909,6 +26828,57 @@ const { user } = useUser();
 const healthCheck = useQuery(api.healthCheck.get);
 const { isAuthenticated } = useConvexAuth();
 const user = useQuery(api.auth.getCurrentUser, isAuthenticated ? {} : "skip");
+{{#if (eq payments "polar")}}
+const products = useQuery(api.polar.listAllProducts);
+const subscription = useQuery(api.polar.getCurrentSubscription);
+const generateCheckoutLink = useAction(api.polar.generateCheckoutLink);
+const generateCustomerPortalUrl = useAction(api.polar.generateCustomerPortalUrl);
+const recurringProduct = products?.find((product) => product.isRecurring);
+
+const openPolarLink = async (url: string, returnUrl: string) => {
+  await WebBrowser.openAuthSessionAsync(url, returnUrl);
+};
+
+const getPolarReturnUrl = (returnUrl: string) => {
+  const url = new URL("/polar/success", env.EXPO_PUBLIC_CONVEX_SITE_URL);
+  url.searchParams.set("returnUrl", returnUrl);
+  return url.toString();
+};
+
+const handlePolarCheckout = async () => {
+  try {
+    if (!recurringProduct) {
+      Alert.alert("Checkout unavailable", "No recurring Polar product is available yet.");
+      return;
+    }
+
+    const returnUrl = Linking.createURL("/");
+    const polarReturnUrl = getPolarReturnUrl(returnUrl);
+    const { url } = await generateCheckoutLink({
+      productIds: [recurringProduct.id],
+      origin: env.EXPO_PUBLIC_CONVEX_SITE_URL,
+      successUrl: polarReturnUrl,
+    });
+
+    await openPolarLink(url, returnUrl);
+  } catch {
+    Alert.alert("Checkout failed", "Unable to open Polar checkout. Please try again.");
+  }
+};
+
+const handlePolarPortal = async () => {
+  try {
+    const returnUrl = Linking.createURL("/");
+    const { url } = await generateCustomerPortalUrl({
+      returnUrl: getPolarReturnUrl(returnUrl),
+    });
+
+    await openPolarLink(url, returnUrl);
+  } catch {
+    Alert.alert("Portal unavailable", "Unable to open the customer portal. Please try again.");
+  }
+};
+{{/if}}
 {{else if (eq backend "convex")}}
 const healthCheck = useQuery(api.healthCheck.get);
 {{/if}}
@@ -26063,6 +27033,19 @@ return (
         Sign Out
       </Button>
     </View>
+    {{#if (eq payments "polar")}}
+    <View className="mt-4 gap-3">
+      {subscription ? (
+      <Button variant="secondary" onPress={handlePolarPortal}>
+        Manage Subscription
+      </Button>
+      ) : (
+      <Button onPress={handlePolarCheckout}>
+        Upgrade to Pro
+      </Button>
+      )}
+    </View>
+    {{/if}}
   </Surface>
   ) : null}
   <Surface variant="secondary" className="p-4 rounded-lg">
@@ -26313,6 +27296,16 @@ const { wrapWithReanimatedMetroConfig } = require("react-native-reanimated/metro
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
+{{#if (or (eq webDeploy "cloudflare") (eq serverDeploy "cloudflare"))}}
+// Alchemy writes runtime state here; block it to avoid Metro refresh loops.
+const blockList = config.resolver.blockList ?? [];
+const blockListPatterns = Array.isArray(blockList) ? blockList : [blockList];
+
+config.resolver.blockList = [
+	...blockListPatterns,
+	/[/\\\\]packages[/\\\\]infra[/\\\\]\\.alchemy(?:[/\\\\]|$)/,
+];
+{{/if}}
 
 const uniwindConfig = withUniwindConfig(wrapWithReanimatedMetroConfig(config), {
   cssEntryFile: "./global.css",
@@ -26360,7 +27353,7 @@ module.exports = uniwindConfig;
     "react-native-keyboard-controller": "1.21.6",
     "react-native-reanimated": "4.3.1",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "4.25.1",
+    "react-native-screens": "4.25.2",
     "react-native-svg": "15.15.4",
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.8.3",
@@ -27801,7 +28794,7 @@ export default function Home() {
 `],
   ["frontend/react/react-router/vite.config.ts.hbs", `import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from "vite";
+import { defineConfig } from "{{#if (includes addons "vite-plus")}}vite-plus{{else}}vite{{/if}}";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
@@ -27810,7 +28803,8 @@ export default defineConfig({
     reactRouter(),
     tsconfigPaths(),
   ],
-});`],
+});
+`],
   ["frontend/react/tanstack-router/index.html.hbs", `<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -28219,7 +29213,7 @@ function HomeComponent() {
   ["frontend/react/tanstack-router/vite.config.ts.hbs", `import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig } from "{{#if (includes addons "vite-plus")}}vite-plus{{else}}vite{{/if}}";
 
 export default defineConfig({
   server: {
@@ -28305,7 +29299,7 @@ import { getClerkAuthToken } from "@/utils/clerk-auth";
 {{/if}}
 {{else if (eq api "orpc")}}
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
-import { orpc, queryClient } from "./utils/orpc";
+import { createQueryClient, orpc } from "./utils/orpc";
 {{/if}}
 {{/if}}
 
@@ -28345,19 +29339,23 @@ export function getRouter() {
 }
 {{else}}
 {{#if (eq api "trpc")}}
-export const queryClient = new QueryClient({
-	queryCache: new QueryCache({
-		onError: (error, query) => {
-			toast.error(error.message, {
-				action: {
-					label: "retry",
-					onClick: query.invalidate,
-				},
-			});
-		},
-	}),
-	defaultOptions: { queries: { staleTime: 60 * 1000 } },
-});
+function createQueryClient() {
+	return new QueryClient({
+		queryCache: new QueryCache({
+			onError: (error, query) => {
+				toast.error(error.message, {
+					action: {
+						label: "retry",
+						onClick: () => {
+							query.invalidate();
+						},
+					},
+				});
+			},
+		}),
+		defaultOptions: { queries: { staleTime: 60 * 1000 } },
+	});
+}
 
 const trpcClient = createTRPCClient<AppRouter>({
 	links: [
@@ -28380,15 +29378,20 @@ const trpcClient = createTRPCClient<AppRouter>({
 		}),
 	],
 });
-
-const trpc = createTRPCOptionsProxy({
-	client: trpcClient,
-	queryClient: queryClient,
-});
 {{else if (eq api "orpc")}}
 {{/if}}
 
 export const getRouter = () => {
+{{#if (eq api "trpc")}}
+	const queryClient = createQueryClient();
+	const trpc = createTRPCOptionsProxy({
+		client: trpcClient,
+		queryClient,
+	});
+{{else if (eq api "orpc")}}
+	const queryClient = createQueryClient();
+{{/if}}
+
 	const router = createTanStackRouter({
 		routeTree,
 		scrollRestoration: true,
@@ -28766,7 +29769,7 @@ function HomeComponent() {
   }
 }
 `],
-  ["frontend/react/tanstack-start/vite.config.ts.hbs", `import { defineConfig } from "vite";
+  ["frontend/react/tanstack-start/vite.config.ts.hbs", `import { defineConfig } from "{{#if (includes addons "vite-plus")}}vite-plus{{else}}vite{{/if}}";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import tailwindcss from "@tailwindcss/vite";
 import viteReact from "@vitejs/plugin-react";
@@ -29835,7 +30838,7 @@ body {
   }
 }
 `],
-  ["frontend/solid/vite.config.ts.hbs", `import { defineConfig } from "vite";
+  ["frontend/solid/vite.config.ts.hbs", `import { defineConfig } from "{{#if (includes addons "vite-plus")}}vite-plus{{else}}vite{{/if}}";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import solidPlugin from "vite-plugin-solid";
 import tailwindcss from "@tailwindcss/vite";
@@ -29855,7 +30858,8 @@ export default defineConfig({
   server: {
     port: 3001,
   },
-});`],
+});
+`],
   ["frontend/svelte/_gitignore", `node_modules
 
 # Output
@@ -30394,7 +31398,7 @@ export default config;
 `],
   ["frontend/svelte/vite.config.ts.hbs", `import tailwindcss from "@tailwindcss/vite";
 import { sveltekit } from "@sveltejs/kit/vite";
-import { defineConfig } from "vite";
+import { defineConfig } from "{{#if (includes addons "vite-plus")}}vite-plus{{else}}vite{{/if}}";
 
 export default defineConfig({
   plugins: [tailwindcss(), sveltekit()],
@@ -30799,6 +31803,53 @@ const db = await D1Database("database", {
 });
 {{/if}}
 
+{{#if (eq serverDeploy "cloudflare")}}
+export const server = await Worker("server", {
+  cwd: "../../apps/server",
+  entrypoint: "src/index.ts",
+  compatibility: "node",
+  url: true,
+  bindings: {
+    {{#if (eq dbSetup "d1")}}
+    DB: db,
+    {{else if (ne database "none")}}
+    DATABASE_URL: alchemy.secret.env.DATABASE_URL!,
+    {{/if}}
+    CORS_ORIGIN: alchemy.env.CORS_ORIGIN!,
+    {{#if (eq auth "better-auth")}}
+    BETTER_AUTH_SECRET: alchemy.secret.env.BETTER_AUTH_SECRET!,
+    BETTER_AUTH_URL: alchemy.env.BETTER_AUTH_URL!,
+    {{/if}}
+    {{#if (eq auth "clerk")}}
+    CLERK_SECRET_KEY: alchemy.secret.env.CLERK_SECRET_KEY!,
+    {{#if (and (ne api "none") (or (eq backend "self") (eq backend "hono") (eq backend "elysia")))}}
+    CLERK_PUBLISHABLE_KEY: alchemy.env.CLERK_PUBLISHABLE_KEY!,
+    {{/if}}
+    {{/if}}
+    {{#if (includes examples "ai")}}
+    GOOGLE_GENERATIVE_AI_API_KEY: alchemy.secret.env.GOOGLE_GENERATIVE_AI_API_KEY!,
+    {{/if}}
+    {{#if (eq payments "polar")}}
+    POLAR_ACCESS_TOKEN: alchemy.secret.env.POLAR_ACCESS_TOKEN!,
+    POLAR_SUCCESS_URL: alchemy.env.POLAR_SUCCESS_URL!,
+    {{/if}}
+    {{#if (eq dbSetup "turso")}}
+    DATABASE_AUTH_TOKEN: alchemy.secret.env.DATABASE_AUTH_TOKEN!,
+    {{/if}}
+    {{#if (eq database "mysql")}}
+    {{#if (eq orm "drizzle")}}
+    DATABASE_HOST: alchemy.env.DATABASE_HOST!,
+    DATABASE_USERNAME: alchemy.env.DATABASE_USERNAME!,
+    DATABASE_PASSWORD: alchemy.secret.env.DATABASE_PASSWORD!,
+    {{/if}}
+    {{/if}}
+  },
+  dev: {
+		port: 3000,
+	},
+});
+{{/if}}
+
 {{#if (eq webDeploy "cloudflare")}}
 {{#if (includes frontend "next")}}
 export const web = await Nextjs("web", {
@@ -30810,7 +31861,11 @@ export const web = await Nextjs("web", {
     NEXT_PUBLIC_CONVEX_SITE_URL: alchemy.env.NEXT_PUBLIC_CONVEX_SITE_URL!,
     {{/if}}
     {{else if (ne backend "self")}}
+    {{#if (eq serverDeploy "cloudflare")}}
+    NEXT_PUBLIC_SERVER_URL: server.url!,
+    {{else}}
     NEXT_PUBLIC_SERVER_URL: alchemy.env.NEXT_PUBLIC_SERVER_URL!,
+    {{/if}}
     {{/if}}
     {{#if (eq dbSetup "d1")}}
     DB: db,
@@ -30864,7 +31919,11 @@ export const web = await Nuxt("web", {
     NUXT_PUBLIC_CONVEX_SITE_URL: alchemy.env.NUXT_PUBLIC_CONVEX_SITE_URL!,
     {{/if}}
     {{else if (ne backend "self")}}
+    {{#if (eq serverDeploy "cloudflare")}}
+    NUXT_PUBLIC_SERVER_URL: server.url!,
+    {{else}}
     NUXT_PUBLIC_SERVER_URL: alchemy.env.NUXT_PUBLIC_SERVER_URL!,
+    {{/if}}
     {{/if}}
     {{#if (eq backend "self")}}
     {{#if (eq dbSetup "d1")}}
@@ -30915,7 +31974,11 @@ export const web = await SvelteKit("web", {
     PUBLIC_CONVEX_SITE_URL: alchemy.env.PUBLIC_CONVEX_SITE_URL!,
     {{/if}}
     {{else if (ne backend "self")}}
+    {{#if (eq serverDeploy "cloudflare")}}
+    PUBLIC_SERVER_URL: server.url!,
+    {{else}}
     PUBLIC_SERVER_URL: alchemy.env.PUBLIC_SERVER_URL!,
+    {{/if}}
     {{/if}}
     {{#if (eq backend "self")}}
     {{#if (eq dbSetup "d1")}}
@@ -30961,7 +32024,11 @@ export const web = await TanStackStart("web", {
     VITE_CONVEX_SITE_URL: alchemy.env.VITE_CONVEX_SITE_URL!,
     {{/if}}
     {{else if (ne backend "self")}}
+    {{#if (eq serverDeploy "cloudflare")}}
+    VITE_SERVER_URL: server.url!,
+    {{else}}
     VITE_SERVER_URL: alchemy.env.VITE_SERVER_URL!,
+    {{/if}}
     {{/if}}
     {{#if (eq dbSetup "d1")}}
     DB: db,
@@ -31011,7 +32078,11 @@ export const web = await Vite("web", {
     VITE_CONVEX_SITE_URL: alchemy.env.VITE_CONVEX_SITE_URL!,
     {{/if}}
     {{else if (ne backend "self")}}
+    {{#if (eq serverDeploy "cloudflare")}}
+    VITE_SERVER_URL: server.url!,
+    {{else}}
     VITE_SERVER_URL: alchemy.env.VITE_SERVER_URL!,
+    {{/if}}
     {{/if}}
   }
 });
@@ -31025,7 +32096,11 @@ export const web = await ReactRouter("web", {
     VITE_CONVEX_SITE_URL: alchemy.env.VITE_CONVEX_SITE_URL!,
     {{/if}}
     {{else if (ne backend "self")}}
+    {{#if (eq serverDeploy "cloudflare")}}
+    VITE_SERVER_URL: server.url!,
+    {{else}}
     VITE_SERVER_URL: alchemy.env.VITE_SERVER_URL!,
+    {{/if}}
     {{/if}}
   }
 });
@@ -31040,7 +32115,11 @@ export const web = await Vite("web", {
     VITE_CONVEX_SITE_URL: alchemy.env.VITE_CONVEX_SITE_URL!,
     {{/if}}
     {{else if (ne backend "self")}}
+    {{#if (eq serverDeploy "cloudflare")}}
+    VITE_SERVER_URL: server.url!,
+    {{else}}
     VITE_SERVER_URL: alchemy.env.VITE_SERVER_URL!,
+    {{/if}}
     {{/if}}
   }
 });
@@ -31054,7 +32133,11 @@ export const web = await Astro("web", {
   {{/if}}
   bindings: {
     {{#if (ne backend "self")}}
+    {{#if (eq serverDeploy "cloudflare")}}
+    PUBLIC_SERVER_URL: server.url!,
+    {{else}}
     PUBLIC_SERVER_URL: alchemy.env.PUBLIC_SERVER_URL!,
+    {{/if}}
     {{/if}}
     {{#if (eq backend "self")}}
     {{#if (eq dbSetup "d1")}}
@@ -31085,52 +32168,6 @@ export const web = await Astro("web", {
   }
 });
 {{/if}}
-{{/if}}
-
-{{#if (eq serverDeploy "cloudflare")}}
-export const server = await Worker("server", {
-  cwd: "../../apps/server",
-  entrypoint: "src/index.ts",
-  compatibility: "node",
-  bindings: {
-    {{#if (eq dbSetup "d1")}}
-    DB: db,
-    {{else if (ne database "none")}}
-    DATABASE_URL: alchemy.secret.env.DATABASE_URL!,
-    {{/if}}
-    CORS_ORIGIN: alchemy.env.CORS_ORIGIN!,
-    {{#if (eq auth "better-auth")}}
-    BETTER_AUTH_SECRET: alchemy.secret.env.BETTER_AUTH_SECRET!,
-    BETTER_AUTH_URL: alchemy.env.BETTER_AUTH_URL!,
-    {{/if}}
-    {{#if (eq auth "clerk")}}
-    CLERK_SECRET_KEY: alchemy.secret.env.CLERK_SECRET_KEY!,
-    {{#if (and (ne api "none") (or (eq backend "self") (eq backend "hono") (eq backend "elysia")))}}
-    CLERK_PUBLISHABLE_KEY: alchemy.env.CLERK_PUBLISHABLE_KEY!,
-    {{/if}}
-    {{/if}}
-    {{#if (includes examples "ai")}}
-    GOOGLE_GENERATIVE_AI_API_KEY: alchemy.secret.env.GOOGLE_GENERATIVE_AI_API_KEY!,
-    {{/if}}
-    {{#if (eq payments "polar")}}
-    POLAR_ACCESS_TOKEN: alchemy.secret.env.POLAR_ACCESS_TOKEN!,
-    POLAR_SUCCESS_URL: alchemy.env.POLAR_SUCCESS_URL!,
-    {{/if}}
-    {{#if (eq dbSetup "turso")}}
-    DATABASE_AUTH_TOKEN: alchemy.secret.env.DATABASE_AUTH_TOKEN!,
-    {{/if}}
-    {{#if (eq database "mysql")}}
-    {{#if (eq orm "drizzle")}}
-    DATABASE_HOST: alchemy.env.DATABASE_HOST!,
-    DATABASE_USERNAME: alchemy.env.DATABASE_USERNAME!,
-    DATABASE_PASSWORD: alchemy.secret.env.DATABASE_PASSWORD!,
-    {{/if}}
-    {{/if}}
-  },
-  dev: {
-		port: 3000,
-	},
-});
 {{/if}}
 
 {{#if (and (eq webDeploy "cloudflare") (eq serverDeploy "cloudflare"))}}
@@ -31938,6 +32975,7 @@ export function cn(...inputs: ClassValue[]) {
   "compilerOptions": {
     "jsx": "react-jsx",
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": [],
     "paths": {
       "@{{projectName}}/ui/*": ["./src/*"]
     }
@@ -31945,6 +32983,71 @@ export function cn(...inputs: ClassValue[]) {
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules"]
 }
+`],
+  ["payments/polar/convex/backend/convex/polar.ts.hbs", `import { Polar } from "@convex-dev/polar";
+
+import { api, components } from "./_generated/api";
+import type { DataModel } from "./_generated/dataModel";
+import { action, query } from "./_generated/server";
+
+type CurrentSubscription = Awaited<ReturnType<Polar<DataModel>["getCurrentSubscription"]>>;
+
+export const polar: Polar<DataModel> = new Polar<DataModel>(components.polar, {
+  getUserInfo: async (ctx) => {
+    const user = await ctx.runQuery(api.auth.getCurrentUser);
+
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    if (!user.email) {
+      throw new Error("Authenticated user is missing an email address");
+    }
+
+    return {
+      userId: user._id,
+      email: user.email,
+    };
+  },
+});
+
+export const {
+  changeCurrentSubscription,
+  cancelCurrentSubscription,
+  getConfiguredProducts,
+  listAllProducts,
+  listAllSubscriptions,
+  generateCheckoutLink,
+  generateCustomerPortalUrl,
+} = polar.api();
+
+export const getCurrentSubscription = query({
+  args: {},
+  handler: async (ctx): Promise<CurrentSubscription | null> => {
+    const user = await ctx.runQuery(api.auth.getCurrentUser);
+
+    if (!user) {
+      return null;
+    }
+
+    return await polar.getCurrentSubscription(ctx, {
+      userId: user._id,
+    });
+  },
+});
+
+export const syncProducts = action({
+  args: {},
+  handler: async (ctx): Promise<void> => {
+    const user = await ctx.runQuery(api.auth.getCurrentUser);
+
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    await polar.syncProducts(ctx);
+  },
+});
 `],
   ["payments/polar/server/base/src/lib/payments.ts.hbs", `import { Polar } from "@polar-sh/sdk";
 {{#if (and (eq backend "self") (eq webDeploy "cloudflare") (includes frontend "svelte"))}}
@@ -32104,4 +33207,4 @@ function SuccessPage() {
 `]
 ]);
 
-export const TEMPLATE_COUNT = 475;
+export const TEMPLATE_COUNT = 484;

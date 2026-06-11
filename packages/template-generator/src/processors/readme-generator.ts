@@ -160,6 +160,7 @@ function generateReadmeContent(options: ProjectConfig): string {
     frontend = ["tanstack-router"],
     backend = "hono",
     api = "trpc",
+    dbSetup,
     webDeploy,
     serverDeploy,
   } = options;
@@ -187,7 +188,7 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 
 ## Features
 
-${generateFeaturesList(database, auth, addons, orm, runtime, frontend, backend, api)}
+${generateFeaturesList(database, auth, addons, orm, runtime, frontend, backend, api, dbSetup)}
 
 ## Getting Started
 
@@ -451,6 +452,7 @@ function generateFeaturesList(
   frontend: ProjectConfig["frontend"],
   backend: ProjectConfig["backend"],
   api: ProjectConfig["api"],
+  dbSetup: ProjectConfig["dbSetup"],
 ): string {
   const isConvex = backend === "convex";
   const hasNative = hasNativeFrontend(frontend);
@@ -525,7 +527,7 @@ function generateFeaturesList(
       mongoose: "Mongoose",
     };
     const dbNames: Record<string, string> = {
-      sqlite: "SQLite/Turso",
+      sqlite: dbSetup === "d1" ? "Cloudflare D1" : "SQLite/Turso",
       postgres: "PostgreSQL",
       mysql: "MySQL",
       mongodb: "MongoDB",
@@ -551,6 +553,8 @@ function generateFeaturesList(
     starlight: "- **Starlight** - Documentation site with Astro",
     turborepo: "- **Turborepo** - Optimized monorepo build system",
     nx: "- **Nx** - Smart monorepo task orchestration and caching",
+    "vite-plus":
+      "- **Vite+** - Unified Vite toolchain, workspace task runner, linting, and formatting",
   };
 
   for (const addon of addons) {
@@ -576,8 +580,40 @@ function generateDatabaseSetup(config: ProjectConfig, packageManagerRunCmd: stri
   };
   const ormDesc = orm === "none" ? "" : ` with ${ormLabels[orm] || orm}`;
   const dbSupport = getDbScriptSupport(config);
+  const isD1Alchemy = dbSupport.isD1Alchemy;
 
   let setup = "## Database Setup\n\n";
+
+  if (isD1Alchemy) {
+    const steps: string[] = [];
+
+    if (dbSupport.hasDbGenerate) {
+      steps.push(
+        `${steps.length + 1}. ${
+          orm === "prisma" ? "Generate the Prisma client" : "Generate migration files"
+        }:
+\`\`\`bash
+${packageManagerRunCmd} db:generate
+\`\`\``,
+      );
+    }
+
+    if (dbSupport.hasDbMigrate) {
+      steps.push(`${steps.length + 1}. Create and apply Prisma migrations locally:
+\`\`\`bash
+${packageManagerRunCmd} db:migrate
+\`\`\``);
+    }
+
+    return `${setup}This project uses Cloudflare D1 (SQLite)${ormDesc}.
+
+Runtime database access uses the Cloudflare \`DB\` binding from \`packages/infra/alchemy.run.ts\`. If a local \`DATABASE_URL\` is present, it is only for database tooling.
+
+Alchemy provisions the D1 database and applies migrations during \`dev\` and \`deploy\`.
+
+${steps.join("\n\n")}
+`;
+  }
 
   const dbDescriptions: Record<string, string> = {
     sqlite: `This project uses SQLite${ormDesc}.
@@ -666,7 +702,9 @@ function generateScriptsList(
   }
 
   if (dbSupport.hasDbScripts) {
-    scripts += `\n- \`${packageManagerRunCmd} db:push\`: Push schema changes to database`;
+    if (dbSupport.hasDbPush) {
+      scripts += `\n- \`${packageManagerRunCmd} db:push\`: Push schema changes to database`;
+    }
     if (dbSupport.hasDbGenerate) {
       scripts += `\n- \`${packageManagerRunCmd} db:generate\`: Generate database client/types`;
     }
@@ -682,11 +720,20 @@ function generateScriptsList(
     scripts += `\n- \`${packageManagerRunCmd} db:local\`: Start the local SQLite database`;
   }
 
-  if (addons.includes("biome")) {
-    scripts += `\n- \`${packageManagerRunCmd} check\`: Run Biome formatting and linting`;
-  }
+  if (addons.includes("vite-plus")) {
+    const hasVitePlusNativeHooks = !addons.includes("husky") && !addons.includes("lefthook");
 
-  if (addons.includes("oxlint")) {
+    scripts += `\n- \`${packageManagerRunCmd} check\`: Run Vite+ format/lint checks and workspace TypeScript checks
+- \`${packageManagerRunCmd} lint\`: Run Vite+ lint checks
+- \`${packageManagerRunCmd} format\`: Run Vite+ formatting
+- \`${packageManagerRunCmd} staged\`: Run Vite+ checks against staged files`;
+
+    if (hasVitePlusNativeHooks) {
+      scripts += `\n- \`${packageManagerRunCmd} hooks:setup\`: Install Vite+ native Git hooks with \`vp config\``;
+    }
+  } else if (addons.includes("biome")) {
+    scripts += `\n- \`${packageManagerRunCmd} check\`: Run Biome formatting and linting`;
+  } else if (addons.includes("oxlint")) {
     scripts += `\n- \`${packageManagerRunCmd} check\`: Run Oxlint and Oxfmt`;
   }
 
@@ -759,7 +806,10 @@ function generateGitHooksSection(
   addons: ProjectConfig["addons"],
 ): string {
   const hasHusky = addons.includes("husky");
-  const hasLinting = addons.includes("biome") || addons.includes("oxlint");
+  const hasLefthook = addons.includes("lefthook");
+  const hasVitePlus = addons.includes("vite-plus");
+  const hasVitePlusNativeHooks = hasVitePlus && !hasHusky && !hasLefthook;
+  const hasLinting = addons.includes("biome") || addons.includes("oxlint") || hasVitePlus;
 
   if (!hasHusky && !hasLinting) {
     return "";
@@ -771,8 +821,15 @@ function generateGitHooksSection(
     lines.push(`- Initialize hooks: \`${packageManagerRunCmd} prepare\``);
   }
 
+  if (hasVitePlusNativeHooks) {
+    lines.push(
+      `- Optional native Vite+ hooks: \`${packageManagerRunCmd} hooks:setup\``,
+      "- Docs: [Vite+ commit hooks](https://viteplus.dev/guide/commit-hooks)",
+    );
+  }
+
   if (hasLinting) {
-    lines.push(`- Format and lint fix: \`${packageManagerRunCmd} check\``);
+    lines.push(`- Run checks: \`${packageManagerRunCmd} check\``);
   }
 
   return `${lines.join("\n")}\n\n`;

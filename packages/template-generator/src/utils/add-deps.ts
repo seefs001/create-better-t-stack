@@ -54,19 +54,19 @@ export const dependencyVersionMap = {
   mongoose: "^9.6.2",
   mongodb: "^7.2.0",
 
-  "vite-plugin-pwa": "^1.2.0",
+  "vite-plugin-pwa": "^1.3.0",
   "@vite-pwa/assets-generator": "^1.0.2",
 
-  "@tauri-apps/cli": "^2.4.0",
+  "@tauri-apps/cli": "^2.11.2",
 
-  "@biomejs/biome": "^2.2.0",
+  "@biomejs/biome": "^2.4.16",
 
-  oxlint: "^1.61.0",
-  oxfmt: "^0.46.0",
+  oxlint: "^1.68.0",
+  oxfmt: "^0.53.0",
 
   husky: "^9.1.7",
-  lefthook: "^2.0.13",
-  "lint-staged": "^16.1.2",
+  lefthook: "^2.1.9",
+  "lint-staged": "^17.0.7",
 
   tsx: "^4.19.2",
   "@types/node": "^22.13.14",
@@ -93,8 +93,10 @@ export const dependencyVersionMap = {
   fastify: "^5.3.3",
   "@fastify/cors": "^11.0.1",
 
-  turbo: "^2.8.12",
-  nx: "^21.5.2",
+  turbo: "^2.9.16",
+  nx: "^22.7.5",
+  "vite-plus": "0.1.24",
+  rolldown: "1.1.0",
 
   ai: "^6.0.3",
   "@ai-sdk/google": "^3.0.1",
@@ -121,6 +123,7 @@ export const dependencyVersionMap = {
   convex: "^1.33.1",
   "@convex-dev/react-query": "^0.1.0",
   "@convex-dev/agent": "^0.3.2",
+  "@convex-dev/polar": "^0.9.1",
   "convex-svelte": "^0.0.12",
   "convex-nuxt": "0.1.5",
   "convex-vue": "^0.1.5",
@@ -162,9 +165,12 @@ export const dependencyVersionMap = {
   "@t3-oss/env-nuxt": "^0.13.1",
 
   "@polar-sh/better-auth": "^1.8.4",
-  "@polar-sh/sdk": "^0.42.2",
+  "@polar-sh/checkout": "^0.2.1",
+  "@polar-sh/sdk": "^0.47.1",
+  "@stripe/react-stripe-js": "^4.0.2",
+  "@stripe/stripe-js": "^7.9.0",
 
-  evlog: "^2.14.1",
+  evlog: "^2.18.1",
 } as const;
 
 export type AvailableDependencies = keyof typeof dependencyVersionMap;
